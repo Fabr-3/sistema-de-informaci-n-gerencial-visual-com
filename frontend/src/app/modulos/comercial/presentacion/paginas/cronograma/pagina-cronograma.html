@@ -1,0 +1,69 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Cronograma de eventos</h1>
+      <p>Eventos de todos los proyectos. Seleccione un evento para abrir su proyecto.</p>
+    </div>
+    <mat-button-toggle-group [value]="vista()" (change)="vista.set($event.value)" aria-label="Vista del calendario">
+      <mat-button-toggle [value]="Vista.Month">Mes</mat-button-toggle>
+      <mat-button-toggle [value]="Vista.Week">Semana</mat-button-toggle>
+      <mat-button-toggle [value]="Vista.Day">Día</mat-button-toggle>
+    </mat-button-toggle-group>
+  </header>
+
+  <section class="panel calendario">
+    <div class="calendario__barra">
+      <div class="calendario__navegacion">
+        <button mat-icon-button mwlCalendarPreviousView [view]="vista()" [viewDate]="fecha()" (viewDateChange)="cambiarFecha($event)" aria-label="Anterior">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button mat-stroked-button mwlCalendarToday [viewDate]="fecha()" (viewDateChange)="cambiarFecha($event)">Hoy</button>
+        <button mat-icon-button mwlCalendarNextView [view]="vista()" [viewDate]="fecha()" (viewDateChange)="cambiarFecha($event)" aria-label="Siguiente">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      <h2>{{ fecha() | calendarDate: vista() + 'ViewTitle' : locale : inicioSemana }}</h2>
+      <ul class="leyenda" aria-label="Estados">
+        @for (elemento of leyenda; track elemento.etiqueta) {
+          <li><span class="leyenda__color" [style.background]="elemento.color"></span>{{ elemento.etiqueta }}</li>
+        }
+      </ul>
+    </div>
+    @if (cargando()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    @switch (vista()) {
+      @case (Vista.Month) {
+        <mwl-calendar-month-view
+          [viewDate]="fecha()"
+          [events]="eventos()"
+          [locale]="locale"
+          [weekStartsOn]="inicioSemana"
+          [activeDayIsOpen]="diaAbierto()"
+          (dayClicked)="alSeleccionarDia($event.day)"
+          (eventClicked)="abrirProyecto($event)"
+        />
+      }
+      @case (Vista.Week) {
+        <mwl-calendar-week-view
+          [viewDate]="fecha()"
+          [events]="eventos()"
+          [locale]="locale"
+          [weekStartsOn]="inicioSemana"
+          [dayStartHour]="horaInicio"
+          (eventClicked)="abrirProyecto($event)"
+        />
+      }
+      @case (Vista.Day) {
+        <mwl-calendar-day-view
+          [viewDate]="fecha()"
+          [events]="eventos()"
+          [locale]="locale"
+          [dayStartHour]="horaInicio"
+          (eventClicked)="abrirProyecto($event)"
+        />
+      }
+    }
+  </section>
+</div>

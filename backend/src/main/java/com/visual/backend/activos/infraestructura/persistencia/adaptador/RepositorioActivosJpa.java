@@ -30,6 +30,7 @@ import com.visual.backend.activos.infraestructura.persistencia.jpa.UsoActivoJpaR
 import com.visual.backend.compartido.aplicacion.Pagina;
 import com.visual.backend.compartido.aplicacion.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
+import com.visual.backend.compartido.infraestructura.persistencia.GeneradorCorrelativos;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Path;
@@ -43,6 +44,9 @@ public class RepositorioActivosJpa implements RepositorioActivos {
     private static final Sort ORDEN_POR_DEFECTO = Sort.by("codigoInventario");
     private static final BigDecimal CIEN = BigDecimal.valueOf(100);
     private static final int ESCALA_FACTOR = 4;
+    private static final String TABLA_ACTIVOS = "activos";
+    private static final String COLUMNA_CODIGO = "codigo_inventario";
+    private static final String SEPARADOR_CODIGO = "-";
 
     private final ActivoJpaRepositorio activos;
     private final ModeloActivoJpaRepositorio modelos;
@@ -51,11 +55,12 @@ public class RepositorioActivosJpa implements RepositorioActivos {
     private final RegistroUsoJpaRepositorio registrosUso;
     private final MantenimientoJpaRepositorio mantenimientos;
     private final ModuloLedJpaRepositorio modulos;
+    private final GeneradorCorrelativos correlativos;
 
     public RepositorioActivosJpa(ActivoJpaRepositorio activos, ModeloActivoJpaRepositorio modelos,
                                  BodegaJpaRepositorio bodegas, UsoActivoJpaRepositorio usos,
                                  RegistroUsoJpaRepositorio registrosUso, MantenimientoJpaRepositorio mantenimientos,
-                                 ModuloLedJpaRepositorio modulos) {
+                                 ModuloLedJpaRepositorio modulos, GeneradorCorrelativos correlativos) {
         this.activos = activos;
         this.modelos = modelos;
         this.bodegas = bodegas;
@@ -63,6 +68,7 @@ public class RepositorioActivosJpa implements RepositorioActivos {
         this.registrosUso = registrosUso;
         this.mantenimientos = mantenimientos;
         this.modulos = modulos;
+        this.correlativos = correlativos;
     }
 
     @Override
@@ -83,8 +89,7 @@ public class RepositorioActivosJpa implements RepositorioActivos {
 
     @Override
     public int reservarCorrelativo(String prefijoCodigo) {
-        activos.bloquearPrefijo(prefijoCodigo);
-        return activos.buscarMayorCorrelativo(prefijoCodigo);
+        return correlativos.reservarUltimo(TABLA_ACTIVOS, COLUMNA_CODIGO, prefijoCodigo + SEPARADOR_CODIGO);
     }
 
     @Override

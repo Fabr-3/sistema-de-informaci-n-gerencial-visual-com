@@ -1,0 +1,97 @@
+<h2 mat-dialog-title>{{ datos.cliente ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
+<form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+  <mat-dialog-content>
+    <div class="formulario">
+      <mat-form-field appearance="outline" class="completo">
+        <mat-label>Nombre o razón social</mat-label>
+        <input matInput formControlName="razonSocial" />
+        <mat-error>Ingrese el nombre o la razón social</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo de cliente</mat-label>
+        <mat-select formControlName="idTipoCliente">
+          @for (tipo of datos.tiposCliente; track tipo.id) {
+            <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>Seleccione el tipo</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Dirección (opcional)</mat-label>
+        <input matInput formControlName="direccion" />
+      </mat-form-field>
+    </div>
+
+    <section class="lista">
+      <div class="lista__titulo">
+        <h3>Documentos</h3>
+        <button mat-button type="button" (click)="agregarDocumento()" [disabled]="documentos.length >= maximoDocumentos">
+          <mat-icon>add</mat-icon>Agregar
+        </button>
+      </div>
+      @for (grupo of documentos.controls; track grupo; let indice = $index) {
+        <div class="fila" [formGroup]="grupo">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Tipo</mat-label>
+            <mat-select formControlName="idTipoDocumento">
+              @for (tipo of datos.tiposDocumento; track tipo.id) {
+                <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Número</mat-label>
+            <input matInput formControlName="numero" />
+          </mat-form-field>
+          <button
+            mat-icon-button
+            type="button"
+            (click)="documentos.removeAt(indice)"
+            [disabled]="documentos.length === 1"
+            aria-label="Quitar documento"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+    </section>
+
+    <section class="lista">
+      <div class="lista__titulo">
+        <h3>Contactos</h3>
+        <button mat-button type="button" (click)="agregarContacto()" [disabled]="contactos.length >= maximoContactos">
+          <mat-icon>add</mat-icon>Agregar
+        </button>
+      </div>
+      @for (grupo of contactos.controls; track grupo; let indice = $index) {
+        <div class="fila fila--contacto" [formGroup]="grupo">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Tipo</mat-label>
+            <mat-select formControlName="idTipoContacto">
+              @for (tipo of datos.tiposContacto; track tipo.id) {
+                <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Valor</mat-label>
+            <input matInput formControlName="valor" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Referencia</mat-label>
+            <input matInput formControlName="referencia" placeholder="Gerencia, Compras…" />
+          </mat-form-field>
+          <button mat-icon-button type="button" (click)="contactos.removeAt(indice)" aria-label="Quitar contacto">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      } @empty {
+        <p class="texto-secundario">Sin contactos registrados.</p>
+      }
+    </section>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancelar</button>
+    <button mat-flat-button type="submit" [disabled]="guardando()">Guardar</button>
+  </mat-dialog-actions>
+</form>

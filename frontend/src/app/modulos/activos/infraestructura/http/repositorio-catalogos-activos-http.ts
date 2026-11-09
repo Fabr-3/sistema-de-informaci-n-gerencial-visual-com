@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { guardarRecurso } from '../../../../compartido/utilidades/guardar-recurso';
 import { parametrosConsulta } from '../../../../compartido/utilidades/parametros-http';
 import { URL_API } from '../../../../nucleo/configuracion/api';
 import { Bodega, Categoria, DatosBodega, Fabricante, TipoMantenimiento } from '../../dominio/modelos/catalogos';
@@ -19,7 +20,7 @@ export class RepositorioCatalogosActivosHttp extends RepositorioCatalogosActivos
   }
 
   guardarCategoria(id: number | null, nombre: string): Observable<Categoria> {
-    return this.guardar<Categoria>(`${this.urlCatalogos}/categorias`, id, { nombre });
+    return guardarRecurso<Categoria>(this.http, `${this.urlCatalogos}/categorias`, id, { nombre });
   }
 
   listarFabricantes(): Observable<Fabricante[]> {
@@ -27,7 +28,7 @@ export class RepositorioCatalogosActivosHttp extends RepositorioCatalogosActivos
   }
 
   guardarFabricante(id: number | null, nombre: string): Observable<Fabricante> {
-    return this.guardar<Fabricante>(`${this.urlCatalogos}/fabricantes`, id, { nombre });
+    return guardarRecurso<Fabricante>(this.http, `${this.urlCatalogos}/fabricantes`, id, { nombre });
   }
 
   listarBodegas(): Observable<Bodega[]> {
@@ -35,7 +36,7 @@ export class RepositorioCatalogosActivosHttp extends RepositorioCatalogosActivos
   }
 
   guardarBodega(id: number | null, datos: DatosBodega): Observable<Bodega> {
-    return this.guardar<Bodega>(`${this.urlCatalogos}/bodegas`, id, datos);
+    return guardarRecurso<Bodega>(this.http, `${this.urlCatalogos}/bodegas`, id, datos);
   }
 
   listarTiposMantenimiento(): Observable<TipoMantenimiento[]> {
@@ -47,11 +48,6 @@ export class RepositorioCatalogosActivosHttp extends RepositorioCatalogosActivos
   }
 
   guardarModelo(id: number | null, datos: DatosModelo): Observable<ModeloActivo> {
-    return this.guardar<ModeloActivo>(this.urlModelos, id, datos);
-  }
-
-  /** POST para crear (sin id) y PUT para actualizar. */
-  private guardar<T>(url: string, id: number | null, cuerpo: object): Observable<T> {
-    return id === null ? this.http.post<T>(url, cuerpo) : this.http.put<T>(`${url}/${id}`, cuerpo);
+    return guardarRecurso<ModeloActivo>(this.http, this.urlModelos, id, datos);
   }
 }

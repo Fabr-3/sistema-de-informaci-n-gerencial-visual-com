@@ -13,7 +13,7 @@ import { CatalogosActivos } from '../../../../aplicacion/catalogos-activos';
 import { HistorialActivos } from '../../../../aplicacion/historial-activos';
 import { Activo } from '../../../../dominio/modelos/activo';
 import { Mantenimiento } from '../../../../dominio/modelos/historial';
-import { noFutura } from './validadores-periodo';
+import { noFutura } from '../../../../../../compartido/utilidades/validadores-periodo';
 
 const LONGITUD_DESCRIPCION = 2000;
 

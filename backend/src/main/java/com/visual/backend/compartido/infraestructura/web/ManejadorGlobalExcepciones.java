@@ -17,6 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.visual.backend.accesos.dominio.excepcion.AutenticacionExcepcion;
@@ -84,6 +85,15 @@ public class ManejadorGlobalExcepciones extends ResponseEntityExceptionHandler {
         ProblemDetail detalle = problema(HttpStatus.BAD_REQUEST, "Los datos enviados no son válidos");
         detalle.setProperty(PROPIEDAD_ERRORES, errores);
         return ResponseEntity.badRequest().body(detalle);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException excepcion,
+                                                                          HttpHeaders cabeceras,
+                                                                          HttpStatusCode estado,
+                                                                          WebRequest solicitud) {
+        return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE)
+                .body(problema(HttpStatus.CONTENT_TOO_LARGE, "El archivo supera el tamaño máximo permitido"));
     }
 
     private static ProblemDetail problema(HttpStatus estado, String mensaje) {

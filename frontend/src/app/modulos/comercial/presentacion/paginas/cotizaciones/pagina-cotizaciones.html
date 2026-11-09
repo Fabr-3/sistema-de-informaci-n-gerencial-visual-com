@@ -1,0 +1,95 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Cotizaciones</h1>
+      <p>Propuestas a clientes. Al aceptarlas, la gerencia genera el proyecto correspondiente.</p>
+    </div>
+    <a mat-flat-button *siPermiso="permisos.COMERCIAL_GESTIONAR" [routerLink]="rutaNueva">
+      <mat-icon>add</mat-icon>
+      Nueva cotización
+    </a>
+  </header>
+
+  <section class="panel">
+    <div class="filtros">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Buscar</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [formControl]="busqueda" placeholder="Número, título o cliente" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Estado</mat-label>
+        <mat-select [value]="criterios().filtro.estado" (selectionChange)="filtrar({ estado: $event.value })">
+          <mat-option [value]="undefined">Todos</mat-option>
+          @for (estado of estados | keyvalue: ordenOriginal; track estado.key) {
+            <mat-option [value]="estado.key">{{ estado.value }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.contenido ?? []">
+        <ng-container matColumnDef="numero">
+          <th mat-header-cell *matHeaderCellDef>Número</th>
+          <td mat-cell *matCellDef="let cotizacion" class="codigo">{{ cotizacion.numero }}</td>
+        </ng-container>
+        <ng-container matColumnDef="cliente">
+          <th mat-header-cell *matHeaderCellDef>Cliente</th>
+          <td mat-cell *matCellDef="let cotizacion">{{ cotizacion.cliente.razonSocial }}</td>
+        </ng-container>
+        <ng-container matColumnDef="titulo">
+          <th mat-header-cell *matHeaderCellDef>Título</th>
+          <td mat-cell *matCellDef="let cotizacion">{{ cotizacion.titulo }}</td>
+        </ng-container>
+        <ng-container matColumnDef="emision">
+          <th mat-header-cell *matHeaderCellDef>Emisión</th>
+          <td mat-cell *matCellDef="let cotizacion">{{ cotizacion.fechaEmision | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="validez">
+          <th mat-header-cell *matHeaderCellDef>Válida hasta</th>
+          <td mat-cell *matCellDef="let cotizacion">{{ cotizacion.fechaValidez | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="importe">
+          <th mat-header-cell *matHeaderCellDef class="numero">Importe</th>
+          <td mat-cell *matCellDef="let cotizacion" class="numero">
+            {{ cotizacion.importeTotal | currency: 'BOB' : 'Bs ' }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let cotizacion">
+            <span class="estado estado--{{ tipoVisual(cotizacion.estado) }}">
+              {{ cotizacion.estado | etiqueta: estados }}
+            </span>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr
+          mat-row
+          *matRowDef="let fila; columns: columnas"
+          class="fila-navegable"
+          tabindex="0"
+          (click)="abrir(fila)"
+          (keydown.enter)="abrir(fila)"
+        ></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas.length">
+            {{ cargando() ? 'Cargando cotizaciones…' : 'No se encontraron cotizaciones con los filtros aplicados.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator
+      [length]="resultado()?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación de cotizaciones"
+    />
+  </section>
+</div>

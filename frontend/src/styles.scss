@@ -247,3 +247,44 @@ a {
   color: var(--mat-sys-error);
   font-size: 12px;
 }
+
+.detalle {
+  font-size: 12px;
+}
+
+.numero {
+  text-align: right;
+}
+
+.fila-navegable {
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--vc-fondo);
+  }
+}
+
+// Avisos de estado dentro de las paginas
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--vc-radio);
+
+  &--peligro {
+    background: var(--vc-rojo-suave);
+    color: var(--vc-rojo-oscuro);
+  }
+
+  &--exito {
+    background: var(--vc-exito-suave);
+    color: var(--vc-exito);
+  }
+
+  &--alerta {
+    background: var(--vc-alerta-suave);
+    color: var(--vc-alerta);
+  }
+}

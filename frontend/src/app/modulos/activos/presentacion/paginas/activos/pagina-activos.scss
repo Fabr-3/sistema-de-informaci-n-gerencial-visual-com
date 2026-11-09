@@ -21,20 +21,3 @@
 .filtro-alertas {
   align-self: center;
 }
-
-.detalle {
-  font-size: 12px;
-}
-
-.numero {
-  text-align: right;
-}
-
-.fila-navegable {
-  cursor: pointer;
-
-  &:hover,
-  &:focus-visible {
-    background: var(--vc-fondo);
-  }
-}

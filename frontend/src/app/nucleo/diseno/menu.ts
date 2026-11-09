@@ -21,6 +21,41 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
     elementos: [{ etiqueta: 'Inicio', icono: 'home', ruta: rutaAbsoluta(Rutas.INICIO) }],
   },
   {
+    titulo: 'Comercial y planificación',
+    elementos: [
+      {
+        etiqueta: 'Cotizaciones',
+        icono: 'request_quote',
+        ruta: rutaAbsoluta(Rutas.COMERCIAL, Rutas.COTIZACIONES),
+        permiso: Permisos.COMERCIAL_VER,
+      },
+      {
+        etiqueta: 'Proyectos',
+        icono: 'work',
+        ruta: rutaAbsoluta(Rutas.COMERCIAL, Rutas.PROYECTOS),
+        permiso: Permisos.COMERCIAL_VER,
+      },
+      {
+        etiqueta: 'Cronograma',
+        icono: 'calendar_month',
+        ruta: rutaAbsoluta(Rutas.COMERCIAL, Rutas.CRONOGRAMA),
+        permiso: Permisos.COMERCIAL_VER,
+      },
+      {
+        etiqueta: 'Clientes',
+        icono: 'business',
+        ruta: rutaAbsoluta(Rutas.COMERCIAL, Rutas.CLIENTES),
+        permiso: Permisos.COMERCIAL_VER,
+      },
+      {
+        etiqueta: 'Servicios y lugares',
+        icono: 'sell',
+        ruta: rutaAbsoluta(Rutas.COMERCIAL, Rutas.CATALOGOS),
+        permiso: Permisos.COMERCIAL_VER,
+      },
+    ],
+  },
+  {
     titulo: 'Activos e inventario',
     elementos: [
       { etiqueta: 'Activos', icono: 'videocam', ruta: rutaAbsoluta(Rutas.ACTIVOS), permiso: Permisos.ACTIVOS_VER },

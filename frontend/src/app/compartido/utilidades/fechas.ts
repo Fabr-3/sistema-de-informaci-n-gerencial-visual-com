@@ -38,3 +38,8 @@ export function aFechaHoraLocal(fecha: Date): string {
 export function aFechaIso(fecha: Date): string {
   return aIsoLocal(fecha).substring(0, 10);
 }
+
+/** Fecha ISO (yyyy-MM-dd) de la API como Date local a medianoche; nulo si no hay valor. */
+export function desdeFechaIso(fechaIso: string | null): Date | null {
+  return fechaIso ? new Date(`${fechaIso}T00:00`) : null;
+}

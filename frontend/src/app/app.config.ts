@@ -17,6 +17,7 @@ import { ServicioSesion } from './modulos/accesos/aplicacion/servicio-sesion';
 import { interceptorAutenticacion } from './modulos/accesos/infraestructura/http/interceptor-autenticacion';
 import { proveerAccesos } from './modulos/accesos/infraestructura/proveedores-accesos';
 import { proveerActivos } from './modulos/activos/infraestructura/proveedores-activos';
+import { proveerComercial } from './modulos/comercial/infraestructura/proveedores-comercial';
 import { EstrategiaTitulo } from './nucleo/configuracion/estrategia-titulo';
 
 const LOCALE = 'es-BO';
@@ -32,6 +33,7 @@ export const appConfig: ApplicationConfig = {
     provideNativeDateAdapter(),
     proveerAccesos(),
     proveerActivos(),
+    proveerComercial(),
     { provide: LOCALE_ID, useValue: LOCALE },
     { provide: MAT_DATE_LOCALE, useValue: LOCALE },
     { provide: TitleStrategy, useClass: EstrategiaTitulo },

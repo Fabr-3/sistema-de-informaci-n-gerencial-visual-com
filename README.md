@@ -6,7 +6,7 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 |---|---|
 | Administración de accesos (usuarios, roles, permisos, auditoría y respaldos) | ✅ Implementado |
 | Gestión de activos e inventario (activos, lotes, uso, mantenimiento, módulos LED) | ✅ Implementado |
-| Comercial y planificación de proyectos | Pendiente |
+| Comercial y planificación de proyectos (clientes, cotizaciones, proyectos, eventos, contratos y cronograma) | ✅ Implementado |
 | Logística | Pendiente |
 | Financiero | Pendiente |
 | Información gerencial | Pendiente |
@@ -14,8 +14,8 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 
 ## Tecnologías
 
-- **Backend** (`backend/`): Java 21, Spring Boot 4.1, Spring Security con JWT (resource server), Spring Data JPA/Hibernate y Flyway.
-- **Frontend** (`frontend/`): Angular 22, Angular Material, SCSS y Vitest.
+- **Backend** (`backend/`): Java 21, Spring Boot 4.1, Spring Security con JWT (resource server), Spring Data JPA/Hibernate, Flyway y OpenPDF (cotizaciones y contratos en PDF).
+- **Frontend** (`frontend/`): Angular 22, Angular Material, angular-calendar (cronograma), SCSS y Vitest.
 - **Base de datos**: PostgreSQL local, base `proyecto-visual-com`.
 
 ## Arquitectura (clean architecture)
@@ -24,8 +24,9 @@ Las dependencias apuntan siempre hacia el dominio.
 
 ```
 backend/src/main/java/com/visual/backend/
-├── compartido/                 Núcleo común: excepciones de negocio, paginación, manejo global de errores
+├── compartido/                 Núcleo común: excepciones de negocio, paginación, manejo global de errores y correlativos
 ├── activos/                    Activos por unidad y por lote, historial de uso, mantenimiento y módulos LED
+├── comercial/                  Clientes, cotizaciones, proyectos, eventos, contratos y documentos PDF
 ├── accesos/
 │   ├── dominio/                Modelos y reglas de negocio (sin Spring ni JPA) + puertos (interfaces)
 │   ├── aplicacion/             Casos de uso (servicios) y DTO de entrada y salida
@@ -72,6 +73,9 @@ El perfil `dev` (activo por defecto, en `application-dev.yaml`) trae valores loc
 | `JWT_SECRETO` | Clave de firma HS256 (mínimo 32 caracteres, aleatoria) |
 | `ADMIN_EMAIL`, `ADMIN_CONTRASENA_INICIAL` | Administrador que se crea si no existe ninguno |
 | `RESPALDOS_DIRECTORIO` | Carpeta de respaldos (por defecto `./respaldos`) |
+| `CONTRATOS_DIRECTORIO` | Carpeta de las copias firmadas de los contratos (por defecto `./documentos/contratos`) |
+
+Los datos de la empresa que se imprimen en cotizaciones y contratos (razón social, dirección, ciudad, correo, teléfono y NIT) se configuran en `app.empresa` de `application.yaml`.
 
 Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que requiere HTTPS.
 
@@ -83,7 +87,8 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V2`: ajustes de seguridad, tokens de refresco y tabla `auditoria` (inmutable mediante triggers).
   - `V3`: roles y permisos fijos con su asignación inicial.
   - `V4`: bodegas, tipo de control por modelo, historial de uso (vista `v_uso_activos` con horas acumuladas), existencias y movimientos por lote; tipos de mantenimiento, categorías y dos bodegas iniciales.
-- `V5`: prefijo de código por modelo (`modelos_activo.prefijo_codigo`) para generar los códigos de inventario de sus unidades.
+  - `V5`: prefijo de código por modelo (`modelos_activo.prefijo_codigo`) para generar los códigos de inventario de sus unidades.
+  - `V6`: módulo comercial. Estados de cotización (`BORRADOR`, `ACEPTADA`, `RECHAZADA`, `VENCIDA`), vigencia, título, periodo del evento y datos de la resolución; trigger que impide modificar las líneas de una cotización resuelta; unidad de medida de servicios, ciudad de lugares, descripción de proyectos y tipos iniciales de cliente, documento y contacto.
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -120,9 +125,27 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `ACTIVOS_GESTIONAR`: registrar activos, catálogos y movimientos de lote.
   - `MANTENIMIENTOS_REGISTRAR` (técnicos): registrar uso y mantenimientos.
 
+## Reglas del módulo comercial y de planificación
+
+- **Clientes:** en las cotizaciones el cliente se busca por nombre o número de documento. Cada cliente tiene al menos un documento (CI o NIT) que no se repite entre clientes, y puede tener varios contactos. Un cliente con cotizaciones no se elimina.
+- **Cotizaciones:**
+  - Se numeran por año (`COT-2026-0001`) y su importe es la suma de sus líneas (cantidad × precio unitario − descuento). Solo admiten servicios activos.
+  - Solo se editan en *Borrador*. Al resolverse, sus líneas quedan bloqueadas también en la base de datos.
+  - El gerente las acepta o las rechaza (con motivo). Aceptar una cotización genera su proyecto con el importe contratado.
+  - Un proceso diario (`app.comercial.cron-vencimiento-cotizaciones`, a las 00:10) marca como *Vencida* toda cotización en borrador cuya validez ya pasó.
+  - Se descargan en PDF con los datos de la empresa.
+- **Proyectos:** pasan de *Planificación* a *En ejecución* y de ahí a *Finalizado*; en cualquiera de los dos primeros estados se pueden cancelar. Solo un proyecto vigente (planificación o ejecución) admite eventos y contratos, y su periodo no puede cambiar si deja eventos programados fuera.
+- **Eventos:** se programan en un lugar y dentro del periodo del proyecto (también validado por la base de datos). Un evento se marca *Ejecutado* solo después de haber comenzado; también puede cancelarse.
+- **Contratos:** se numeran por año (`CTR-2026-0001`), su fecha de firma no puede ser futura y se generan en PDF a partir de la plantilla `backend/src/main/resources/plantillas/contrato-servicios.txt`. A cada contrato se le puede adjuntar la copia firmada escaneada (solo PDF, hasta 10 MB; se verifica el contenido del archivo). La copia se guarda en `CONTRATOS_DIRECTORIO` con el número del contrato y una nueva reemplaza a la anterior.
+- **Cronograma:** muestra los eventos de todos los proyectos por mes, semana o día, con colores por estado. Al seleccionar un evento se abre su proyecto.
+- **Permisos:**
+  - `COMERCIAL_VER` (gerente): consultar clientes, cotizaciones, proyectos y cronograma.
+  - `COMERCIAL_GESTIONAR` (administrador): registrar clientes, catálogos, cotizaciones, proyectos, eventos y contratos.
+  - `COTIZACIONES_APROBAR` (gerente): aceptar o rechazar cotizaciones.
+
 ## Respaldos
 
-Se generan con `pg_dump` en formato personalizado: uno automático cada día a las 02:00 y otros manuales desde **Administración de accesos → Respaldos**. Para restaurar uno:
+Se generan con `pg_dump` en formato personalizado: uno automático cada día a las 02:00 y otros manuales desde **Administración de accesos → Respaldos**. Las copias firmadas de los contratos no están en la base: hay que copiar también la carpeta `CONTRATOS_DIRECTORIO`. Para restaurar uno:
 
 ```bash
 pg_restore --clean -h localhost -U postgres -d proyecto-visual-com respaldo_AAAAMMDD_HHMMSS_mmm.dump
@@ -130,10 +153,14 @@ pg_restore --clean -h localhost -U postgres -d proyecto-visual-com respaldo_AAAA
 
 ## Datos de prueba
 
-El script `database/datos_prueba/01_accesos_activos.sql` carga datos similares a la operación real: personal con sus roles, modelos y equipos con códigos, uso en eventos, mantenimientos, módulos LED e inventario por lotes. Se ejecuta una sola vez sobre la base de desarrollo, con las migraciones ya aplicadas, y no modifica los datos existentes:
+Los scripts de `database/datos_prueba/` cargan datos similares a la operación real. Se ejecutan una sola vez y en orden sobre la base de desarrollo, con las migraciones ya aplicadas, y no modifican los datos existentes:
+
+- `01_accesos_activos.sql`: personal con sus roles, modelos y equipos con códigos, uso en eventos, mantenimientos, módulos LED e inventario por lotes.
+- `02_comercial.sql`: servicios y lugares, ocho clientes con documentos y contactos, cotizaciones en todos los estados, proyectos con su cronograma de eventos y contratos.
 
 ```bash
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/01_accesos_activos.sql
+psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/02_comercial.sql
 ```
 
 Todos los usuarios de prueba tienen la contraseña `VisualCom2026`:

@@ -17,6 +17,11 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  servlet:
+    multipart:
+      # Contratos firmados escaneados (ver ServicioContratos.TAMANO_MAXIMO_FIRMADO)
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 server:
   error:
@@ -54,3 +59,15 @@ app:
   activos:
     # Porcentaje del intervalo de horas desde el que se avisa el mantenimiento preventivo
     porcentaje-alerta-mantenimiento: 90
+  empresa:
+    # Datos que se imprimen en cotizaciones y contratos
+    razon-social: Visual Com S.R.L.
+    direccion: "c/ Lucas Jaimes #76, Piso 1, Of. 2, Miraflores"
+    ciudad: La Paz
+    email: info@visual.com.bo
+    telefono: ""
+    nit: ""
+  comercial:
+    # Revision diaria de cotizaciones vencidas a las 00:10
+    cron-vencimiento-cotizaciones: "0 10 0 * * *"
+    directorio-contratos: ${CONTRATOS_DIRECTORIO:./documentos/contratos}

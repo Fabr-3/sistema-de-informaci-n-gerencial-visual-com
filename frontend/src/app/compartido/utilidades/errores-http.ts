@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 export const MENSAJE_SIN_CONEXION = 'No se pudo conectar con el servidor';
-export const MENSAJE_ERROR_GENERICO = 'Ocurrio un error inesperado. Intente nuevamente';
+export const MENSAJE_ERROR_GENERICO = 'Ocurrió un error inesperado. Intente nuevamente';
 
 /** Cuerpo de error RFC 9457 que devuelve la API. */
 interface DetalleProblema {

@@ -17,9 +17,11 @@ export class ServicioNotificaciones {
   }
 
   error(error: unknown): void {
-    this.snackBar.open(mensajeDeError(error), TEXTO_CERRAR, {
-      duration: DURACION_ERROR_MS,
-      panelClass: 'snack-error',
-    });
+    this.advertencia(mensajeDeError(error));
+  }
+
+  /** Mensaje de error ya redactado (por ejemplo, una validacion local). */
+  advertencia(mensaje: string): void {
+    this.snackBar.open(mensaje, TEXTO_CERRAR, { duration: DURACION_ERROR_MS, panelClass: 'snack-error' });
   }
 }

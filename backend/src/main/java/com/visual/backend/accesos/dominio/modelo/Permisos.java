@@ -15,6 +15,9 @@ public final class Permisos {
     public static final String ACTIVOS_VER = "ACTIVOS_VER";
     public static final String ACTIVOS_GESTIONAR = "ACTIVOS_GESTIONAR";
     public static final String MANTENIMIENTOS_REGISTRAR = "MANTENIMIENTOS_REGISTRAR";
+    public static final String COMERCIAL_VER = "COMERCIAL_VER";
+    public static final String COMERCIAL_GESTIONAR = "COMERCIAL_GESTIONAR";
+    public static final String COTIZACIONES_APROBAR = "COTIZACIONES_APROBAR";
 
     private Permisos() {
     }

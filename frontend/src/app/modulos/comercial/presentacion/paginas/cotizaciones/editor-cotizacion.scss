@@ -1,0 +1,92 @@
+.volver {
+  align-self: flex-start;
+  margin-left: -12px;
+}
+
+h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vc-espacio);
+}
+
+.tarjeta {
+  padding: 16px 20px 4px;
+
+  h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+.formulario--cuatro {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  .doble {
+    grid-column: span 2;
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+
+    .doble {
+      grid-column: auto;
+    }
+  }
+}
+
+.sin-relleno {
+  padding: 0 0 8px;
+}
+
+.lineas {
+  overflow-x: auto;
+}
+
+.linea {
+  display: grid;
+  grid-template-columns: minmax(220px, 3fr) minmax(80px, 1fr) minmax(110px, 1.2fr) minmax(110px, 1.2fr) minmax(110px, 1.2fr) 40px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.linea--cabecera {
+  color: var(--vc-texto-secundario);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.subtotal {
+  font-weight: 500;
+}
+
+.total {
+  display: flex;
+  justify-content: flex-end;
+  gap: 24px;
+  padding: 12px 48px 16px 0;
+  border-top: 1px solid var(--vc-borde);
+  font-size: 16px;
+}
+
+.campo-completo {
+  width: 100%;
+}
+
+.acciones-pie {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.accion-peligrosa {
+  color: var(--vc-rojo);
+}

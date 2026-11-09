@@ -1,0 +1,174 @@
+<div class="pagina">
+  <a mat-button class="volver" [routerLink]="rutaListado"><mat-icon>arrow_back</mat-icon>Cotizaciones</a>
+
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else {
+    @let actual = cotizacion();
+    <header class="pagina__encabezado">
+      <div>
+        <h1>
+          {{ actual ? actual.numero : 'Nueva cotización' }}
+          @if (actual) {
+            <span class="estado estado--{{ tipoVisual(actual.estado) }}">{{ actual.estado | etiqueta: estados }}</span>
+          }
+        </h1>
+        @if (actual) {
+          <p>{{ actual.cliente.razonSocial }} · registrada el {{ actual.fechaCreacion | date: 'dd/MM/yyyy' }}</p>
+        }
+      </div>
+      @if (actual) {
+        <div class="acciones-encabezado">
+          <button mat-stroked-button (click)="descargarPdf(actual)"><mat-icon>picture_as_pdf</mat-icon>PDF</button>
+          @if (actual.idProyecto) {
+            <a mat-stroked-button [routerLink]="rutaProyecto(actual.idProyecto)"><mat-icon>work</mat-icon>Ver proyecto</a>
+          }
+          @if (puedeResolver()) {
+            <button mat-stroked-button (click)="rechazar(actual)"><mat-icon>thumb_down</mat-icon>Rechazar</button>
+            <button mat-flat-button (click)="aceptar(actual)"><mat-icon>task_alt</mat-icon>Aceptar</button>
+          }
+        </div>
+      }
+    </header>
+
+    @if (actual?.estado === 'RECHAZADA') {
+      <div class="aviso aviso--peligro">
+        <mat-icon>info</mat-icon>
+        Rechazada por {{ actual?.resueltoPor }} el {{ actual?.fechaResolucion | date: 'dd/MM/yyyy' }}: {{ actual?.motivoRechazo }}
+      </div>
+    } @else if (actual?.estado === 'ACEPTADA') {
+      <div class="aviso aviso--exito">
+        <mat-icon>task_alt</mat-icon>
+        Aceptada por {{ actual?.resueltoPor }} el {{ actual?.fechaResolucion | date: 'dd/MM/yyyy' }}.
+      </div>
+    } @else if (actual?.estado === 'VENCIDA') {
+      <div class="aviso aviso--alerta">
+        <mat-icon>schedule</mat-icon>
+        Venció el {{ actual?.fechaValidez | date: 'dd/MM/yyyy' }} sin ser aceptada.
+      </div>
+    }
+
+    <form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+      <section class="panel tarjeta">
+        <div class="formulario formulario--cuatro">
+          <mat-form-field appearance="outline" class="doble">
+            <mat-label>Cliente</mat-label>
+            <input
+              matInput
+              formControlName="cliente"
+              [matAutocomplete]="autocompletarCliente"
+              placeholder="Buscar por nombre o documento"
+            />
+            <mat-autocomplete #autocompletarCliente="matAutocomplete" [displayWith]="mostrarCliente">
+              @for (cliente of clientesSugeridos(); track cliente.id) {
+                <mat-option [value]="cliente">{{ cliente.razonSocial }}</mat-option>
+              } @empty {
+                <mat-option disabled>Sin coincidencias</mat-option>
+              }
+            </mat-autocomplete>
+            <mat-error>Seleccione un cliente de la lista</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="doble">
+            <mat-label>Título</mat-label>
+            <input matInput formControlName="titulo" placeholder="Evento y alcance" />
+            <mat-error>Ingrese el título</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Emisión</mat-label>
+            <input matInput formControlName="fechaEmision" [matDatepicker]="emision" />
+            <mat-datepicker-toggle matIconSuffix [for]="emision" />
+            <mat-datepicker #emision />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Válida hasta</mat-label>
+            <input matInput formControlName="fechaValidez" [matDatepicker]="validez" />
+            <mat-datepicker-toggle matIconSuffix [for]="validez" />
+            <mat-datepicker #validez />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Evento desde (opcional)</mat-label>
+            <input matInput formControlName="fechaEventoInicio" [matDatepicker]="eventoInicio" />
+            <mat-datepicker-toggle matIconSuffix [for]="eventoInicio" />
+            <mat-datepicker #eventoInicio />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Evento hasta (opcional)</mat-label>
+            <input matInput formControlName="fechaEventoFin" [matDatepicker]="eventoFin" />
+            <mat-datepicker-toggle matIconSuffix [for]="eventoFin" />
+            <mat-datepicker #eventoFin />
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="panel tarjeta">
+        <div class="seccion__encabezado sin-relleno">
+          <h2>Servicios</h2>
+          @if (puedeEditar()) {
+            <button mat-button type="button" (click)="agregarLinea()" [disabled]="lineas.length >= maximoLineas">
+              <mat-icon>add</mat-icon>Agregar servicio
+            </button>
+          }
+        </div>
+        <div class="lineas">
+          <div class="linea linea--cabecera" aria-hidden="true">
+            <span>Servicio</span><span>Cantidad</span><span>Precio unit. (Bs)</span><span>Descuento (Bs)</span>
+            <span class="numero">Subtotal</span><span></span>
+          </div>
+          @for (grupo of lineas.controls; track grupo; let indice = $index) {
+            <div class="linea" [formGroup]="grupo">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-select formControlName="idServicio" (selectionChange)="alElegirServicio(indice, $event.value)" aria-label="Servicio">
+                  @for (servicio of serviciosDisponibles(); track servicio.id) {
+                    <mat-option [value]="servicio.id">{{ servicio.nombre }}</mat-option>
+                  }
+                </mat-select>
+                @if (grupo.controls.idServicio.value) {
+                  <mat-hint>{{ unidad(grupo.controls.idServicio.value) }}</mat-hint>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <input matInput type="number" min="1" formControlName="cantidad" aria-label="Cantidad" />
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <input matInput type="number" min="0" step="0.01" formControlName="precioUnitario" aria-label="Precio unitario" />
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <input matInput type="number" min="0" step="0.01" formControlName="descuento" aria-label="Descuento" />
+              </mat-form-field>
+              <span class="numero subtotal">{{ subtotal(indice) | currency: 'BOB' : 'Bs ' }}</span>
+              @if (puedeEditar()) {
+                <button mat-icon-button type="button" (click)="lineas.removeAt(indice)" [disabled]="lineas.length === 1" aria-label="Quitar servicio">
+                  <mat-icon>close</mat-icon>
+                </button>
+              } @else {
+                <span></span>
+              }
+            </div>
+          }
+          <div class="total">
+            <span>Total</span>
+            <strong>{{ total() | currency: 'BOB' : 'Bs ' }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel tarjeta">
+        <mat-form-field appearance="outline" class="campo-completo">
+          <mat-label>Condiciones comerciales (opcional)</mat-label>
+          <textarea matInput rows="3" formControlName="condiciones" placeholder="Forma de pago, alcance, exclusiones…"></textarea>
+        </mat-form-field>
+      </section>
+
+      @if (puedeEditar()) {
+        <div class="acciones-pie">
+          @if (actual) {
+            <button mat-button type="button" class="accion-peligrosa" (click)="eliminar(actual)">Eliminar borrador</button>
+          }
+          <button mat-flat-button type="submit" [disabled]="procesando()">
+            {{ actual ? 'Guardar cambios' : 'Registrar cotización' }}
+          </button>
+        </div>
+      }
+    </form>
+  }
+</div>

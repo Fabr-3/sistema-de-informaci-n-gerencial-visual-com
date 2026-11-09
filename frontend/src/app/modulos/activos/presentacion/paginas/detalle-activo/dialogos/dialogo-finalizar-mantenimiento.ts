@@ -11,7 +11,7 @@ import { aFechaHoraLocal } from '../../../../../../compartido/utilidades/fechas'
 import { ServicioNotificaciones } from '../../../../../../nucleo/notificaciones/servicio-notificaciones';
 import { HistorialActivos } from '../../../../aplicacion/historial-activos';
 import { CONDICIONES_FINALES, CondicionFinal, Mantenimiento } from '../../../../dominio/modelos/historial';
-import { noFutura } from './validadores-periodo';
+import { noFutura } from '../../../../../../compartido/utilidades/validadores-periodo';
 
 const LONGITUD_OBSERVACIONES = 2000;
 

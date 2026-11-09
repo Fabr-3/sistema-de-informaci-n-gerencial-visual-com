@@ -18,3 +18,5 @@ app:
   respaldos:
     directorio: ./target/respaldos-prueba
     programado: false
+  comercial:
+    directorio-contratos: ./target/contratos-prueba

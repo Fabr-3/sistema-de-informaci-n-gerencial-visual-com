@@ -189,6 +189,11 @@ public class Usuario {
     }
 
     public String nombreCompleto() {
+        return componerNombre(nombres, apellidoPaterno, apellidoMaterno);
+    }
+
+    /** "Nombres Paterno Materno", omitiendo el apellido materno si no existe. */
+    public static String componerNombre(String nombres, String apellidoPaterno, String apellidoMaterno) {
         StringBuilder completo = new StringBuilder(nombres).append(' ').append(apellidoPaterno);
         if (apellidoMaterno != null) {
             completo.append(' ').append(apellidoMaterno);

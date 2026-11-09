@@ -10,7 +10,7 @@ import { ServicioNotificaciones } from '../../../../../../nucleo/notificaciones/
 import { HistorialActivos } from '../../../../aplicacion/historial-activos';
 import { Activo } from '../../../../dominio/modelos/activo';
 import { RegistroUso } from '../../../../dominio/modelos/historial';
-import { finPosteriorAInicio, noFutura } from './validadores-periodo';
+import { finPosteriorAInicio, noFutura } from '../../../../../../compartido/utilidades/validadores-periodo';
 
 const LONGITUD_DESCRIPCION = 255;
 

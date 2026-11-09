@@ -11,6 +11,12 @@ export const Rutas = {
   ACTIVOS: 'activos',
   LOTES: 'lotes',
   CATALOGOS: 'catalogos',
+  COMERCIAL: 'comercial',
+  CLIENTES: 'clientes',
+  COTIZACIONES: 'cotizaciones',
+  PROYECTOS: 'proyectos',
+  CRONOGRAMA: 'cronograma',
+  NUEVA: 'nueva',
 } as const;
 
 /** Parametro de consulta con la URL a la que se vuelve tras iniciar sesion. */

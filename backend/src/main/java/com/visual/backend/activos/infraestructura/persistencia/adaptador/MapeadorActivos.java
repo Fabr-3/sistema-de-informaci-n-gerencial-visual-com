@@ -86,7 +86,7 @@ final class MapeadorActivos {
     static RegistroUso aDominio(RegistroUsoEntidad entidad) {
         return new RegistroUso(entidad.getId(), entidad.getIdActivo(), entidad.getFechaInicio(),
                 entidad.getFechaFin(), entidad.getDescripcion(), entidad.getCreadoPor(),
-                nombreUsuario(entidad.getCreador()), entidad.getFechaCreacion());
+                nombreMostrado(entidad.getCreador()), entidad.getFechaCreacion());
     }
 
     static Mantenimiento aDominio(MantenimientoEntidad entidad) {
@@ -121,10 +121,10 @@ final class MapeadorActivos {
     static MovimientoLote aDominio(MovimientoLoteEntidad entidad) {
         return new MovimientoLote(entidad.getId(), entidad.getIdExistencia(), entidad.getTipo(),
                 entidad.getCantidad(), entidad.getMotivo(), entidad.getFecha(), entidad.getCreadoPor(),
-                nombreUsuario(entidad.getCreador()));
+                nombreMostrado(entidad.getCreador()));
     }
 
-    private static String nombreUsuario(UsuarioEntidad usuario) {
-        return usuario == null ? null : usuario.getNombreUsuario();
+    private static String nombreMostrado(UsuarioEntidad usuario) {
+        return usuario == null ? null : usuario.nombreCompleto();
     }
 }

@@ -16,6 +16,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.visual.backend.accesos.dominio.modelo.Usuario;
+
 @Entity
 @Table(name = "usuarios")
 @Getter
@@ -82,4 +84,9 @@ public class UsuarioEntidad {
 
     @Column(name = "fecha_eliminacion")
     private LocalDateTime fechaEliminacion;
+
+    /** Nombre para mostrar en los registros que firma el usuario. */
+    public String nombreCompleto() {
+        return Usuario.componerNombre(nombres, apellidoPaterno, apellidoMaterno);
+    }
 }

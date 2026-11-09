@@ -1,0 +1,156 @@
+<div class="pagina">
+  <a mat-button class="volver" [routerLink]="rutaListado"><mat-icon>arrow_back</mat-icon>Proyectos</a>
+
+  @if (detalle(); as actual) {
+    @let proyecto = actual.proyecto;
+    <header class="pagina__encabezado">
+      <div>
+        <h1>
+          {{ proyecto.nombre }}
+          <span class="estado estado--{{ tipoVisualProyecto(proyecto.estado) }}">
+            {{ proyecto.estado | etiqueta: estadosProyecto }}
+          </span>
+        </h1>
+        <p>{{ proyecto.cliente.razonSocial }}</p>
+      </div>
+      @if (puedeGestionar() && (vigente() || transiciones().length > 0)) {
+        <div class="acciones-encabezado">
+          @if (vigente()) {
+            <button mat-stroked-button (click)="editar(proyecto)"><mat-icon>edit</mat-icon>Editar</button>
+          }
+          @for (estado of transiciones(); track estado) {
+            <button mat-stroked-button [class.accion-peligrosa]="estado === 'CANCELADO'" (click)="cambiarEstado(proyecto, estado)">
+              {{ accionesEstado[estado] }}
+            </button>
+          }
+        </div>
+      }
+    </header>
+
+    <div class="resumen">
+      <section class="panel tarjeta">
+        <h2>Datos del proyecto</h2>
+        <dl class="datos">
+          <dt>Periodo</dt>
+          <dd>
+            @if (proyecto.fechaInicio) {
+              {{ proyecto.fechaInicio | date: 'dd/MM/yyyy' }} – {{ proyecto.fechaFin | date: 'dd/MM/yyyy' }}
+            } @else {
+              Por definir
+            }
+          </dd>
+          <dt>Cotización</dt>
+          <dd><a [routerLink]="rutaCotizacion(proyecto.idCotizacion)">{{ proyecto.numeroCotizacion }}</a></dd>
+          <dt>Importe contratado</dt>
+          <dd><strong>{{ actual.cotizacion.importeTotal | currency: 'BOB' : 'Bs ' }}</strong></dd>
+          <dt>Creado</dt>
+          <dd>{{ proyecto.fechaCreacion | date: 'dd/MM/yyyy' }}</dd>
+        </dl>
+        @if (proyecto.descripcion) {
+          <p class="texto-secundario descripcion">{{ proyecto.descripcion }}</p>
+        }
+      </section>
+
+      <section class="panel tarjeta">
+        <div class="tarjeta__titulo">
+          <h2>Contratos</h2>
+          @if (puedeGestionar() && vigente()) {
+            <button mat-button (click)="editarContrato(proyecto.id)"><mat-icon>add</mat-icon>Registrar</button>
+          }
+        </div>
+        @for (contrato of actual.contratos; track contrato.id) {
+          <div class="contrato">
+            <div>
+              <span class="codigo">{{ contrato.numero }}</span>
+              <div class="texto-secundario detalle">
+                Firmado el {{ contrato.fechaFirma | date: 'dd/MM/yyyy' }}
+                · {{ contrato.archivoFirmado ? 'copia firmada adjunta' : 'sin copia firmada' }}
+              </div>
+            </div>
+            <span class="contrato__acciones">
+              @if (puedeGestionar()) {
+                <button mat-icon-button matTooltip="Editar" (click)="editarContrato(proyecto.id, contrato)" aria-label="Editar contrato">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <input #selectorFirmado type="file" accept="application/pdf" hidden
+                       (change)="adjuntarFirmado(contrato, selectorFirmado)" />
+                <button mat-icon-button matTooltip="Adjuntar copia firmada (PDF)" (click)="selectorFirmado.click()"
+                        aria-label="Adjuntar copia firmada del contrato">
+                  <mat-icon>upload_file</mat-icon>
+                </button>
+              }
+              <button mat-icon-button matTooltip="Contrato generado" (click)="descargarContrato(contrato)" aria-label="Descargar contrato en PDF">
+                <mat-icon>picture_as_pdf</mat-icon>
+              </button>
+              @if (contrato.archivoFirmado) {
+                <button mat-icon-button matTooltip="Copia firmada" (click)="descargarFirmado(contrato)"
+                        aria-label="Descargar copia firmada del contrato">
+                  <mat-icon>task</mat-icon>
+                </button>
+              }
+            </span>
+          </div>
+        } @empty {
+          <p class="texto-secundario">Sin contratos registrados.</p>
+        }
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="seccion__encabezado">
+        <h2 class="titulo-seccion">Cronograma de eventos</h2>
+        @if (puedeGestionar() && vigente()) {
+          <button mat-stroked-button (click)="editarEvento(proyecto.id)"><mat-icon>event</mat-icon>Programar evento</button>
+        }
+      </div>
+      <div class="tabla-contenedor">
+        <table mat-table [dataSource]="actual.eventos">
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>Evento</th>
+            <td mat-cell *matCellDef="let evento"><strong>{{ evento.nombre }}</strong></td>
+          </ng-container>
+          <ng-container matColumnDef="lugar">
+            <th mat-header-cell *matHeaderCellDef>Lugar</th>
+            <td mat-cell *matCellDef="let evento">{{ etiquetaLugar(evento.lugar) }}</td>
+          </ng-container>
+          <ng-container matColumnDef="horario">
+            <th mat-header-cell *matHeaderCellDef>Horario</th>
+            <td mat-cell *matCellDef="let evento">
+              {{ evento.fechaInicio | date: 'dd/MM/yyyy HH:mm' }} – {{ evento.fechaFin | date: 'dd/MM/yyyy HH:mm' }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let evento">
+              <span class="estado estado--{{ tipoVisualEvento(evento.estado) }}">{{ evento.estado | etiqueta: estadosEvento }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+            <td mat-cell *matCellDef="let evento" class="celda-acciones">
+              @if (puedeGestionar() && evento.estado === 'PROGRAMADO') {
+                <button mat-icon-button [matMenuTriggerFor]="menu" [attr.aria-label]="'Acciones de ' + evento.nombre">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu" xPosition="before">
+                  <button mat-menu-item (click)="editarEvento(evento.idProyecto, evento)"><mat-icon>edit</mat-icon><span>Editar</span></button>
+                  <button mat-menu-item (click)="cambiarEstadoEvento(evento, 'EJECUTADO')"><mat-icon>task_alt</mat-icon><span>Marcar ejecutado</span></button>
+                  <button mat-menu-item (click)="cambiarEstadoEvento(evento, 'CANCELADO')"><mat-icon>event_busy</mat-icon><span>Cancelar evento</span></button>
+                </mat-menu>
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="columnasEventos"></tr>
+          <tr mat-row *matRowDef="let fila; columns: columnasEventos"></tr>
+          <tr class="mat-row" *matNoDataRow>
+            <td class="vacio" [attr.colspan]="columnasEventos.length">Sin eventos programados.</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+  } @else if (noEncontrado()) {
+    <div class="panel vacio">No se encontró el proyecto solicitado.</div>
+  } @else {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>

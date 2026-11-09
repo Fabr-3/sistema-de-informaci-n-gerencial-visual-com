@@ -1,0 +1,70 @@
+.calendario {
+  overflow: hidden;
+}
+
+.calendario__barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--vc-borde);
+
+  h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+
+    &::first-letter {
+      text-transform: uppercase;
+    }
+  }
+}
+
+.calendario__navegacion {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.leyenda {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--vc-texto-secundario);
+  font-size: 12px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.leyenda__color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+:host ::ng-deep {
+  .cal-month-view .cal-day-badge {
+    background-color: var(--vc-rojo);
+  }
+
+  .cal-month-view .cal-day-cell.cal-today,
+  .cal-week-view .cal-day-headers .cal-header.cal-today {
+    background-color: var(--vc-rojo-suave);
+  }
+
+  .cal-month-view .cal-day-number {
+    opacity: 0.7;
+  }
+
+  .evento-cancelado {
+    text-decoration: line-through;
+  }
+}

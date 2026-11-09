@@ -1,0 +1,101 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Servicios y lugares</h1>
+      <p>Catálogo de servicios con su precio referencial y lugares donde se realizan los eventos.</p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
+      <mat-tab label="Servicios">
+        <div class="seccion__encabezado">
+          <p class="texto-secundario">El precio referencial se propone al cotizar y puede negociarse en cada cotización.</p>
+          <button mat-stroked-button *siPermiso="permisos.COMERCIAL_GESTIONAR" (click)="editarServicio()">
+            <mat-icon>add</mat-icon>Nuevo servicio
+          </button>
+        </div>
+        <div class="tabla-contenedor">
+          <table mat-table [dataSource]="servicios()">
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef>Servicio</th>
+              <td mat-cell *matCellDef="let servicio">
+                <strong>{{ servicio.nombre }}</strong>
+                @if (servicio.descripcion) {
+                  <div class="texto-secundario detalle">{{ servicio.descripcion }}</div>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="unidad">
+              <th mat-header-cell *matHeaderCellDef>Unidad</th>
+              <td mat-cell *matCellDef="let servicio">{{ servicio.unidadMedida }}</td>
+            </ng-container>
+            <ng-container matColumnDef="precio">
+              <th mat-header-cell *matHeaderCellDef class="numero">Precio referencial</th>
+              <td mat-cell *matCellDef="let servicio" class="numero">{{ servicio.precioReferencial | currency: 'BOB' : 'Bs ' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let servicio">
+                <span class="estado" [class.estado--activo]="servicio.activo" [class.estado--neutro]="!servicio.activo">
+                  {{ servicio.activo ? 'Disponible' : 'Inactivo' }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+              <td mat-cell *matCellDef="let servicio" class="celda-acciones">
+                <button mat-icon-button matTooltip="Editar" (click)="editarServicio(servicio)" aria-label="Editar servicio">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasServicios()"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnasServicios()"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="vacio" [attr.colspan]="columnasServicios().length">Aún no hay servicios registrados.</td>
+            </tr>
+          </table>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Lugares">
+        <div class="seccion__encabezado">
+          <p class="texto-secundario">Hoteles, coliseos, recintos y espacios abiertos donde se programan los eventos.</p>
+          <button mat-stroked-button *siPermiso="permisos.COMERCIAL_GESTIONAR" (click)="editarLugar()">
+            <mat-icon>add</mat-icon>Nuevo lugar
+          </button>
+        </div>
+        <div class="tabla-contenedor">
+          <table mat-table [dataSource]="lugares()">
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef>Lugar</th>
+              <td mat-cell *matCellDef="let lugar"><strong>{{ lugar.nombre }}</strong></td>
+            </ng-container>
+            <ng-container matColumnDef="direccion">
+              <th mat-header-cell *matHeaderCellDef>Dirección</th>
+              <td mat-cell *matCellDef="let lugar">{{ lugar.direccion }}</td>
+            </ng-container>
+            <ng-container matColumnDef="ciudad">
+              <th mat-header-cell *matHeaderCellDef>Ciudad</th>
+              <td mat-cell *matCellDef="let lugar">{{ lugar.ciudad ?? '—' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+              <td mat-cell *matCellDef="let lugar" class="celda-acciones">
+                <button mat-icon-button matTooltip="Editar" (click)="editarLugar(lugar)" aria-label="Editar lugar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasLugares()"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnasLugares()"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="vacio" [attr.colspan]="columnasLugares().length">Aún no hay lugares registrados.</td>
+            </tr>
+          </table>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </section>
+</div>

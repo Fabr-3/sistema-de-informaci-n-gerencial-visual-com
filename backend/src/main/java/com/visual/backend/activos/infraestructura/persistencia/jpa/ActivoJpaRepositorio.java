@@ -37,22 +37,6 @@ public interface ActivoJpaRepositorio extends JpaRepository<ActivoEntidad, Integ
             """)
     List<ConteoPorModelo> contarPorModelo(@Param("excluido") EstadoOperativo excluido);
 
-    /**
-     * Mayor correlativo usado con el prefijo (codigos PREFIJO-NNNN). Incluye
-     * eliminados porque el codigo de inventario nunca se reutiliza. El
-     * prefijo solo admite [A-Z0-9], por lo que no altera la expresion regular.
-     */
-    @Query(value = """
-            select coalesce(max(cast(substring(codigo_inventario from '^' || :prefijo || '-([0-9]+)$') as integer)), 0)
-            from activos
-            where codigo_inventario like :prefijo || '-%'
-            """, nativeQuery = true)
-    int buscarMayorCorrelativo(@Param("prefijo") String prefijo);
-
-    /** Bloqueo transaccional por prefijo: serializa la generacion de codigos. */
-    @Query(value = "select cast(pg_advisory_xact_lock(hashtext(:prefijo)) as text)", nativeQuery = true)
-    String bloquearPrefijo(@Param("prefijo") String prefijo);
-
     interface ConteoPorModelo {
 
         Integer getIdModelo();
