@@ -1,0 +1,64 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Roles y permisos</h1>
+      <p>Los roles son fijos; aquí se define qué puede hacer cada uno. Los cambios se aplican en el próximo ingreso o renovación de sesión.</p>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <mat-accordion multi>
+    @for (rol of roles(); track rol.id) {
+      <mat-expansion-panel class="rol">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <strong>{{ rol.nombre }}</strong>
+            @if (!rol.modificable) {
+              <mat-icon class="candado" aria-label="Rol protegido">lock</mat-icon>
+            }
+          </mat-panel-title>
+          <mat-panel-description>
+            {{ seleccion().get(rol.id)?.size ?? 0 }} permisos
+            @if (tieneCambios(rol)) {
+              <span class="estado estado--alerta">Sin guardar</span>
+            }
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <p class="texto-secundario">{{ rol.descripcion }}</p>
+        @if (!rol.modificable) {
+          <p class="indicacion">El rol Administrador conserva siempre todos los permisos.</p>
+        }
+
+        <div class="modulos">
+          @for (grupo of grupos(); track grupo.modulo) {
+            <fieldset class="modulo">
+              <legend>{{ grupo.nombreModulo }}</legend>
+              @for (permiso of grupo.permisos; track permiso.id) {
+                <mat-checkbox
+                  [checked]="estaMarcado(rol, permiso.id)"
+                  [disabled]="!esEditable(rol)"
+                  (change)="alternar(rol, permiso.id, $event.checked)"
+                >
+                  {{ permiso.descripcion ?? permiso.nombre }}
+                </mat-checkbox>
+              }
+            </fieldset>
+          }
+        </div>
+
+        @if (esEditable(rol)) {
+          <mat-action-row>
+            <button mat-button [disabled]="!tieneCambios(rol)" (click)="descartar(rol)">Descartar</button>
+            <button mat-flat-button [disabled]="!tieneCambios(rol) || guardando() === rol.id" (click)="guardar(rol)">
+              Guardar cambios
+            </button>
+          </mat-action-row>
+        }
+      </mat-expansion-panel>
+    }
+  </mat-accordion>
+</div>

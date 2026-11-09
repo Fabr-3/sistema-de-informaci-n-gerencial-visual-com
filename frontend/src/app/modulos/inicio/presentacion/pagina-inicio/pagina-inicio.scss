@@ -1,0 +1,30 @@
+.accesos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--vc-espacio);
+}
+
+.acceso {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  color: var(--vc-texto);
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 120ms ease;
+
+  mat-icon:first-child {
+    color: var(--vc-rojo);
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--vc-rojo);
+  }
+}
+
+.acceso__flecha {
+  margin-left: auto;
+  color: var(--vc-texto-secundario);
+}

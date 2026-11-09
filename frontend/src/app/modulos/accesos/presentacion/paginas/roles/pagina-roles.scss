@@ -1,0 +1,45 @@
+.rol {
+  border: 1px solid var(--vc-borde);
+  box-shadow: none;
+}
+
+mat-panel-title {
+  align-items: center;
+  gap: 8px;
+}
+
+mat-panel-description {
+  align-items: center;
+  gap: 12px;
+}
+
+.candado {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--vc-texto-secundario);
+}
+
+.modulos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.modulo {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 8px 12px 12px;
+  border: 1px solid var(--vc-borde);
+  border-radius: var(--vc-radio);
+
+  legend {
+    padding: 0 4px;
+    color: var(--vc-rojo);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}

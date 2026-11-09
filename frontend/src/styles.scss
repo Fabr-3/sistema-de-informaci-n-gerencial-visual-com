@@ -1,1 +1,203 @@
-/* You can add global styles to this file, and also import other style files */
+// Tema global: estilo sobrio y minimalista en rojo y blanco (sin modo oscuro).
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light;
+
+  @include mat.theme((
+    color: (
+      primary: mat.$red-palette,
+      theme-type: light,
+    ),
+    typography: (
+      plain-family: 'Inter, Roboto, sans-serif',
+      brand-family: 'Inter, Roboto, sans-serif',
+    ),
+    density: 0,
+  ));
+
+  // Rojo corporativo exacto y superficies neutras (el tema M3 las tine de rosa).
+  --mat-sys-primary: var(--vc-rojo);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-surface: #ffffff;
+  --mat-sys-surface-container-lowest: #ffffff;
+  --mat-sys-surface-container-low: #fafafa;
+  --mat-sys-surface-container: #f5f5f5;
+  --mat-sys-surface-container-high: #f0f0f0;
+  --mat-sys-surface-container-highest: #ebebeb;
+  --mat-sys-surface-variant: #f2f2f2;
+  --mat-sys-outline: #c4c4c4;
+  --mat-sys-outline-variant: #e3e3e3;
+  --mat-sys-on-surface: var(--vc-texto);
+  --mat-sys-on-surface-variant: var(--vc-texto-secundario);
+}
+
+:root {
+  --vc-rojo: #b71c1c;
+  --vc-rojo-oscuro: #8e1414;
+  --vc-rojo-suave: #fdeeee;
+  --vc-fondo: #f7f7f7;
+  --vc-superficie: #ffffff;
+  --vc-borde: #e6e6e6;
+  --vc-texto: #1f1f1f;
+  --vc-texto-secundario: #5f6368;
+  --vc-exito: #2e7d32;
+  --vc-exito-suave: #e8f5e9;
+  --vc-alerta: #a15c00;
+  --vc-alerta-suave: #fff4e0;
+  --vc-neutro-suave: #eeeeee;
+  --vc-radio: 8px;
+  --vc-espacio: 16px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--vc-fondo);
+  color: var(--vc-texto);
+  font-family: Inter, Roboto, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+// ---------------------------------------------------------------------
+// Utilidades de maquetacion compartidas por las paginas
+// ---------------------------------------------------------------------
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vc-espacio);
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.pagina__encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--vc-espacio);
+
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: var(--vc-texto-secundario);
+  }
+}
+
+.panel {
+  background: var(--vc-superficie);
+  border: 1px solid var(--vc-borde);
+  border-radius: var(--vc-radio);
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 16px 0;
+
+  mat-form-field {
+    flex: 1 1 200px;
+  }
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+  }
+
+  th.mat-mdc-header-cell {
+    color: var(--vc-texto-secundario);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.vacio {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--vc-texto-secundario);
+}
+
+.texto-secundario {
+  color: var(--vc-texto-secundario);
+}
+
+// Insignias de estado
+.estado {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  &--activo {
+    background: var(--vc-exito-suave);
+    color: var(--vc-exito);
+  }
+
+  &--alerta {
+    background: var(--vc-alerta-suave);
+    color: var(--vc-alerta);
+  }
+
+  &--peligro {
+    background: var(--vc-rojo-suave);
+    color: var(--vc-rojo);
+  }
+
+  &--neutro {
+    background: var(--vc-neutro-suave);
+    color: var(--vc-texto-secundario);
+  }
+}
+
+// Formularios dentro de dialogos
+.formulario {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 16px;
+
+  .completo {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.indicacion {
+  margin: 0 0 12px;
+  color: var(--vc-texto-secundario);
+  font-size: 13px;
+}
+
+.snack-error {
+  --mat-snack-bar-container-color: var(--vc-rojo-oscuro);
+  --mat-snack-bar-supporting-text-color: #ffffff;
+}

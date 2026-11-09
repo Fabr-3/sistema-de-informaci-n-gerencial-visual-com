@@ -1,0 +1,18 @@
+# Perfil de desarrollo local. NO usar estos valores en produccion.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/proyecto-visual-com
+    username: postgres
+    password: postgres
+
+app:
+  seguridad:
+    jwt:
+      secreto: solo-desarrollo-visual-com-clave-jwt-0123456789abcdef
+    refresco:
+      # En local se trabaja con HTTP, por lo que la cookie no puede ser Secure
+      cookie-segura: false
+    administrador-inicial:
+      email: admin@visual.com.bo
+      contrasena: admin123456
+      debe-cambiar-contrasena: false

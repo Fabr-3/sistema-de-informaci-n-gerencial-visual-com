@@ -1,0 +1,73 @@
+<h2 mat-dialog-title>{{ esEdicion ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+<form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+  <mat-dialog-content>
+    <div class="formulario">
+      <mat-form-field appearance="outline" class="completo">
+        <mat-label>Nombre de usuario</mat-label>
+        <input matInput formControlName="nombreUsuario" autocomplete="off" />
+        @if (!esEdicion) {
+          <mat-hint>3 a 50 caracteres: letras, números, punto, guion o guion bajo</mat-hint>
+        }
+        <mat-error>Ingrese un nombre de usuario válido</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="completo">
+        <mat-label>Nombres</mat-label>
+        <input matInput formControlName="nombres" />
+        <mat-error>Ingrese los nombres</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Apellido paterno</mat-label>
+        <input matInput formControlName="apellidoPaterno" />
+        <mat-error>Ingrese el apellido paterno</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Apellido materno (opcional)</mat-label>
+        <input matInput formControlName="apellidoMaterno" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="completo">
+        <mat-label>Correo electrónico</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="off" />
+        <mat-error>Ingrese un correo válido</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Rol</mat-label>
+        <mat-select formControlName="idRol">
+          @for (rol of roles; track rol.id) {
+            <mat-option [value]="rol.id">{{ rol.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>Seleccione un rol</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ requiereExpiracion() ? 'Vigente hasta' : 'Vigente hasta (opcional)' }}</mat-label>
+        <input matInput formControlName="fechaExpiracion" [matDatepicker]="selectorFecha" />
+        <mat-datepicker-toggle matIconSuffix [for]="selectorFecha" />
+        <mat-datepicker #selectorFecha [startAt]="hoy" />
+        @if (formulario.controls.fechaExpiracion.hasError('fechaPasada')) {
+          <mat-error>La fecha debe ser hoy o posterior</mat-error>
+        } @else {
+          <mat-error>Indique hasta cuándo es válida la cuenta</mat-error>
+        }
+      </mat-form-field>
+
+      @if (!esEdicion) {
+        <mat-form-field appearance="outline" class="completo">
+          <mat-label>Contraseña temporal</mat-label>
+          <input matInput type="password" formControlName="contrasenaTemporal" autocomplete="new-password" />
+          <mat-hint>{{ politica }} El usuario deberá cambiarla al ingresar.</mat-hint>
+          <mat-error>No cumple la política de contraseñas</mat-error>
+        </mat-form-field>
+      }
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancelar</button>
+    <button mat-flat-button type="submit" [disabled]="guardando()">Guardar</button>
+  </mat-dialog-actions>
+</form>

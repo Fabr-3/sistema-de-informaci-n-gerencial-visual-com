@@ -1,0 +1,136 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Auditoría</h1>
+      <p>Registro inmutable de accesos y operaciones realizadas en el sistema.</p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <form class="filtros" [formGroup]="filtros" (ngSubmit)="buscar()">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Desde</mat-label>
+        <input matInput formControlName="desde" [matDatepicker]="selectorDesde" />
+        <mat-datepicker-toggle matIconSuffix [for]="selectorDesde" />
+        <mat-datepicker #selectorDesde />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Hasta</mat-label>
+        <input matInput formControlName="hasta" [matDatepicker]="selectorHasta" />
+        <mat-datepicker-toggle matIconSuffix [for]="selectorHasta" />
+        <mat-datepicker #selectorHasta />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Acción</mat-label>
+        <mat-select formControlName="accion">
+          <mat-option [value]="null">Todas</mat-option>
+          @for (accion of acciones | keyvalue: ordenOriginal; track accion.key) {
+            <mat-option [value]="accion.key">{{ accion.value }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Entidad</mat-label>
+        <input matInput formControlName="entidad" placeholder="usuarios, roles, respaldos…" />
+      </mat-form-field>
+      <div class="filtros__acciones">
+        <button mat-button type="button" (click)="limpiar()">Limpiar</button>
+        <button mat-flat-button type="submit"><mat-icon>filter_list</mat-icon>Filtrar</button>
+      </div>
+    </form>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.contenido ?? []" multiTemplateDataRows>
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let registro">{{ registro.fecha | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="usuario">
+          <th mat-header-cell *matHeaderCellDef>Usuario</th>
+          <td mat-cell *matCellDef="let registro">{{ registro.nombreUsuario ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="accion">
+          <th mat-header-cell *matHeaderCellDef>Acción</th>
+          <td mat-cell *matCellDef="let registro">
+            <span
+              class="estado"
+              [class.estado--peligro]="esAccionCritica(registro.accion)"
+              [class.estado--neutro]="!esAccionCritica(registro.accion)"
+            >
+              {{ etiquetaAccion(registro.accion) }}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="entidad">
+          <th mat-header-cell *matHeaderCellDef>Entidad</th>
+          <td mat-cell *matCellDef="let registro">
+            {{ registro.entidad ?? '—' }}
+            @if (registro.idEntidad) {
+              <span class="texto-secundario">#{{ registro.idEntidad }}</span>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="detalle">
+          <th mat-header-cell *matHeaderCellDef>Detalle</th>
+          <td mat-cell *matCellDef="let registro">{{ registro.detalle ?? '' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="direccionIp">
+          <th mat-header-cell *matHeaderCellDef>IP</th>
+          <td mat-cell *matCellDef="let registro" class="texto-secundario">{{ registro.direccionIp ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="expandir">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Detalle de cambios</span></th>
+          <td mat-cell *matCellDef="let registro">
+            @if (tieneValores(registro)) {
+              <button
+                mat-icon-button
+                (click)="alternarDetalle(registro)"
+                [attr.aria-expanded]="expandido() === registro.id"
+                aria-label="Ver cambios"
+              >
+                <mat-icon>{{ expandido() === registro.id ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="cambios">
+          <td mat-cell *matCellDef="let registro" [attr.colspan]="columnas.length" class="celda-cambios">
+            @if (expandido() === registro.id) {
+              <div class="cambios">
+                <div>
+                  <h3>Valores anteriores</h3>
+                  <pre>{{ registro.valoresAnteriores ? (registro.valoresAnteriores | json) : '—' }}</pre>
+                </div>
+                <div>
+                  <h3>Valores nuevos</h3>
+                  <pre>{{ registro.valoresNuevos ? (registro.valoresNuevos | json) : '—' }}</pre>
+                </div>
+              </div>
+            }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: ['cambios']" class="fila-cambios"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas.length">
+            {{ cargando() ? 'Cargando registros…' : 'No hay registros con los filtros aplicados.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="resultado()?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación de auditoría"
+    />
+  </section>
+</div>

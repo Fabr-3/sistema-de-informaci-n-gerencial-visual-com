@@ -1,3 +1,53 @@
+# Configuracion comun. Los valores sensibles se leen de variables de entorno;
+# el perfil "dev" (por defecto) define valores locales solo para desarrollo.
 spring:
   application:
     name: backend
+  profiles:
+    default: dev
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USUARIO}
+    password: ${DB_CONTRASENA}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # El esquema lo gestiona Flyway; Hibernate solo valida el mapeo
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  error:
+    include-stacktrace: never
+    include-message: never
+
+app:
+  zona-horaria: America/La_Paz
+  seguridad:
+    jwt:
+      secreto: ${JWT_SECRETO}
+      emisor: visual-com
+      duracion-acceso: 15m
+    refresco:
+      duracion: 7d
+      nombre-cookie: visual_refresco
+      cookie-segura: true
+    bloqueo:
+      intentos-maximos: 5
+      duracion: 15m
+    administrador-inicial:
+      nombre-usuario: admin
+      nombres: Administrador
+      apellido-paterno: Sistema
+      email: ${ADMIN_EMAIL}
+      contrasena: ${ADMIN_CONTRASENA_INICIAL}
+      debe-cambiar-contrasena: true
+  respaldos:
+    directorio: ${RESPALDOS_DIRECTORIO:./respaldos}
+    ruta-pg-dump: pg_dump
+    programado: true
+    # Respaldo automatico diario a las 02:00
+    cron: "0 0 2 * * *"
+    tiempo-maximo: 10m

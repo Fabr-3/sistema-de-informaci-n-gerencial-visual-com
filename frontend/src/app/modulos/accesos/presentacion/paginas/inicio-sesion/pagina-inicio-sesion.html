@@ -1,0 +1,61 @@
+<main class="acceso">
+  <section class="acceso__marca" aria-hidden="true">
+    <div>
+      <span class="marca">VISUAL<strong>COM</strong></span>
+      <p>Sistema de Información Gerencial</p>
+    </div>
+    <small>Producción y tecnología audiovisual</small>
+  </section>
+
+  <section class="acceso__formulario">
+    <form [formGroup]="formulario" (ngSubmit)="iniciarSesion()" novalidate>
+      <h1>Iniciar sesión</h1>
+      <p class="texto-secundario">Ingrese sus credenciales para continuar.</p>
+
+      @if (error(); as mensaje) {
+        <div class="alerta" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ mensaje }}</span>
+        </div>
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>Usuario</mat-label>
+        <input matInput formControlName="nombreUsuario" autocomplete="username" autofocus />
+        @if (formulario.controls.nombreUsuario.hasError('required')) {
+          <mat-error>Ingrese su usuario</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Contraseña</mat-label>
+        <input
+          matInput
+          formControlName="contrasena"
+          autocomplete="current-password"
+          [type]="mostrarContrasena() ? 'text' : 'password'"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="mostrarContrasena.set(!mostrarContrasena())"
+          [attr.aria-label]="mostrarContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+        >
+          <mat-icon>{{ mostrarContrasena() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (formulario.controls.contrasena.hasError('required')) {
+          <mat-error>Ingrese su contraseña</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-flat-button type="submit" class="acceso__boton" [disabled]="enviando()">
+        @if (enviando()) {
+          <mat-spinner diameter="20" />
+        } @else {
+          Ingresar
+        }
+      </button>
+    </form>
+  </section>
+</main>

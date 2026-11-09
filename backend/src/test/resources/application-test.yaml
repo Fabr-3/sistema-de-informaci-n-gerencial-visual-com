@@ -1,0 +1,20 @@
+# Perfil de pruebas: base de datos aislada de la de desarrollo.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/proyecto_visual_com_test
+    username: postgres
+    password: postgres
+
+app:
+  seguridad:
+    jwt:
+      secreto: solo-pruebas-visual-com-clave-jwt-0123456789abcdef
+    refresco:
+      cookie-segura: false
+    administrador-inicial:
+      email: admin@visual.com.bo
+      contrasena: admin123456
+      debe-cambiar-contrasena: false
+  respaldos:
+    directorio: ./target/respaldos-prueba
+    programado: false

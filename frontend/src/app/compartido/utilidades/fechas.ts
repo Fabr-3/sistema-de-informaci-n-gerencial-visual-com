@@ -1,0 +1,30 @@
+const relleno = (valor: number, digitos = 2): string => valor.toString().padStart(digitos, '0');
+
+/**
+ * Convierte una fecha a ISO local sin zona horaria (yyyy-MM-ddTHH:mm:ss),
+ * formato que espera la API para LocalDateTime.
+ */
+export function aIsoLocal(fecha: Date): string {
+  return (
+    `${fecha.getFullYear()}-${relleno(fecha.getMonth() + 1)}-${relleno(fecha.getDate())}` +
+    `T${relleno(fecha.getHours())}:${relleno(fecha.getMinutes())}:${relleno(fecha.getSeconds())}`
+  );
+}
+
+/** Ultimo segundo del dia: una vigencia "hasta el 15" incluye todo el dia 15. */
+export function finDelDia(fecha: Date): Date {
+  const resultado = new Date(fecha);
+  resultado.setHours(23, 59, 59, 0);
+  return resultado;
+}
+
+export function inicioDelDia(fecha: Date): Date {
+  const resultado = new Date(fecha);
+  resultado.setHours(0, 0, 0, 0);
+  return resultado;
+}
+
+/** Interpreta una fecha ISO local de la API (sin zona) como hora local. */
+export function desdeIsoLocal(valor: string | null): Date | null {
+  return valor ? new Date(valor.substring(0, 19)) : null;
+}

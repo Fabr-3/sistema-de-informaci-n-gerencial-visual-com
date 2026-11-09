@@ -1,0 +1,66 @@
+<mat-sidenav-container class="contenedor">
+  <mat-sidenav
+    #menuLateral
+    class="menu-lateral"
+    [mode]="pantallaAngosta() ? 'over' : 'side'"
+    [opened]="!pantallaAngosta()"
+  >
+    <div class="marca">VISUAL<strong>COM</strong></div>
+    <nav aria-label="Navegación principal">
+      @for (grupo of menu(); track grupo.titulo) {
+        @if (grupo.titulo) {
+          <h2 class="menu-lateral__grupo">{{ grupo.titulo }}</h2>
+        }
+        <mat-nav-list>
+          @for (elemento of grupo.elementos; track elemento.ruta) {
+            <a
+              mat-list-item
+              [routerLink]="elemento.ruta"
+              routerLinkActive="activo"
+              [routerLinkActiveOptions]="{ exact: true }"
+              (click)="alNavegar(menuLateral)"
+            >
+              <mat-icon matListItemIcon>{{ elemento.icono }}</mat-icon>
+              <span matListItemTitle>{{ elemento.etiqueta }}</span>
+            </a>
+          }
+        </mat-nav-list>
+      }
+    </nav>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar class="barra">
+      @if (pantallaAngosta()) {
+        <button mat-icon-button (click)="menuLateral.toggle()" aria-label="Abrir menú">
+          <mat-icon>menu</mat-icon>
+        </button>
+      }
+      <span class="barra__titulo">Sistema de Información Gerencial</span>
+      <span class="espaciador"></span>
+      @if (usuario(); as usuarioActual) {
+        <button mat-button class="barra__usuario" [matMenuTriggerFor]="menuUsuario">
+          <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
+          <span class="barra__nombre">{{ usuarioActual.nombreCompleto }}</span>
+          <mat-icon iconPositionEnd>expand_more</mat-icon>
+        </button>
+        <mat-menu #menuUsuario="matMenu" xPosition="before">
+          <div class="menu-usuario__datos">
+            <strong>{{ usuarioActual.nombreCompleto }}</strong>
+            <span>{{ usuarioActual.nombreRol }} · {{ usuarioActual.nombreUsuario }}</span>
+          </div>
+          <mat-divider />
+          <a mat-menu-item [routerLink]="rutaCambioContrasena">
+            <mat-icon>key</mat-icon>
+            <span>Cambiar contraseña</span>
+          </a>
+          <button mat-menu-item (click)="cerrarSesion()">
+            <mat-icon>logout</mat-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </mat-menu>
+      }
+    </mat-toolbar>
+    <router-outlet />
+  </mat-sidenav-content>
+</mat-sidenav-container>

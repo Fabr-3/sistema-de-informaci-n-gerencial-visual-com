@@ -1,0 +1,24 @@
+<div class="pagina">
+  @if (usuario(); as usuarioActual) {
+    <header class="pagina__encabezado">
+      <div>
+        <h1>Bienvenido, {{ usuarioActual.nombreCompleto }}</h1>
+        <p>{{ usuarioActual.nombreRol }}</p>
+      </div>
+    </header>
+  }
+
+  @if (accesosRapidos().length > 0) {
+    <section class="accesos" aria-label="Accesos rápidos">
+      @for (acceso of accesosRapidos(); track acceso.ruta) {
+        <a class="panel acceso" [routerLink]="acceso.ruta">
+          <mat-icon>{{ acceso.icono }}</mat-icon>
+          <span>{{ acceso.etiqueta }}</span>
+          <mat-icon class="acceso__flecha">chevron_right</mat-icon>
+        </a>
+      }
+    </section>
+  } @else {
+    <div class="panel vacio">Las secciones asignadas a su rol estarán disponibles a medida que se habiliten los módulos del sistema.</div>
+  }
+</div>

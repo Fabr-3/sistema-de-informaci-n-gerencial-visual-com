@@ -1,0 +1,123 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Usuarios</h1>
+      <p>Cuentas de acceso al sistema y su rol asignado.</p>
+    </div>
+    <button mat-flat-button *siPermiso="permisos.USUARIOS_GESTIONAR" (click)="crear()">
+      <mat-icon>person_add</mat-icon>
+      Nuevo usuario
+    </button>
+  </header>
+
+  <section class="panel">
+    <div class="filtros">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Buscar</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [formControl]="busqueda" placeholder="Nombre, usuario o correo" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Rol</mat-label>
+        <mat-select [value]="criterios().filtro.idRol" (selectionChange)="filtrar({ idRol: $event.value })">
+          <mat-option [value]="undefined">Todos</mat-option>
+          @for (rol of roles(); track rol.id) {
+            <mat-option [value]="rol.id">{{ rol.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Estado</mat-label>
+        <mat-select [value]="criterios().filtro.activo" (selectionChange)="filtrar({ activo: $event.value })">
+          <mat-option [value]="undefined">Todos</mat-option>
+          <mat-option [value]="true">Activos</mat-option>
+          <mat-option [value]="false">Inactivos</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.contenido ?? []">
+        <ng-container matColumnDef="nombreUsuario">
+          <th mat-header-cell *matHeaderCellDef>Usuario</th>
+          <td mat-cell *matCellDef="let usuario"><strong>{{ usuario.nombreUsuario }}</strong></td>
+        </ng-container>
+        <ng-container matColumnDef="nombreCompleto">
+          <th mat-header-cell *matHeaderCellDef>Nombre</th>
+          <td mat-cell *matCellDef="let usuario">{{ usuario.nombreCompleto }}</td>
+        </ng-container>
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Correo</th>
+          <td mat-cell *matCellDef="let usuario">{{ usuario.email }}</td>
+        </ng-container>
+        <ng-container matColumnDef="rol">
+          <th mat-header-cell *matHeaderCellDef>Rol</th>
+          <td mat-cell *matCellDef="let usuario">
+            {{ usuario.nombreRol }}
+            @if (usuario.fechaExpiracion) {
+              <div class="texto-secundario detalle">Hasta {{ usuario.fechaExpiracion | date: 'dd/MM/yyyy' }}</div>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let usuario">
+            @let estado = estadoUsuario(usuario);
+            <span class="estado estado--{{ estado.tipo }}">{{ estado.etiqueta }}</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="ultimoAcceso">
+          <th mat-header-cell *matHeaderCellDef>Último acceso</th>
+          <td mat-cell *matCellDef="let usuario">
+            {{ usuario.fechaUltimoAcceso ? (usuario.fechaUltimoAcceso | date: 'dd/MM/yyyy HH:mm') : 'Nunca' }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef class="celda-acciones"><span class="cdk-visually-hidden">Acciones</span></th>
+          <td mat-cell *matCellDef="let usuario" class="celda-acciones">
+            <button mat-icon-button [matMenuTriggerFor]="menuAcciones" [attr.aria-label]="'Acciones de ' + usuario.nombreUsuario">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menuAcciones="matMenu" xPosition="before">
+              <button mat-menu-item (click)="editar(usuario)">
+                <mat-icon>edit</mat-icon><span>Editar</span>
+              </button>
+              <button mat-menu-item (click)="restablecerContrasena(usuario)">
+                <mat-icon>lock_reset</mat-icon><span>Restablecer contraseña</span>
+              </button>
+              @if (usuario.id !== idUsuarioActual()) {
+                <button mat-menu-item (click)="cambiarEstado(usuario)">
+                  <mat-icon>{{ usuario.activo ? 'block' : 'check_circle' }}</mat-icon>
+                  <span>{{ usuario.activo ? 'Desactivar' : 'Activar' }}</span>
+                </button>
+                <button mat-menu-item class="accion-peligrosa" (click)="eliminar(usuario)">
+                  <mat-icon>delete</mat-icon><span>Eliminar</span>
+                </button>
+              }
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnas()"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas()"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas().length">
+            {{ cargando() ? 'Cargando usuarios…' : 'No se encontraron usuarios con los filtros aplicados.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="resultado()?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación de usuarios"
+    />
+  </section>
+</div>

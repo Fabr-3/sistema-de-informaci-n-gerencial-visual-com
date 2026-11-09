@@ -1,0 +1,18 @@
+package com.visual.backend.accesos.dominio.modelo;
+
+/**
+ * Codigos de los permisos fijos (permisos.nombre). Se usan como autoridades
+ * de seguridad, por lo que deben coincidir con los datos iniciales (V3).
+ */
+public final class Permisos {
+
+    public static final String USUARIOS_VER = "USUARIOS_VER";
+    public static final String USUARIOS_GESTIONAR = "USUARIOS_GESTIONAR";
+    public static final String ROLES_VER = "ROLES_VER";
+    public static final String ROLES_GESTIONAR = "ROLES_GESTIONAR";
+    public static final String AUDITORIA_VER = "AUDITORIA_VER";
+    public static final String RESPALDOS_GESTIONAR = "RESPALDOS_GESTIONAR";
+
+    private Permisos() {
+    }
+}
