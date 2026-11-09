@@ -1,0 +1,174 @@
+<div class="pagina">
+  <a mat-button class="volver" [routerLink]="rutaListado"><mat-icon>arrow_back</mat-icon>Montajes y personal</a>
+
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (plan(); as actual) {
+    @let evento = actual.evento;
+    <header class="pagina__encabezado">
+      <div>
+        <h1>
+          {{ evento.nombre }}
+          <span class="estado estado--{{ tipoVisualEvento(evento.estado) }}">{{ evento.estado | etiqueta: estadosEvento }}</span>
+        </h1>
+        <p>{{ evento.cliente }} · {{ evento.proyecto }}</p>
+      </div>
+    </header>
+
+    @if (!actual.editable) {
+      <div class="aviso aviso--alerta" role="status">
+        <mat-icon>lock</mat-icon>
+        <span>El evento ya no está programado: su logística queda solo para consulta.</span>
+      </div>
+    }
+    @for (aviso of actual.avisos; track aviso) {
+      <div class="aviso aviso--alerta" role="alert"><mat-icon>warning</mat-icon><span>{{ aviso }}</span></div>
+    }
+
+    <div class="resumen">
+      <section class="panel tarjeta">
+        <h2>Evento</h2>
+        <dl class="datos">
+          <dt>Horario</dt>
+          <dd>{{ evento.fechaInicio | date: 'dd/MM/yyyy HH:mm' }} – {{ evento.fechaFin | date: 'dd/MM/yyyy HH:mm' }}</dd>
+          <dt>Lugar</dt>
+          <dd>
+            {{ evento.lugar }}
+            @if (evento.direccion || evento.ciudad) {
+              <div class="texto-secundario detalle">{{ evento.direccion }}{{ evento.direccion && evento.ciudad ? ', ' : '' }}{{ evento.ciudad }}</div>
+            }
+          </dd>
+          <dt>Plan logístico</dt>
+          <dd>{{ actual.ventanaInicio | date: 'dd/MM/yyyy HH:mm' }} – {{ actual.ventanaFin | date: 'dd/MM/yyyy HH:mm' }}</dd>
+        </dl>
+      </section>
+
+      <section class="panel tarjeta">
+        <div class="tarjeta__titulo">
+          <h2>Transporte y logística</h2>
+          @if (puedeGestionar()) {
+            <button mat-button (click)="editarTransporte(actual)"><mat-icon>edit</mat-icon>Editar</button>
+          }
+        </div>
+        @if (actual.detallesTransporte) {
+          <p class="transporte">{{ actual.detallesTransporte }}</p>
+        } @else {
+          <p class="texto-secundario">Sin detalles de transporte.</p>
+        }
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="seccion__encabezado">
+        <h2 class="titulo-seccion">Jornadas de montaje y desmontaje</h2>
+        @if (puedeGestionar()) {
+          <button mat-stroked-button (click)="editarJornada(actual)"><mat-icon>add</mat-icon>Agregar jornada</button>
+        }
+      </div>
+      <div class="tabla-contenedor">
+        <table mat-table [dataSource]="actual.jornadas">
+          <ng-container matColumnDef="tipo">
+            <th mat-header-cell *matHeaderCellDef>Tipo</th>
+            <td mat-cell *matCellDef="let jornada">
+              <span class="estado" [class.estado--alerta]="jornada.tipo === 'MONTAJE'" [class.estado--neutro]="jornada.tipo === 'DESMONTAJE'">
+                {{ jornada.tipo | etiqueta: tiposJornada }}
+              </span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="horario">
+            <th mat-header-cell *matHeaderCellDef>Horario</th>
+            <td mat-cell *matCellDef="let jornada">
+              {{ jornada.inicio | date: 'EEE dd/MM/yyyy HH:mm' }} – {{ jornada.fin | date: 'HH:mm' }}
+              @if ((jornada.fin | date: 'yyyyMMdd') !== (jornada.inicio | date: 'yyyyMMdd')) {
+                <span class="texto-secundario">({{ jornada.fin | date: 'dd/MM' }})</span>
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="descripcion">
+            <th mat-header-cell *matHeaderCellDef>Descripción</th>
+            <td mat-cell *matCellDef="let jornada" class="texto-secundario">{{ jornada.descripcion ?? '—' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+            <td mat-cell *matCellDef="let jornada" class="celda-acciones">
+              @if (puedeGestionar()) {
+                <button mat-icon-button matTooltip="Editar" (click)="editarJornada(actual, jornada)" aria-label="Editar jornada">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Quitar" (click)="quitarJornada(actual, jornada)" aria-label="Quitar jornada">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="columnasJornadas"></tr>
+          <tr mat-row *matRowDef="let fila; columns: columnasJornadas"></tr>
+          <tr class="mat-row" *matNoDataRow>
+            <td class="vacio" [attr.colspan]="columnasJornadas.length">Sin jornadas de montaje ni desmontaje.</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="seccion__encabezado">
+        <h2 class="titulo-seccion">Personal asignado</h2>
+        @if (puedeGestionar()) {
+          <button mat-stroked-button (click)="editarAsignacion(actual)"><mat-icon>person_add</mat-icon>Asignar personal</button>
+        }
+      </div>
+      <div class="tabla-contenedor">
+        <table mat-table [dataSource]="actual.asignaciones">
+          <ng-container matColumnDef="persona">
+            <th mat-header-cell *matHeaderCellDef>Persona</th>
+            <td mat-cell *matCellDef="let asignacion"><strong>{{ asignacion.personal.nombreCompleto }}</strong></td>
+          </ng-container>
+          <ng-container matColumnDef="rol">
+            <th mat-header-cell *matHeaderCellDef>Rol</th>
+            <td mat-cell *matCellDef="let asignacion">{{ asignacion.rol.nombre }}</td>
+          </ng-container>
+          <ng-container matColumnDef="horario">
+            <th mat-header-cell *matHeaderCellDef>Horario</th>
+            <td mat-cell *matCellDef="let asignacion">
+              {{ asignacion.inicio | date: 'dd/MM HH:mm' }} – {{ asignacion.fin | date: 'dd/MM HH:mm' }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="cruces">
+            <th mat-header-cell *matHeaderCellDef>Disponibilidad</th>
+            <td mat-cell *matCellDef="let asignacion">
+              @if (asignacion.cruces.length) {
+                <span class="estado estado--alerta" [matTooltip]="textoCruces(asignacion.cruces)">
+                  <mat-icon>warning</mat-icon>Cruce con {{ asignacion.cruces.length === 1 ? asignacion.cruces[0].evento : asignacion.cruces.length + ' eventos' }}
+                </span>
+              } @else {
+                <span class="estado estado--activo">Sin cruces</span>
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+            <td mat-cell *matCellDef="let asignacion" class="celda-acciones">
+              @if (puedeGestionar()) {
+                <button mat-icon-button matTooltip="Editar" (click)="editarAsignacion(actual, asignacion)" aria-label="Editar asignación">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Quitar" (click)="quitarAsignacion(actual, asignacion)" aria-label="Quitar asignación">
+                  <mat-icon>person_remove</mat-icon>
+                </button>
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="columnasAsignaciones"></tr>
+          <tr mat-row *matRowDef="let fila; columns: columnasAsignaciones"></tr>
+          <tr class="mat-row" *matNoDataRow>
+            <td class="vacio" [attr.colspan]="columnasAsignaciones.length">Aún no hay personal asignado.</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+  } @else if (!cargando()) {
+    <p class="texto-secundario">No se pudo cargar el plan logístico del evento.</p>
+  }
+</div>

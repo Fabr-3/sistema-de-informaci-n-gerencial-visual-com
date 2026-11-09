@@ -17,6 +17,10 @@ export const Rutas = {
   PROYECTOS: 'proyectos',
   CRONOGRAMA: 'cronograma',
   NUEVA: 'nueva',
+  LOGISTICA: 'logistica',
+  PLANIFICACION: 'planificacion',
+  PERSONAL: 'personal',
+  MIS_ASIGNACIONES: 'mis-asignaciones',
 } as const;
 
 /** Parametro de consulta con la URL a la que se vuelve tras iniciar sesion. */

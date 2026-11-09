@@ -1,0 +1,98 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Personal técnico</h1>
+      <p>Técnicos de planta y sub-contratados que se asignan a montajes, eventos y desmontajes.</p>
+    </div>
+    @if (puedeGestionar) {
+      <button mat-flat-button (click)="editar()"><mat-icon>person_add</mat-icon>Nuevo personal</button>
+    }
+  </header>
+
+  <section class="panel">
+    <div class="filtros">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Buscar</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [formControl]="busqueda" placeholder="Nombre o documento" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Especialidad</mat-label>
+        <mat-select [value]="criterios().filtro.idEspecialidad" (selectionChange)="filtrar({ idEspecialidad: $event.value })">
+          <mat-option [value]="undefined">Todas</mat-option>
+          @for (especialidad of catalogos()?.especialidades ?? []; track especialidad.id) {
+            <mat-option [value]="especialidad.id">{{ especialidad.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Estado</mat-label>
+        <mat-select [value]="criterios().filtro.activo" (selectionChange)="filtrar({ activo: $event.value })">
+          <mat-option [value]="undefined">Todos</mat-option>
+          <mat-option [value]="true">Activos</mat-option>
+          <mat-option [value]="false">Inactivos</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.contenido ?? []">
+        <ng-container matColumnDef="nombre">
+          <th mat-header-cell *matHeaderCellDef>Nombre</th>
+          <td mat-cell *matCellDef="let persona">
+            <strong>{{ persona.nombreCompleto }}</strong>
+            <div class="texto-secundario detalle">{{ persona.documento.tipo.nombre }} {{ persona.documento.numero }}</div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="especialidades">
+          <th mat-header-cell *matHeaderCellDef>Especialidades</th>
+          <td mat-cell *matCellDef="let persona">{{ especialidades(persona) }}</td>
+        </ng-container>
+        <ng-container matColumnDef="telefono">
+          <th mat-header-cell *matHeaderCellDef>Teléfono</th>
+          <td mat-cell *matCellDef="let persona">{{ persona.telefono ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="cuenta">
+          <th mat-header-cell *matHeaderCellDef>Cuenta</th>
+          <td mat-cell *matCellDef="let persona" class="codigo">{{ persona.usuario?.nombreUsuario ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let persona">
+            <span class="estado" [class.estado--activo]="persona.activo" [class.estado--neutro]="!persona.activo">
+              {{ persona.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+          <td mat-cell *matCellDef="let persona" class="celda-acciones">
+            @if (puedeGestionar) {
+              <button mat-icon-button matTooltip="Editar" (click)="editar(persona)" [attr.aria-label]="'Editar a ' + persona.nombreCompleto">
+                <mat-icon>edit</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas.length">
+            {{ cargando() ? 'Cargando personal…' : 'No se encontró personal con los filtros aplicados.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator
+      [length]="resultado()?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación del personal"
+    />
+  </section>
+</div>

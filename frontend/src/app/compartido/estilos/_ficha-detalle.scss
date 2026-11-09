@@ -1,0 +1,58 @@
+// Estructura comun de las fichas de detalle: encabezado, tarjetas de resumen
+// y listas de datos (detalle de proyecto, plan logistico).
+@mixin ficha-detalle {
+  .volver {
+    align-self: flex-start;
+    margin-left: -12px;
+  }
+
+  h1 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--vc-espacio);
+  }
+
+  .tarjeta {
+    padding: 16px 20px;
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+  }
+
+  .tarjeta__titulo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .titulo-seccion {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .datos {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 16px;
+    margin: 0;
+
+    dt {
+      color: var(--vc-texto-secundario);
+    }
+
+    dd {
+      margin: 0;
+    }
+  }
+}

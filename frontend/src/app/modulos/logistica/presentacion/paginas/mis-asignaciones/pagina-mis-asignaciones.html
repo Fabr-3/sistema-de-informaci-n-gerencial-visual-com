@@ -1,0 +1,67 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Mis asignaciones</h1>
+      <p>Montajes, eventos y desmontajes en los que participa desde hoy.</p>
+    </div>
+  </header>
+
+  @let actual = resultado();
+  @if (actual === undefined) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (actual && !actual.vinculado) {
+    <div class="aviso aviso--alerta" role="status">
+      <mat-icon>info</mat-icon>
+      <span>Su cuenta no está vinculada a ningún registro del personal técnico. Consulte con logística.</span>
+    </div>
+  } @else if (actual) {
+    @for (asignacion of actual.asignaciones; track asignacion.id) {
+      <article class="panel asignacion">
+        <div class="asignacion__fecha">
+          <span class="dia">{{ asignacion.inicio | date: 'dd' }}</span>
+          <span>{{ asignacion.inicio | date: 'MMM yyyy' }}</span>
+          <span class="texto-secundario">{{ asignacion.inicio | date: 'EEEE' }}</span>
+        </div>
+        <div class="asignacion__detalle">
+          <h2>{{ asignacion.evento.nombre }}</h2>
+          <p class="texto-secundario">{{ asignacion.evento.cliente }}</p>
+          <dl class="datos">
+            <dt>Rol</dt>
+            <dd>{{ asignacion.rol }}</dd>
+            <dt>Horario</dt>
+            <dd>{{ asignacion.inicio | date: 'dd/MM HH:mm' }} – {{ asignacion.fin | date: 'dd/MM HH:mm' }}</dd>
+            <dt>Lugar</dt>
+            <dd>
+              {{ asignacion.evento.lugar }}
+              @if (asignacion.evento.direccion) {
+                · {{ asignacion.evento.direccion }}
+              }
+              @if (asignacion.evento.ciudad) {
+                ({{ asignacion.evento.ciudad }})
+              }
+            </dd>
+            <dt>Evento</dt>
+            <dd>{{ asignacion.evento.fechaInicio | date: 'dd/MM HH:mm' }} – {{ asignacion.evento.fechaFin | date: 'HH:mm' }}</dd>
+            @if (asignacion.detallesTransporte) {
+              <dt>Transporte</dt>
+              <dd class="transporte">{{ asignacion.detallesTransporte }}</dd>
+            }
+          </dl>
+          @if (asignacion.cruces.length) {
+            <div class="aviso aviso--alerta" role="status">
+              <mat-icon>warning</mat-icon>
+              <span>
+                Se cruza con
+                @for (cruce of asignacion.cruces; track cruce.idAsignacion; let ultimo = $last) {
+                  {{ cruce.evento }} ({{ cruce.inicio | date: 'dd/MM HH:mm' }}–{{ cruce.fin | date: 'HH:mm' }}){{ ultimo ? '.' : ', ' }}
+                }
+              </span>
+            </div>
+          }
+        </div>
+      </article>
+    } @empty {
+      <p class="texto-secundario">No tiene asignaciones desde hoy.</p>
+    }
+  }
+</div>

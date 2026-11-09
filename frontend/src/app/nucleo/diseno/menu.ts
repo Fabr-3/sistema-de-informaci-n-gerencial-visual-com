@@ -56,6 +56,29 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
     ],
   },
   {
+    titulo: 'Logística',
+    elementos: [
+      {
+        etiqueta: 'Montajes y personal',
+        icono: 'local_shipping',
+        ruta: rutaAbsoluta(Rutas.LOGISTICA, Rutas.PLANIFICACION),
+        permiso: Permisos.LOGISTICA_VER,
+      },
+      {
+        etiqueta: 'Personal técnico',
+        icono: 'engineering',
+        ruta: rutaAbsoluta(Rutas.LOGISTICA, Rutas.PERSONAL),
+        permiso: Permisos.LOGISTICA_VER,
+      },
+      {
+        etiqueta: 'Mis asignaciones',
+        icono: 'assignment_ind',
+        ruta: rutaAbsoluta(Rutas.LOGISTICA, Rutas.MIS_ASIGNACIONES),
+        permiso: Permisos.ASIGNACIONES_VER_PROPIAS,
+      },
+    ],
+  },
+  {
     titulo: 'Activos e inventario',
     elementos: [
       { etiqueta: 'Activos', icono: 'videocam', ruta: rutaAbsoluta(Rutas.ACTIVOS), permiso: Permisos.ACTIVOS_VER },

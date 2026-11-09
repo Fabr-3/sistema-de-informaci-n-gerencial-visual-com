@@ -1,0 +1,8 @@
+@use '../../../../../compartido/estilos/ficha-detalle' as ficha;
+
+@include ficha.ficha-detalle;
+
+.transporte {
+  margin: 0;
+  white-space: pre-line;
+}

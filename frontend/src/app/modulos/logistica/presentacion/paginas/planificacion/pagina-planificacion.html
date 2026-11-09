@@ -1,0 +1,101 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Montajes y personal</h1>
+      <p>Planifique las jornadas de montaje y desmontaje de cada evento y asigne al personal técnico.</p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="filtros">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Buscar</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [formControl]="busqueda" placeholder="Evento, proyecto o cliente" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Fechas</mat-label>
+        <mat-date-range-input [formGroup]="rango" [rangePicker]="selectorRango">
+          <input matStartDate formControlName="desde" placeholder="Desde" />
+          <input matEndDate formControlName="hasta" placeholder="Hasta" />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="selectorRango" />
+        <mat-date-range-picker #selectorRango />
+      </mat-form-field>
+    </div>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.contenido ?? []">
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let fila">
+            <strong>{{ fila.evento.fechaInicio | date: 'dd/MM/yyyy' }}</strong>
+            <div class="texto-secundario detalle">
+              {{ fila.evento.fechaInicio | date: 'HH:mm' }} – {{ fila.evento.fechaFin | date: 'HH:mm' }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="evento">
+          <th mat-header-cell *matHeaderCellDef>Evento</th>
+          <td mat-cell *matCellDef="let fila">
+            <strong>{{ fila.evento.nombre }}</strong>
+            <div class="texto-secundario detalle">{{ fila.evento.cliente }} · {{ fila.evento.proyecto }}</div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="lugar">
+          <th mat-header-cell *matHeaderCellDef>Lugar</th>
+          <td mat-cell *matCellDef="let fila">
+            {{ fila.evento.lugar }}
+            @if (fila.evento.ciudad) {
+              <div class="texto-secundario detalle">{{ fila.evento.ciudad }}</div>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="jornadas">
+          <th mat-header-cell *matHeaderCellDef class="numero">Jornadas</th>
+          <td mat-cell *matCellDef="let fila" class="numero">{{ fila.jornadas }}</td>
+        </ng-container>
+        <ng-container matColumnDef="personal">
+          <th mat-header-cell *matHeaderCellDef class="numero">Personal</th>
+          <td mat-cell *matCellDef="let fila" class="numero">{{ fila.personal }}</td>
+        </ng-container>
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let fila">
+            @if (fila.evento.estado === 'PROGRAMADO') {
+              @let avance = estado(fila);
+              <span class="estado estado--{{ avance.tipo }}">
+                @if (fila.cruces > 0) {
+                  <mat-icon [matTooltip]="fila.cruces + ' asignación(es) se cruzan con otros eventos'">warning</mat-icon>
+                }
+                {{ avance.etiqueta }}
+              </span>
+            } @else {
+              <span class="estado estado--{{ tipoVisualEvento(fila.evento.estado) }}">
+                Evento {{ fila.evento.estado | etiqueta: estadosEvento | lowercase }}
+              </span>
+            }
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas" class="fila-navegable" tabindex="0" (click)="abrir(fila)" (keydown.enter)="abrir(fila)"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas.length">
+            {{ cargando() ? 'Cargando eventos…' : 'No hay eventos en el rango de fechas indicado.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator
+      [length]="resultado()?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación de eventos"
+    />
+  </section>
+</div>

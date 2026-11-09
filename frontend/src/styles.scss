@@ -160,6 +160,13 @@ a {
   font-weight: 500;
   white-space: nowrap;
 
+  .mat-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    font-size: 16px;
+  }
+
   &--activo {
     background: var(--vc-exito-suave);
     color: var(--vc-exito);
@@ -272,6 +279,10 @@ a {
   gap: 8px;
   padding: 10px 14px;
   border-radius: var(--vc-radio);
+
+  .mat-icon {
+    flex-shrink: 0;
+  }
 
   &--peligro {
     background: var(--vc-rojo-suave);

@@ -49,6 +49,10 @@ export const routes: Routes = [
         loadChildren: () => import('./modulos/comercial/presentacion/rutas-comercial').then((m) => m.RUTAS_COMERCIAL),
       },
       {
+        path: Rutas.LOGISTICA,
+        loadChildren: () => import('./modulos/logistica/presentacion/rutas-logistica').then((m) => m.RUTAS_LOGISTICA),
+      },
+      {
         path: Rutas.ACTIVOS,
         loadChildren: () => import('./modulos/activos/presentacion/rutas-activos').then((m) => m.RUTAS_ACTIVOS),
       },
