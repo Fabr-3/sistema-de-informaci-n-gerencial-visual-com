@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Provider } from '@angular/core';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 
 /** Textos del paginador de Angular Material en espanol. */
@@ -19,3 +19,6 @@ export class PaginadorEspanol extends MatPaginatorIntl {
     return `${inicio + 1} – ${fin} de ${total}`;
   };
 }
+
+/** Proveedor para las rutas con tablas paginadas (se registra por modulo para no cargarlo al inicio). */
+export const PROVEEDOR_PAGINADOR_ESPANOL: Provider = { provide: MatPaginatorIntl, useClass: PaginadorEspanol };

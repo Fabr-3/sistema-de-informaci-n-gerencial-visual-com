@@ -1,0 +1,23 @@
+.especificaciones__titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+.especificacion {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mayusculas {
+  text-transform: uppercase;
+}

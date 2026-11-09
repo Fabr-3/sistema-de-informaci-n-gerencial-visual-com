@@ -1,0 +1,32 @@
+<div class="seccion__encabezado">
+  <p class="texto-secundario">
+    {{ resumen().ACTIVO }} activos · {{ resumen().DEFECTUOSO }} defectuosos · {{ resumen().RETIRADO }} retirados
+  </p>
+  @if (puedeAgregar()) {
+    <button mat-stroked-button (click)="agregar()"><mat-icon>add</mat-icon>Agregar módulo</button>
+  }
+</div>
+@if (modulos().length === 0) {
+  <p class="vacio">Este activo no tiene módulos LED registrados.</p>
+} @else {
+  <ul class="modulos">
+    @for (modulo of modulos(); track modulo.id) {
+      <li class="modulo">
+        <span class="modulo__codigo">{{ modulo.codigo }}</span>
+        <span class="estado estado--{{ tipoVisualModulo(modulo.estado) }}">{{ estados[modulo.estado] }}</span>
+        @if (puedeCambiarEstado() && modulo.estado !== 'RETIRADO') {
+          <button mat-icon-button [matMenuTriggerFor]="menuEstado" [attr.aria-label]="'Cambiar estado de ' + modulo.codigo">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menuEstado="matMenu" xPosition="before">
+            @for (estado of estados | keyvalue: ordenOriginal; track estado.key) {
+              @if (estado.key !== modulo.estado) {
+                <button mat-menu-item (click)="cambiarEstado(modulo, estado.key)">Marcar como {{ estado.value.toLowerCase() }}</button>
+              }
+            }
+          </mat-menu>
+        }
+      </li>
+    }
+  </ul>
+}

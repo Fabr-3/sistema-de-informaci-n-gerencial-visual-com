@@ -18,6 +18,7 @@ import com.visual.backend.accesos.infraestructura.persistencia.jpa.RolJpaReposit
 import com.visual.backend.accesos.infraestructura.persistencia.jpa.UsuarioJpaRepositorio;
 import com.visual.backend.compartido.aplicacion.Pagina;
 import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 
 import jakarta.persistence.criteria.Predicate;
 

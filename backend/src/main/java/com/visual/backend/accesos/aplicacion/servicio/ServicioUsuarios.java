@@ -201,7 +201,7 @@ public class ServicioUsuarios {
     }
 
     private Integer idActor() {
-        return contexto.usuarioActual().map(ContextoSolicitud.UsuarioActual::id).orElse(null);
+        return contexto.idUsuarioActual();
     }
 
     private LocalDateTime ahora() {

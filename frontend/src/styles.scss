@@ -45,6 +45,7 @@ html {
   --vc-exito-suave: #e8f5e9;
   --vc-alerta: #a15c00;
   --vc-alerta-suave: #fff4e0;
+  --vc-alerta-borde: #f3d19c;
   --vc-neutro-suave: #eeeeee;
   --vc-radio: 8px;
   --vc-espacio: 16px;
@@ -68,6 +69,10 @@ body {
   font-family: Inter, Roboto, sans-serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--vc-rojo);
 }
 
 // ---------------------------------------------------------------------
@@ -200,4 +205,45 @@ body {
 .snack-error {
   --mat-snack-bar-container-color: var(--vc-rojo-oscuro);
   --mat-snack-bar-supporting-text-color: #ffffff;
+}
+
+// Encabezado de las secciones dentro de pestanas o paneles
+.seccion__encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+
+  p {
+    margin: 0;
+  }
+}
+
+.celda-acciones {
+  width: 56px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.acciones-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.oculto {
+  display: none;
+}
+
+.codigo {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 13px;
+}
+
+.error-grupo {
+  margin: -8px 0 8px;
+  color: var(--mat-sys-error);
+  font-size: 12px;
 }

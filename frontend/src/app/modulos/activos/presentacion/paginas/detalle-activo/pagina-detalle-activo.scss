@@ -1,0 +1,88 @@
+.volver {
+  align-self: flex-start;
+  margin-left: -12px;
+}
+
+h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aviso-baja {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--vc-radio);
+  background: var(--vc-rojo-suave);
+  color: var(--vc-rojo-oscuro);
+}
+
+.resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--vc-espacio);
+}
+
+.tarjeta {
+  padding: 16px 20px;
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0;
+
+  dt {
+    color: var(--vc-texto-secundario);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.observaciones {
+  margin: 12px 0 0;
+  white-space: pre-line;
+}
+
+.indicador {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.indicador__valor {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.progreso__texto {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.progreso--alerta {
+  --mat-progress-bar-active-indicator-color: var(--vc-alerta);
+}
+
+.progreso--vencido {
+  --mat-progress-bar-active-indicator-color: var(--vc-rojo);
+}
+
+.accion-peligrosa {
+  --mat-menu-item-label-text-color: var(--vc-rojo);
+  --mat-menu-item-icon-color: var(--vc-rojo);
+}

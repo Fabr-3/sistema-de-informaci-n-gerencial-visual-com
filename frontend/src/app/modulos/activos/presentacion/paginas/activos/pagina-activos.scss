@@ -1,0 +1,40 @@
+.aviso-mantenimiento {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--vc-alerta-borde);
+  border-radius: var(--vc-radio);
+  background: var(--vc-alerta-suave);
+  color: var(--vc-alerta);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.aviso-mantenimiento__accion {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.filtro-alertas {
+  align-self: center;
+}
+
+.detalle {
+  font-size: 12px;
+}
+
+.numero {
+  text-align: right;
+}
+
+.fila-navegable {
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--vc-fondo);
+  }
+}

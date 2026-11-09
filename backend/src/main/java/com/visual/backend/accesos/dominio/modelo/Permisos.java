@@ -12,6 +12,9 @@ public final class Permisos {
     public static final String ROLES_GESTIONAR = "ROLES_GESTIONAR";
     public static final String AUDITORIA_VER = "AUDITORIA_VER";
     public static final String RESPALDOS_GESTIONAR = "RESPALDOS_GESTIONAR";
+    public static final String ACTIVOS_VER = "ACTIVOS_VER";
+    public static final String ACTIVOS_GESTIONAR = "ACTIVOS_GESTIONAR";
+    public static final String MANTENIMIENTOS_REGISTRAR = "MANTENIMIENTOS_REGISTRAR";
 
     private Permisos() {
     }

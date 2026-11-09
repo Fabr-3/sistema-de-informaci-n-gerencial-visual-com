@@ -1,3 +1,4 @@
+import { TipoEstadoVisual } from '../../../../compartido/modelos/estado-visual';
 import { CodigoRol } from './rol';
 
 export interface Usuario {
@@ -41,7 +42,7 @@ export interface NuevoUsuario extends DatosUsuario {
   readonly contrasenaTemporal: string;
 }
 
-export type TipoEstadoUsuario = 'activo' | 'alerta' | 'peligro' | 'neutro';
+export type TipoEstadoUsuario = TipoEstadoVisual;
 
 export interface EstadoUsuario {
   readonly etiqueta: string;

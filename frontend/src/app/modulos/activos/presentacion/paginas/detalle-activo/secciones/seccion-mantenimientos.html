@@ -1,0 +1,70 @@
+<div class="seccion__encabezado">
+  <p class="texto-secundario">
+    Los mantenimientos de tipo preventivo reinician el contador de horas al finalizar.
+  </p>
+  @if (puedeIniciar()) {
+    <button mat-stroked-button (click)="iniciar()"><mat-icon>build</mat-icon>Iniciar mantenimiento</button>
+  }
+</div>
+<div class="tabla-contenedor">
+  <table mat-table [dataSource]="mantenimientos()?.contenido ?? []">
+    <ng-container matColumnDef="tipo">
+      <th mat-header-cell *matHeaderCellDef>Tipo</th>
+      <td mat-cell *matCellDef="let mantenimiento">{{ mantenimiento.tipo.nombre }}</td>
+    </ng-container>
+    <ng-container matColumnDef="inicio">
+      <th mat-header-cell *matHeaderCellDef>Inicio</th>
+      <td mat-cell *matCellDef="let mantenimiento">{{ mantenimiento.fechaInicio | date: 'dd/MM/yyyy HH:mm' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="fin">
+      <th mat-header-cell *matHeaderCellDef>Fin</th>
+      <td mat-cell *matCellDef="let mantenimiento">
+        @if (mantenimiento.fechaFin) {
+          {{ mantenimiento.fechaFin | date: 'dd/MM/yyyy HH:mm' }}
+        } @else {
+          <span class="estado estado--alerta">En proceso</span>
+        }
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="resultado">
+      <th mat-header-cell *matHeaderCellDef>Resultado</th>
+      <td mat-cell *matCellDef="let mantenimiento">
+        {{ mantenimiento.condicionFinal | etiqueta: condiciones }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="costo">
+      <th mat-header-cell *matHeaderCellDef>Costo</th>
+      <td mat-cell *matCellDef="let mantenimiento">
+        {{ mantenimiento.costo !== null ? (mantenimiento.costo | currency: 'BOB' : 'Bs ') : '—' }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="detalle">
+      <th mat-header-cell *matHeaderCellDef>Detalle</th>
+      <td mat-cell *matCellDef="let mantenimiento" class="texto-secundario">
+        {{ mantenimiento.observaciones ?? mantenimiento.descripcion ?? '' }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="acciones">
+      <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+      <td mat-cell *matCellDef="let mantenimiento" class="celda-acciones">
+        @if (mantenimiento.estado === 'EN_PROCESO' && puedeRegistrar()) {
+          <button mat-button (click)="finalizar(mantenimiento)">Finalizar</button>
+        }
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+    <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="vacio" [attr.colspan]="columnas.length">Sin mantenimientos registrados.</td>
+    </tr>
+  </table>
+</div>
+@if ((mantenimientos()?.totalElementos ?? 0) > tamano) {
+  <mat-paginator
+    [length]="mantenimientos()?.totalElementos ?? 0"
+    [pageIndex]="pagina()"
+    [pageSize]="tamano"
+    [hidePageSize]="true"
+    (page)="cambiarPagina($event)"
+  />
+}

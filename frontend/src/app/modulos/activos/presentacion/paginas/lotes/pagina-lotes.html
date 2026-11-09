@@ -1,0 +1,104 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Inventario por lotes</h1>
+      <p>Cantidades por bodega de los equipos que no se controlan individualmente.</p>
+    </div>
+    <div class="acciones-encabezado" *siPermiso="permisos.ACTIVOS_GESTIONAR">
+      <button mat-stroked-button (click)="registrar('traslado')"><mat-icon>swap_horiz</mat-icon>Trasladar</button>
+      <button mat-flat-button (click)="registrar('movimiento')"><mat-icon>add</mat-icon>Registrar movimiento</button>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="filtros">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Buscar</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [formControl]="busqueda" placeholder="Modelo o fabricante" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Categoría</mat-label>
+        <mat-select [value]="filtro().idCategoria" (selectionChange)="filtrar({ idCategoria: $event.value })">
+          <mat-option [value]="undefined">Todas</mat-option>
+          @for (categoria of categorias(); track categoria.id) {
+            <mat-option [value]="categoria.id">{{ categoria.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Bodega</mat-label>
+        <mat-select [value]="filtro().idBodega" (selectionChange)="filtrar({ idBodega: $event.value })">
+          <mat-option [value]="undefined">Todas</mat-option>
+          @for (bodega of bodegas(); track bodega.id) {
+            <mat-option [value]="bodega.id">{{ bodega.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="existencias()">
+        <ng-container matColumnDef="modelo">
+          <th mat-header-cell *matHeaderCellDef>Modelo</th>
+          <td mat-cell *matCellDef="let existencia"><strong>{{ existencia.modelo }}</strong></td>
+          <td mat-footer-cell *matFooterCellDef>Total</td>
+        </ng-container>
+        <ng-container matColumnDef="categoria">
+          <th mat-header-cell *matHeaderCellDef>Categoría</th>
+          <td mat-cell *matCellDef="let existencia">{{ existencia.categoria }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+        <ng-container matColumnDef="bodega">
+          <th mat-header-cell *matHeaderCellDef>Bodega</th>
+          <td mat-cell *matCellDef="let existencia">{{ existencia.bodega }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+        <ng-container matColumnDef="cantidad">
+          <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+          <td mat-cell *matCellDef="let existencia">
+            @if (existencia.cantidad === 0) {
+              <span class="estado estado--peligro">Agotado</span>
+            } @else {
+              {{ existencia.cantidad }}
+            }
+          </td>
+          <td mat-footer-cell *matFooterCellDef><strong>{{ totalUnidades() }}</strong></td>
+        </ng-container>
+        <ng-container matColumnDef="historial">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Historial</span></th>
+          <td mat-cell *matCellDef="let existencia" class="celda-acciones">
+            <button mat-icon-button matTooltip="Ver movimientos" (click)="verHistorial(existencia)" aria-label="Ver movimientos">
+              <mat-icon>history</mat-icon>
+            </button>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+          <td mat-cell *matCellDef="let existencia" class="celda-acciones">
+            <button mat-icon-button matTooltip="Registrar movimiento" (click)="registrar('movimiento', existencia)" aria-label="Registrar movimiento">
+              <mat-icon>edit_note</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Ver movimientos" (click)="verHistorial(existencia)" aria-label="Ver movimientos">
+              <mat-icon>history</mat-icon>
+            </button>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnas()"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas()"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas().length">
+            {{ cargando() ? 'Cargando existencias…' : 'No hay existencias registradas con los filtros aplicados.' }}
+          </td>
+        </tr>
+        <tr mat-footer-row *matFooterRowDef="columnas()" [class.oculto]="existencias().length === 0"></tr>
+      </table>
+    </div>
+  </section>
+</div>

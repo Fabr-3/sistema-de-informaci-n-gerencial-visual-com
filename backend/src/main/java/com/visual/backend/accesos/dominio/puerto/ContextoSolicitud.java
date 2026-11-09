@@ -14,6 +14,11 @@ public interface ContextoSolicitud {
 
     Optional<String> agenteUsuario();
 
+    /** Id del usuario autenticado o nulo (operaciones del sistema). */
+    default Integer idUsuarioActual() {
+        return usuarioActual().map(UsuarioActual::id).orElse(null);
+    }
+
     record UsuarioActual(Integer id, String nombreUsuario) {
     }
 }

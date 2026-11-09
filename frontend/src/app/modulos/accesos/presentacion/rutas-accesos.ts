@@ -1,7 +1,6 @@
-import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Routes } from '@angular/router';
 
-import { PaginadorEspanol } from '../../../nucleo/configuracion/paginador-espanol';
+import { PROVEEDOR_PAGINADOR_ESPANOL } from '../../../nucleo/configuracion/paginador-espanol';
 import { Rutas } from '../../../nucleo/configuracion/rutas';
 import { Permisos } from '../dominio/modelos/permisos';
 import { permisoGuard } from './guardias/guardias-sesion';
@@ -10,7 +9,7 @@ import { permisoGuard } from './guardias/guardias-sesion';
 export const RUTAS_ACCESOS: Routes = [
   {
     path: '',
-    providers: [{ provide: MatPaginatorIntl, useClass: PaginadorEspanol }],
+    providers: [PROVEEDOR_PAGINADOR_ESPANOL],
     children: [
       { path: '', pathMatch: 'full', redirectTo: Rutas.USUARIOS },
       {

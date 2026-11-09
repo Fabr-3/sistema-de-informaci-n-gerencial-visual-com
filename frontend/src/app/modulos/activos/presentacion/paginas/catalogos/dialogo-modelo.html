@@ -1,0 +1,86 @@
+<h2 mat-dialog-title>{{ datos.modelo ? 'Editar modelo' : 'Nuevo modelo' }}</h2>
+<form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+  <mat-dialog-content>
+    <div class="formulario">
+      <mat-form-field appearance="outline">
+        <mat-label>Fabricante</mat-label>
+        <mat-select formControlName="idFabricante">
+          @for (fabricante of datos.fabricantes; track fabricante.id) {
+            <mat-option [value]="fabricante.id">{{ fabricante.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>Seleccione el fabricante</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre del modelo</mat-label>
+        <input matInput formControlName="nombre" />
+        <mat-error>Ingrese el nombre</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Categoría</mat-label>
+        <mat-select formControlName="idCategoria">
+          @for (categoria of datos.categorias; track categoria.id) {
+            <mat-option [value]="categoria.id">{{ categoria.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>Seleccione la categoría</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo de control</mat-label>
+        <mat-select formControlName="tipoControl">
+          @for (tipo of tiposControl | keyvalue: ordenOriginal; track tipo.key) {
+            <mat-option [value]="tipo.key">{{ tipo.value }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>Por lote: cables y accesorios que se cuentan por cantidad</mat-hint>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Prefijo de código</mat-label>
+        <input matInput formControlName="prefijoCodigo" maxlength="10" class="mayusculas" placeholder="NOVA" />
+        <mat-hint>Genera los códigos de sus unidades: {{ (formulario.controls.prefijoCodigo.value || 'NOVA').toUpperCase() }}-0001</mat-hint>
+        <mat-error>De 2 a 10 letras o números</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Horas entre mantenimientos preventivos (opcional)</mat-label>
+        <input matInput type="number" min="1" step="1" formControlName="horasMantenimiento" />
+        <mat-hint>Se avisa cuando el uso acumulado se acerca a este intervalo</mat-hint>
+        <mat-error>Debe ser mayor a cero</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="especificaciones">
+      <div class="especificaciones__titulo">
+        <h3>Especificaciones técnicas</h3>
+        <button
+          mat-button
+          type="button"
+          (click)="agregarEspecificacion()"
+          [disabled]="especificaciones.length >= maximoEspecificaciones"
+        >
+          <mat-icon>add</mat-icon>Agregar
+        </button>
+      </div>
+      @for (grupo of especificaciones.controls; track grupo; let indice = $index) {
+        <div class="especificacion" [formGroup]="grupo">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Característica</mat-label>
+            <input matInput formControlName="caracteristica" placeholder="Pitch" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Valor</mat-label>
+            <input matInput formControlName="valor" placeholder="3.9 mm" />
+          </mat-form-field>
+          <button mat-icon-button type="button" (click)="quitarEspecificacion(indice)" aria-label="Quitar especificación">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      } @empty {
+        <p class="texto-secundario">Sin especificaciones (resolución, brillo, consumo, etc.).</p>
+      }
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancelar</button>
+    <button mat-flat-button type="submit" [disabled]="guardando()">Guardar</button>
+  </mat-dialog-actions>
+</form>

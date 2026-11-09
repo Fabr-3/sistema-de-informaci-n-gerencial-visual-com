@@ -27,6 +27,10 @@ export class ServicioSesion {
     return this.usuario()?.permisos.includes(permiso) ?? false;
   }
 
+  tieneAlgunPermiso(...permisos: string[]): boolean {
+    return permisos.some((permiso) => this.tienePermiso(permiso));
+  }
+
   iniciarSesion(credenciales: Credenciales): Observable<Sesion> {
     return this.repositorio.iniciarSesion(credenciales).pipe(tap((sesion) => this.sesion.set(sesion)));
   }

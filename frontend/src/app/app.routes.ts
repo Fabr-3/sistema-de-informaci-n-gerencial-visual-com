@@ -44,6 +44,10 @@ export const routes: Routes = [
         path: Rutas.ACCESOS,
         loadChildren: () => import('./modulos/accesos/presentacion/rutas-accesos').then((m) => m.RUTAS_ACCESOS),
       },
+      {
+        path: Rutas.ACTIVOS,
+        loadChildren: () => import('./modulos/activos/presentacion/rutas-activos').then((m) => m.RUTAS_ACTIVOS),
+      },
     ],
   },
   { path: '**', redirectTo: Rutas.INICIO },

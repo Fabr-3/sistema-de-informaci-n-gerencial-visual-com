@@ -1,0 +1,98 @@
+<h2 mat-dialog-title>{{ activo ? 'Editar ' + activo.codigoInventario : 'Registrar activos' }}</h2>
+<form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+  <mat-dialog-content>
+    @if (modelos.length === 0) {
+      <p class="indicacion">No hay modelos controlados por unidad. Regístrelos primero en Catálogos.</p>
+    }
+    <div class="formulario">
+      <mat-form-field appearance="outline" class="completo">
+        <mat-label>Modelo</mat-label>
+        <mat-select formControlName="idModelo">
+          @for (modelo of modelos; track modelo.id) {
+            <mat-option [value]="modelo.id">
+              {{ nombreModelo(modelo) }} · {{ modelo.categoria.nombre }}
+              @if (modelo.prefijoCodigo) {
+                ({{ modelo.prefijoCodigo }})
+              }
+            </mat-option>
+          }
+        </mat-select>
+        <mat-error>Seleccione el modelo</mat-error>
+      </mat-form-field>
+
+      @if (!activo) {
+        <mat-form-field appearance="outline">
+          <mat-label>Cantidad de unidades</mat-label>
+          <input matInput type="number" min="1" [max]="cantidadMaxima" step="1" formControlName="cantidad" />
+          <mat-error>Entre 1 y {{ cantidadMaxima }} unidades</mat-error>
+        </mat-form-field>
+      }
+
+      <mat-form-field appearance="outline" [class.completo]="!!activo">
+        <mat-label>Bodega</mat-label>
+        <mat-select formControlName="idBodega">
+          @for (bodega of bodegas; track bodega.id) {
+            <mat-option [value]="bodega.id">{{ bodega.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>Seleccione la bodega</mat-error>
+      </mat-form-field>
+
+      @if (!activo) {
+        @let prefijo = modeloSeleccionado()?.prefijoCodigo;
+        @if (modeloSeleccionado() && !prefijo) {
+          <p class="completo error-grupo">El modelo no tiene prefijo de código: defínalo en Catálogos para generar los códigos.</p>
+        }
+        @if (cantidad() === 1) {
+          <mat-form-field appearance="outline" class="completo">
+            <mat-label>Código de inventario (opcional)</mat-label>
+            <input matInput formControlName="codigoInventario" />
+            @if (prefijo) {
+              <mat-hint>Vacío: se genera el siguiente {{ prefijo }}-NNNN</mat-hint>
+            }
+          </mat-form-field>
+        } @else if (prefijo) {
+          <p class="indicacion completo">Se generarán {{ cantidad() }} códigos correlativos {{ prefijo }}-NNNN.</p>
+        }
+        <mat-form-field appearance="outline" class="completo">
+          <mat-label>Números de serie (opcional, uno por línea)</mat-label>
+          <textarea matInput rows="3" formControlName="numerosSerie"></textarea>
+          <mat-hint>Si los indica, debe haber uno por unidad, en el orden de los códigos</mat-hint>
+        </mat-form-field>
+        @if (formulario.hasError('seriesIncompletas')) {
+          <p class="completo error-grupo" role="alert">Indique {{ cantidad() }} números de serie o ninguno</p>
+        }
+      } @else {
+        <mat-form-field appearance="outline" class="completo">
+          <mat-label>Número de serie (opcional)</mat-label>
+          <input matInput formControlName="numeroSerie" />
+        </mat-form-field>
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha de adquisición (opcional)</mat-label>
+        <input matInput formControlName="fechaAdquisicion" [matDatepicker]="selectorFecha" [max]="hoy" />
+        <mat-datepicker-toggle matIconSuffix [for]="selectorFecha" />
+        <mat-datepicker #selectorFecha />
+        <mat-error>La fecha no puede ser futura</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ activo ? 'Costo de adquisición en Bs' : 'Costo por unidad en Bs' }} (opcional)</mat-label>
+        <input matInput type="number" min="0" step="0.01" formControlName="costo" />
+        <mat-error>El costo no puede ser negativo</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="completo">
+        <mat-label>Observaciones (opcional)</mat-label>
+        <textarea matInput rows="2" formControlName="observaciones"></textarea>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancelar</button>
+    <button mat-flat-button type="submit" [disabled]="guardando()">
+      {{ activo ? 'Guardar' : cantidad() > 1 ? 'Registrar ' + cantidad() + ' unidades' : 'Registrar' }}
+    </button>
+  </mat-dialog-actions>
+</form>

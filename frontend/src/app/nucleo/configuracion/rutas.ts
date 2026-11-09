@@ -8,6 +8,9 @@ export const Rutas = {
   ROLES: 'roles',
   AUDITORIA: 'auditoria',
   RESPALDOS: 'respaldos',
+  ACTIVOS: 'activos',
+  LOTES: 'lotes',
+  CATALOGOS: 'catalogos',
 } as const;
 
 /** Parametro de consulta con la URL a la que se vuelve tras iniciar sesion. */

@@ -67,6 +67,7 @@ class ServicioUsuariosTest {
         Clock reloj = Clock.fixed(AHORA.atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
         when(contexto.usuarioActual()).thenReturn(Optional.of(
                 new ContextoSolicitud.UsuarioActual(ID_ADMINISTRADOR_ACTUAL, "admin")));
+        when(contexto.idUsuarioActual()).thenReturn(ID_ADMINISTRADOR_ACTUAL);
         when(codificador.codificar(anyString())).thenReturn("hash-nuevo");
         for (CodigoRol codigo : CodigoRol.values()) {
             when(repositorioRoles.buscarPorId(codigo.ordinal() + 1)).thenReturn(Optional.of(rol(codigo)));

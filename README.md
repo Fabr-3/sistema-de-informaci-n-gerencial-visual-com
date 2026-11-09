@@ -5,7 +5,7 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 | Módulo | Estado |
 |---|---|
 | Administración de accesos (usuarios, roles, permisos, auditoría y respaldos) | ✅ Implementado |
-| Gestión de activos e inventario | Pendiente |
+| Gestión de activos e inventario (activos, lotes, uso, mantenimiento, módulos LED) | ✅ Implementado |
 | Comercial y planificación de proyectos | Pendiente |
 | Logística | Pendiente |
 | Financiero | Pendiente |
@@ -25,6 +25,7 @@ Las dependencias apuntan siempre hacia el dominio.
 ```
 backend/src/main/java/com/visual/backend/
 ├── compartido/                 Núcleo común: excepciones de negocio, paginación, manejo global de errores
+├── activos/                    Activos por unidad y por lote, historial de uso, mantenimiento y módulos LED
 ├── accesos/
 │   ├── dominio/                Modelos y reglas de negocio (sin Spring ni JPA) + puertos (interfaces)
 │   ├── aplicacion/             Casos de uso (servicios) y DTO de entrada y salida
@@ -81,6 +82,8 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V1`: esquema base (copia del diseño original).
   - `V2`: ajustes de seguridad, tokens de refresco y tabla `auditoria` (inmutable mediante triggers).
   - `V3`: roles y permisos fijos con su asignación inicial.
+  - `V4`: bodegas, tipo de control por modelo, historial de uso (vista `v_uso_activos` con horas acumuladas), existencias y movimientos por lote; tipos de mantenimiento, categorías y dos bodegas iniciales.
+- `V5`: prefijo de código por modelo (`modelos_activo.prefijo_codigo`) para generar los códigos de inventario de sus unidades.
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -97,6 +100,26 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - El rol Administrador conserva todos los permisos.
 - **Auditoría:** registra accesos y operaciones CRUD con los valores anteriores y nuevos. Se conserva indefinidamente y la consultan el administrador y el gerente.
 
+## Reglas del módulo de activos e inventario
+
+- **Registro de unidades:** se pueden registrar varias unidades de un modelo en una sola operación (hasta 100). Cada unidad recibe un código correlativo con el prefijo del modelo (`ABPL-0001`, `ABPL-0002`, …); el código manual solo se admite al registrar una unidad. El prefijo es obligatorio para los modelos por unidad y no cambia una vez que el modelo tiene inventario. En Catálogos se muestra la cantidad en inventario de cada modelo.
+- **Tipo de control:** lo define cada modelo.
+  - **Por unidad:** equipos con código, serie, horas de uso y mantenimiento.
+  - **Por lote:** cables y accesorios que se controlan por cantidad en cada bodega.
+- **Alerta de mantenimiento preventivo:**
+  - Las horas se suman a partir del historial de uso.
+  - La alerta aparece al alcanzar el 90 % del intervalo del modelo (`app.activos.porcentaje-alerta-mantenimiento`) y se marca como vencida al 100 %.
+  - Finalizar un mantenimiento de un tipo que reinicia horas (Preventivo) pone el contador en cero.
+- **Historial de uso:** solo registra periodos pasados. Un activo no puede tener dos usos superpuestos, y un registro erróneo se anula sin borrarse.
+- **Ciclo de mantenimiento:** iniciar un mantenimiento deja el activo *En mantenimiento*. Al finalizarlo vuelve a *Disponible*, salvo que se indique *No reparable*, en cuyo caso se da de baja.
+- **Baja de activos:** solo se da de baja un activo *Disponible*. Un activo con historial no se elimina: se da de baja.
+- **Módulos LED:** se rastrean uno por uno con código único y estado *Activo*, *Defectuoso* o *Retirado*.
+- **Existencias por lote:** nunca quedan negativas y cada cambio queda como movimiento. Los traslados registran la salida y la entrada en una sola transacción. Una bodega inactiva solo admite salidas.
+- **Permisos:**
+  - `ACTIVOS_VER`: consultar.
+  - `ACTIVOS_GESTIONAR`: registrar activos, catálogos y movimientos de lote.
+  - `MANTENIMIENTOS_REGISTRAR` (técnicos): registrar uso y mantenimientos.
+
 ## Respaldos
 
 Se generan con `pg_dump` en formato personalizado: uno automático cada día a las 02:00 y otros manuales desde **Administración de accesos → Respaldos**. Para restaurar uno:
@@ -104,6 +127,23 @@ Se generan con `pg_dump` en formato personalizado: uno automático cada día a l
 ```bash
 pg_restore --clean -h localhost -U postgres -d proyecto-visual-com respaldo_AAAAMMDD_HHMMSS_mmm.dump
 ```
+
+## Datos de prueba
+
+El script `database/datos_prueba/01_accesos_activos.sql` carga datos similares a la operación real: personal con sus roles, modelos y equipos con códigos, uso en eventos, mantenimientos, módulos LED e inventario por lotes. Se ejecuta una sola vez sobre la base de desarrollo, con las migraciones ya aplicadas, y no modifica los datos existentes:
+
+```bash
+psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/01_accesos_activos.sql
+```
+
+Todos los usuarios de prueba tienen la contraseña `VisualCom2026`:
+
+| Usuario | Rol | Nota |
+|---|---|---|
+| `mvargas`, `lquispe` | Gerente | |
+| `jmamani`, `rcondori`, `dgutierrez` | Técnico | |
+| `ftorrez` | Sub-contratado temporal | Vigente hasta el 31/03/2027 |
+| `cmendoza` | Sub-contratado temporal | Vigencia vencida: no puede ingresar |
 
 ## Pruebas
 

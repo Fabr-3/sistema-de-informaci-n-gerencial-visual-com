@@ -15,6 +15,7 @@ import com.visual.backend.accesos.infraestructura.persistencia.entidad.Auditoria
 import com.visual.backend.accesos.infraestructura.persistencia.jpa.AuditoriaJpaRepositorio;
 import com.visual.backend.compartido.aplicacion.Pagina;
 import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 
 import jakarta.persistence.criteria.Predicate;
 import tools.jackson.core.type.TypeReference;

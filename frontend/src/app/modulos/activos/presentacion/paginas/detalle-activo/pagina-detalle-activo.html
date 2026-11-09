@@ -1,0 +1,109 @@
+<div class="pagina">
+  <a mat-button class="volver" [routerLink]="rutaListado"><mat-icon>arrow_back</mat-icon>Activos</a>
+
+  @if (activo(); as activo) {
+    <header class="pagina__encabezado">
+      <div>
+        <h1>
+          {{ activo.codigoInventario }}
+          <span class="estado estado--{{ tipoVisualEstado(activo.estado) }}">{{ activo.estado | etiqueta: estados }}</span>
+        </h1>
+        <p>{{ activo.modelo }} · {{ activo.categoria }}</p>
+      </div>
+      <div *siPermiso="permisos.ACTIVOS_GESTIONAR">
+        <button mat-stroked-button [matMenuTriggerFor]="menuAcciones">
+          Acciones<mat-icon iconPositionEnd>expand_more</mat-icon>
+        </button>
+        <mat-menu #menuAcciones="matMenu" xPosition="before">
+          <button mat-menu-item (click)="editar(activo)" [disabled]="activo.estado === 'BAJA'">
+            <mat-icon>edit</mat-icon><span>Editar</span>
+          </button>
+          <button mat-menu-item (click)="darDeBaja(activo)" [disabled]="!puedeDarDeBaja()">
+            <mat-icon>do_not_disturb_on</mat-icon><span>Dar de baja</span>
+          </button>
+          <button mat-menu-item class="accion-peligrosa" (click)="eliminar(activo)">
+            <mat-icon>delete</mat-icon><span>Eliminar</span>
+          </button>
+        </mat-menu>
+      </div>
+    </header>
+
+    @if (activo.motivoBaja) {
+      <div class="aviso-baja"><mat-icon>info</mat-icon>Dado de baja: {{ activo.motivoBaja }}</div>
+    }
+
+    <div class="resumen">
+      <section class="panel tarjeta">
+        <h2>Datos generales</h2>
+        <dl class="datos">
+          <dt>Número de serie</dt><dd>{{ activo.numeroSerie ?? '—' }}</dd>
+          <dt>Bodega</dt><dd>{{ activo.bodega }}</dd>
+          <dt>Fecha de adquisición</dt><dd>{{ activo.fechaAdquisicion ? (activo.fechaAdquisicion | date: 'dd/MM/yyyy') : '—' }}</dd>
+          <dt>Costo de adquisición</dt>
+          <dd>{{ activo.costoAdquisicion !== null ? (activo.costoAdquisicion | currency: 'BOB' : 'Bs ') : '—' }}</dd>
+          <dt>Registrado</dt><dd>{{ activo.fechaCreacion | date: 'dd/MM/yyyy' }}</dd>
+        </dl>
+        @if (activo.observaciones) {
+          <p class="texto-secundario observaciones">{{ activo.observaciones }}</p>
+        }
+      </section>
+
+      <section class="panel tarjeta">
+        <h2>Uso y mantenimiento</h2>
+        <div class="indicador">
+          <span class="indicador__valor">{{ activo.horasTotales | number: '1.0-1' }}</span>
+          <span class="texto-secundario">horas de uso acumuladas</span>
+        </div>
+        @if (avance() !== null) {
+          <div class="progreso">
+            <div class="progreso__texto">
+              <span>{{ activo.horasDesdeMantenimiento | number: '1.0-1' }} de {{ activo.horasMantenimiento }} h desde el último mantenimiento</span>
+              <span class="estado estado--{{ tipoVisualAlerta(activo.nivelAlerta) }}">{{ activo.nivelAlerta | etiqueta: niveles }}</span>
+            </div>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="avance()"
+              [class.progreso--alerta]="activo.nivelAlerta === 'PROXIMO'"
+              [class.progreso--vencido]="activo.nivelAlerta === 'VENCIDO'"
+            />
+          </div>
+        } @else {
+          <p class="texto-secundario">El modelo no define un intervalo de mantenimiento por horas.</p>
+        }
+        <p class="texto-secundario">
+          Último mantenimiento preventivo:
+          {{ activo.fechaUltimoMantenimiento ? (activo.fechaUltimoMantenimiento | date: 'dd/MM/yyyy') : 'sin registro' }}
+        </p>
+      </section>
+
+      @if (activo.especificaciones.length > 0) {
+        <section class="panel tarjeta">
+          <h2>Especificaciones del modelo</h2>
+          <dl class="datos">
+            @for (especificacion of activo.especificaciones; track especificacion.caracteristica) {
+              <dt>{{ especificacion.caracteristica }}</dt><dd>{{ especificacion.valor }}</dd>
+            }
+          </dl>
+        </section>
+      }
+    </div>
+
+    <section class="panel">
+      <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
+        <mat-tab label="Historial de uso">
+          <app-seccion-usos [activo]="activo" (cambio)="recargar()" />
+        </mat-tab>
+        <mat-tab label="Mantenimientos">
+          <app-seccion-mantenimientos [activo]="activo" (cambio)="recargar()" />
+        </mat-tab>
+        <mat-tab label="Módulos LED">
+          <app-seccion-modulos [activo]="activo" />
+        </mat-tab>
+      </mat-tab-group>
+    </section>
+  } @else if (noEncontrado()) {
+    <div class="panel vacio">No se encontró el activo solicitado.</div>
+  } @else {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>

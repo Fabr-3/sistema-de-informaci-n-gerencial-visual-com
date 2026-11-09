@@ -1,0 +1,52 @@
+<div class="seccion__encabezado">
+  <p class="texto-secundario">Periodos de uso registrados; suman horas para el mantenimiento preventivo.</p>
+  @if (puedeRegistrar()) {
+    <button mat-stroked-button (click)="registrar()"><mat-icon>schedule</mat-icon>Registrar uso</button>
+  }
+</div>
+<div class="tabla-contenedor">
+  <table mat-table [dataSource]="registros()?.contenido ?? []">
+    <ng-container matColumnDef="inicio">
+      <th mat-header-cell *matHeaderCellDef>Inicio</th>
+      <td mat-cell *matCellDef="let registro">{{ registro.fechaInicio | date: 'dd/MM/yyyy HH:mm' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="fin">
+      <th mat-header-cell *matHeaderCellDef>Fin</th>
+      <td mat-cell *matCellDef="let registro">{{ registro.fechaFin | date: 'dd/MM/yyyy HH:mm' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="horas">
+      <th mat-header-cell *matHeaderCellDef>Horas</th>
+      <td mat-cell *matCellDef="let registro">{{ horasEntre(registro.fechaInicio, registro.fechaFin) | number: '1.0-2' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="descripcion">
+      <th mat-header-cell *matHeaderCellDef>Descripción</th>
+      <td mat-cell *matCellDef="let registro">{{ registro.descripcion ?? '—' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="registradoPor">
+      <th mat-header-cell *matHeaderCellDef>Registrado por</th>
+      <td mat-cell *matCellDef="let registro" class="texto-secundario">{{ registro.nombreCreador ?? '—' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="acciones">
+      <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+      <td mat-cell *matCellDef="let registro" class="celda-acciones">
+        <button mat-icon-button matTooltip="Anular" (click)="anular(registro)" aria-label="Anular registro de uso">
+          <mat-icon>block</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="columnas()"></tr>
+    <tr mat-row *matRowDef="let fila; columns: columnas()"></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="vacio" [attr.colspan]="columnas().length">Sin usos registrados.</td>
+    </tr>
+  </table>
+</div>
+@if ((registros()?.totalElementos ?? 0) > tamano) {
+  <mat-paginator
+    [length]="registros()?.totalElementos ?? 0"
+    [pageIndex]="pagina()"
+    [pageSize]="tamano"
+    [hidePageSize]="true"
+    (page)="cambiarPagina($event)"
+  />
+}

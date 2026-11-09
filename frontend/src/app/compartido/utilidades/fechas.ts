@@ -28,3 +28,13 @@ export function inicioDelDia(fecha: Date): Date {
 export function desdeIsoLocal(valor: string | null): Date | null {
   return valor ? new Date(valor.substring(0, 19)) : null;
 }
+
+/** Valor para inputs datetime-local (yyyy-MM-ddTHH:mm); la API lo acepta como LocalDateTime. */
+export function aFechaHoraLocal(fecha: Date): string {
+  return aIsoLocal(fecha).substring(0, 16);
+}
+
+/** Fecha ISO (yyyy-MM-dd) en hora local, para inputs de fecha y LocalDate. */
+export function aFechaIso(fecha: Date): string {
+  return aIsoLocal(fecha).substring(0, 10);
+}

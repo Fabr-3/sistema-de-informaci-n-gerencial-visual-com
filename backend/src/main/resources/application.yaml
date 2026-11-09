@@ -51,3 +51,6 @@ app:
     # Respaldo automatico diario a las 02:00
     cron: "0 0 2 * * *"
     tiempo-maximo: 10m
+  activos:
+    # Porcentaje del intervalo de horas desde el que se avisa el mantenimiento preventivo
+    porcentaje-alerta-mantenimiento: 90

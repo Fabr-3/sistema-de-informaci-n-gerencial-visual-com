@@ -21,6 +21,24 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
     elementos: [{ etiqueta: 'Inicio', icono: 'home', ruta: rutaAbsoluta(Rutas.INICIO) }],
   },
   {
+    titulo: 'Activos e inventario',
+    elementos: [
+      { etiqueta: 'Activos', icono: 'videocam', ruta: rutaAbsoluta(Rutas.ACTIVOS), permiso: Permisos.ACTIVOS_VER },
+      {
+        etiqueta: 'Inventario por lotes',
+        icono: 'inventory_2',
+        ruta: rutaAbsoluta(Rutas.ACTIVOS, Rutas.LOTES),
+        permiso: Permisos.ACTIVOS_VER,
+      },
+      {
+        etiqueta: 'Catálogos',
+        icono: 'category',
+        ruta: rutaAbsoluta(Rutas.ACTIVOS, Rutas.CATALOGOS),
+        permiso: Permisos.ACTIVOS_VER,
+      },
+    ],
+  },
+  {
     titulo: 'Administración de accesos',
     elementos: [
       {

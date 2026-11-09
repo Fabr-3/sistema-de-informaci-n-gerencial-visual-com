@@ -1,0 +1,159 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Catálogos de activos</h1>
+      <p>Modelos de equipo con su tipo de control y plan de mantenimiento, categorías, fabricantes y bodegas.</p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
+      <mat-tab label="Modelos">
+        <div class="seccion__encabezado">
+          <p class="texto-secundario">El modelo determina la categoría, el tipo de control y el intervalo de mantenimiento.</p>
+          <button mat-stroked-button *siPermiso="permisos.ACTIVOS_GESTIONAR" (click)="editarModelo()">
+            <mat-icon>add</mat-icon>Nuevo modelo
+          </button>
+        </div>
+        <div class="tabla-contenedor">
+          <table mat-table [dataSource]="modelos()">
+            <ng-container matColumnDef="fabricante">
+              <th mat-header-cell *matHeaderCellDef>Fabricante</th>
+              <td mat-cell *matCellDef="let modelo">{{ modelo.fabricante.nombre }}</td>
+            </ng-container>
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef>Modelo</th>
+              <td mat-cell *matCellDef="let modelo"><strong>{{ modelo.nombre }}</strong></td>
+            </ng-container>
+            <ng-container matColumnDef="categoria">
+              <th mat-header-cell *matHeaderCellDef>Categoría</th>
+              <td mat-cell *matCellDef="let modelo">{{ modelo.categoria.nombre }}</td>
+            </ng-container>
+            <ng-container matColumnDef="tipoControl">
+              <th mat-header-cell *matHeaderCellDef>Control</th>
+              <td mat-cell *matCellDef="let modelo">
+                <span class="estado estado--neutro">{{ modelo.tipoControl | etiqueta: tiposControl }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="horasMantenimiento">
+              <th mat-header-cell *matHeaderCellDef>Mantenimiento</th>
+              <td mat-cell *matCellDef="let modelo">
+                {{ modelo.horasMantenimiento ? 'Cada ' + modelo.horasMantenimiento + ' h' : '—' }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="prefijo">
+              <th mat-header-cell *matHeaderCellDef>Prefijo</th>
+              <td mat-cell *matCellDef="let modelo" class="codigo">{{ modelo.prefijoCodigo ?? '—' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="inventario">
+              <th mat-header-cell *matHeaderCellDef>Inventario</th>
+              <td mat-cell *matCellDef="let modelo">
+                @if (modelo.tipoControl === 'UNIDAD') {
+                  <a [routerLink]="rutaActivos" [queryParams]="{ idModelo: modelo.id }">{{ modelo.cantidadInventario }} {{ modelo.cantidadInventario === 1 ? 'unidad' : 'unidades' }}</a>
+                } @else {
+                  <a [routerLink]="rutaLotes">{{ modelo.cantidadInventario }} en existencia</a>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+              <td mat-cell *matCellDef="let modelo" class="celda-acciones">
+                <button mat-icon-button matTooltip="Editar" (click)="editarModelo(modelo)" aria-label="Editar modelo">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasModelos()"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnasModelos()"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="vacio" [attr.colspan]="columnasModelos().length">Aún no hay modelos registrados.</td>
+            </tr>
+          </table>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Categorías">
+        <div class="seccion__encabezado">
+          <p class="texto-secundario">Agrupan los modelos para filtrar y reportar el inventario.</p>
+          <button mat-stroked-button *siPermiso="permisos.ACTIVOS_GESTIONAR" (click)="editarCatalogo('categoria')">
+            <mat-icon>add</mat-icon>Nueva categoría
+          </button>
+        </div>
+        <ng-container *ngTemplateOutlet="tablaSimple; context: { $implicit: categorias(), tipo: 'categoria' }" />
+      </mat-tab>
+
+      <mat-tab label="Fabricantes">
+        <div class="seccion__encabezado">
+          <p class="texto-secundario">Marcas de los equipos.</p>
+          <button mat-stroked-button *siPermiso="permisos.ACTIVOS_GESTIONAR" (click)="editarCatalogo('fabricante')">
+            <mat-icon>add</mat-icon>Nuevo fabricante
+          </button>
+        </div>
+        <ng-container *ngTemplateOutlet="tablaSimple; context: { $implicit: fabricantes(), tipo: 'fabricante' }" />
+      </mat-tab>
+
+      <mat-tab label="Bodegas">
+        <div class="seccion__encabezado">
+          <p class="texto-secundario">Almacenes donde se resguardan los activos.</p>
+          <button mat-stroked-button *siPermiso="permisos.ACTIVOS_GESTIONAR" (click)="editarBodega()">
+            <mat-icon>add</mat-icon>Nueva bodega
+          </button>
+        </div>
+        <div class="tabla-contenedor">
+          <table mat-table [dataSource]="bodegas()">
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef>Nombre</th>
+              <td mat-cell *matCellDef="let bodega"><strong>{{ bodega.nombre }}</strong></td>
+            </ng-container>
+            <ng-container matColumnDef="direccion">
+              <th mat-header-cell *matHeaderCellDef>Dirección</th>
+              <td mat-cell *matCellDef="let bodega">{{ bodega.direccion ?? '—' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let bodega">
+                <span class="estado" [class.estado--activo]="bodega.activa" [class.estado--neutro]="!bodega.activa">
+                  {{ bodega.activa ? 'Activa' : 'Inactiva' }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+              <td mat-cell *matCellDef="let bodega" class="celda-acciones">
+                <button mat-icon-button matTooltip="Editar" (click)="editarBodega(bodega)" aria-label="Editar bodega">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasBodegas()"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnasBodegas()"></tr>
+          </table>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </section>
+</div>
+
+<ng-template #tablaSimple let-elementos let-tipo="tipo">
+  <div class="tabla-contenedor">
+    <table mat-table [dataSource]="elementos">
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef>Nombre</th>
+        <td mat-cell *matCellDef="let elemento">{{ elemento.nombre }}</td>
+      </ng-container>
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+        <td mat-cell *matCellDef="let elemento" class="celda-acciones">
+          <button mat-icon-button matTooltip="Editar" (click)="editarCatalogo(tipo, elemento)" aria-label="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="columnasSimples()"></tr>
+      <tr mat-row *matRowDef="let fila; columns: columnasSimples()"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="vacio" [attr.colspan]="columnasSimples().length">Sin registros.</td>
+      </tr>
+    </table>
+  </div>
+</ng-template>
