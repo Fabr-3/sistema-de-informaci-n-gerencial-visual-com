@@ -45,6 +45,16 @@ export interface PersonalDisponible {
   readonly cruces: readonly Cruce[];
 }
 
+/** La persona ya trabaja en ese horario dentro del mismo evento (no se puede repetir). */
+export function asignadoEnEvento(persona: PersonalDisponible, idEvento: number): boolean {
+  return persona.cruces.some((cruce) => cruce.idEvento === idEvento);
+}
+
+/** Cruces con otros eventos: se permiten, pero se advierten. */
+export function crucesConOtrosEventos(persona: PersonalDisponible, idEvento: number): readonly Cruce[] {
+  return persona.cruces.filter((cruce) => cruce.idEvento !== idEvento);
+}
+
 export interface CatalogosLogistica {
   readonly rolesEvento: readonly ElementoCatalogo[];
   readonly especialidades: readonly ElementoCatalogo[];

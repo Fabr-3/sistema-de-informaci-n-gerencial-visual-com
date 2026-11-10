@@ -50,8 +50,14 @@ export class GestionPlanificacion {
     return this.repositorio.quitarAsignacion(idEvento, idAsignacion);
   }
 
-  disponibles(idEvento: number, inicio: string, fin: string): Observable<PersonalDisponible[]> {
-    return this.repositorio.disponibles(idEvento, inicio, fin);
+  /** idAsignacion: la que se esta editando, para que no cuente como cruce consigo misma. */
+  disponibles(
+    idEvento: number,
+    inicio: string,
+    fin: string,
+    idAsignacion: number | null,
+  ): Observable<PersonalDisponible[]> {
+    return this.repositorio.disponibles(idEvento, inicio, fin, idAsignacion);
   }
 
   misAsignaciones(): Observable<MisAsignaciones> {

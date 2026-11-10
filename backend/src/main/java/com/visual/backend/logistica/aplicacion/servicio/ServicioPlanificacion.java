@@ -82,12 +82,6 @@ public class ServicioPlanificacion {
                         evento.fechaFin(), List.of(), List.of(), List.of()));
     }
 
-    /** Id del plan del evento (nulo si aun no tiene), para excluirlo al consultar cruces. */
-    @Transactional(readOnly = true)
-    public Integer idPlan(Integer idEvento) {
-        return planes.buscarPorEvento(idEvento).map(PlanLogistico::getId).orElse(null);
-    }
-
     @Transactional
     public VistaPlanEvento guardarTransporte(Integer idEvento, String detalles) {
         EventoLogistico evento = eventos.obtener(idEvento);

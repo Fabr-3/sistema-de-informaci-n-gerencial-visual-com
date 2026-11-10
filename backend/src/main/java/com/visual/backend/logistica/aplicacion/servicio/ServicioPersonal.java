@@ -93,10 +93,14 @@ public class ServicioPersonal {
         return actualizado;
     }
 
-    /** Personal activo con sus asignaciones en otros planes que se cruzan con el periodo. */
+    /**
+     * Personal activo con todas sus asignaciones que se cruzan con el periodo,
+     * incluidas las del mismo evento; se omite la asignacion que se esta editando.
+     */
     @Transactional(readOnly = true)
-    public List<PersonalDisponible> disponibles(Periodo periodo, Integer idPlanExcluido) {
-        Map<Integer, List<Cruce>> cruces = asignaciones.cruces(null, periodo, idPlanExcluido).stream()
+    public List<PersonalDisponible> disponibles(Periodo periodo, Integer idAsignacionExcluida) {
+        Map<Integer, List<Cruce>> cruces = asignaciones.cruces(null, periodo, null).stream()
+                .filter(cruce -> !cruce.idAsignacion().equals(idAsignacionExcluida))
                 .collect(Collectors.groupingBy(Cruce::idPersonal));
         return repositorio.listarActivos().stream()
                 .map(personal -> new PersonalDisponible(personal.getId(), personal.nombreCompleto(),

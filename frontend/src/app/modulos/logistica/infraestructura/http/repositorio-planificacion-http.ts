@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -53,9 +53,14 @@ export class RepositorioPlanificacionHttp extends RepositorioPlanificacion {
     return this.http.delete<void>(`${this.url}/${idEvento}/asignaciones/${idAsignacion}`);
   }
 
-  disponibles(idEvento: number, inicio: string, fin: string): Observable<PersonalDisponible[]> {
+  disponibles(
+    idEvento: number,
+    inicio: string,
+    fin: string,
+    idAsignacion: number | null,
+  ): Observable<PersonalDisponible[]> {
     return this.http.get<PersonalDisponible[]>(`${this.url}/${idEvento}/personal-disponible`, {
-      params: new HttpParams().set('inicio', inicio).set('fin', fin),
+      params: parametrosConsulta({ inicio, fin, idAsignacion }),
     });
   }
 

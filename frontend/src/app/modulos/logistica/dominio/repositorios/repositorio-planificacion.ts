@@ -27,6 +27,11 @@ export abstract class RepositorioPlanificacion {
     datos: DatosAsignacion,
   ): Observable<Asignacion>;
   abstract quitarAsignacion(idEvento: number, idAsignacion: number): Observable<void>;
-  abstract disponibles(idEvento: number, inicio: string, fin: string): Observable<PersonalDisponible[]>;
+  abstract disponibles(
+    idEvento: number,
+    inicio: string,
+    fin: string,
+    idAsignacion: number | null,
+  ): Observable<PersonalDisponible[]>;
   abstract misAsignaciones(): Observable<MisAsignaciones>;
 }

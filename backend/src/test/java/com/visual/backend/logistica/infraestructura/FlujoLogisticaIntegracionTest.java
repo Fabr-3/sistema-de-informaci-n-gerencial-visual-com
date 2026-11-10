@@ -106,12 +106,16 @@ class FlujoLogisticaIntegracionTest {
             assertThat(fila.get("cruces").asInt()).isEqualTo(1);
         });
 
-        JsonNode disponibles = leer(get("/api/logistica/eventos/" + idEventoPrensa + "/personal-disponible")
-                .param("inicio", hora(20)).param("fin", hora(21)), token);
+        String rutaDisponibles = "/api/logistica/eventos/" + idEventoPrensa + "/personal-disponible";
+        JsonNode disponibles = leer(get(rutaDisponibles).param("inicio", hora(20)).param("fin", hora(21)), token);
         assertThat(disponibles).anySatisfy(persona -> {
             assertThat(persona.get("id").asInt()).isEqualTo(idTecnicoSonido);
-            assertThat(persona.get("cruces")).hasSize(1);
+            assertThat(persona.get("cruces")).hasSize(2);
         });
+        JsonNode editando = leer(get(rutaDisponibles).param("inicio", hora(20)).param("fin", hora(21))
+                .param("idAsignacion", enPrensa.get("id").asString()), token);
+        assertThat(editando).anySatisfy(persona -> assertThat(persona.get("cruces")).singleElement()
+                .satisfies(cruce -> assertThat(cruce.get("evento").asString()).isEqualTo("Cena de gala")));
     }
 
     @Test

@@ -15,7 +15,7 @@ import { finPosteriorAInicio } from '../../../../../compartido/utilidades/valida
 import { ServicioNotificaciones } from '../../../../../nucleo/notificaciones/servicio-notificaciones';
 import { ElementoCatalogo } from '../../../../comercial/dominio/modelos/catalogos';
 import { GestionPlanificacion } from '../../../aplicacion/gestion-planificacion';
-import { PersonalDisponible } from '../../../dominio/modelos/personal';
+import { PersonalDisponible, asignadoEnEvento, crucesConOtrosEventos } from '../../../dominio/modelos/personal';
 import {
   Asignacion,
   Jornada,
@@ -185,10 +185,14 @@ export interface DatosDialogoAsignacion {
             <mat-label>Persona</mat-label>
             <mat-select formControlName="idPersonal">
               @for (persona of personal(); track persona.id) {
-                <mat-option [value]="persona.id">
+                @let enEsteEvento = asignadoEnEvento(persona, datos.plan.evento.id);
+                @let otrosEventos = crucesConOtrosEventos(persona, datos.plan.evento.id);
+                <mat-option [value]="persona.id" [disabled]="enEsteEvento">
                   {{ persona.nombreCompleto }}
-                  @if (persona.cruces.length) {
-                    <span class="ocupado">· ocupado en {{ persona.cruces[0].evento }}</span>
+                  @if (enEsteEvento) {
+                    <span class="texto-secundario">· ya asignado en este evento en ese horario</span>
+                  } @else if (otrosEventos.length) {
+                    <span class="ocupado">· ocupado en {{ otrosEventos[0].evento }}</span>
                   } @else if (persona.especialidades.length) {
                     <span class="texto-secundario">· {{ persona.especialidades.join(', ') }}</span>
                   }
@@ -252,6 +256,8 @@ export class DialogoAsignacion {
   private readonly dialogo = inject(MatDialogRef<DialogoAsignacion, Asignacion>);
   protected readonly datos = inject<DatosDialogoAsignacion>(MAT_DIALOG_DATA);
   protected readonly sugeridos = periodosSugeridos(this.datos.plan);
+  protected readonly asignadoEnEvento = asignadoEnEvento;
+  protected readonly crucesConOtrosEventos = crucesConOtrosEventos;
   protected readonly guardando = signal(false);
 
   protected readonly formulario = inject(NonNullableFormBuilder).group(
@@ -275,7 +281,7 @@ export class DialogoAsignacion {
       debounceTime(RETARDO_CONSULTA_MS),
       switchMap((clave) => {
         const [inicio, fin] = clave.split('|');
-        return this.gestion.disponibles(this.datos.plan.evento.id, inicio, fin).pipe(
+        return this.gestion.disponibles(this.datos.plan.evento.id, inicio, fin, this.datos.asignacion?.id ?? null).pipe(
           catchError((error: unknown) => {
             this.notificaciones.error(error);
             return of<PersonalDisponible[]>([]);
@@ -291,9 +297,10 @@ export class DialogoAsignacion {
     initialValue: this.formulario.controls.idPersonal.value,
   });
 
-  protected readonly crucesElegido = computed(
-    () => this.personal().find((persona) => persona.id === this.idPersonal())?.cruces ?? [],
-  );
+  protected readonly crucesElegido = computed(() => {
+    const elegido = this.personal().find((persona) => persona.id === this.idPersonal());
+    return elegido ? crucesConOtrosEventos(elegido, this.datos.plan.evento.id) : [];
+  });
 
   protected usarPeriodo(inicio: string, fin: string): void {
     this.formulario.patchValue({ inicio: fechaHora(inicio), fin: fechaHora(fin) });

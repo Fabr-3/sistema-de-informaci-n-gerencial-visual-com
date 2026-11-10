@@ -114,13 +114,14 @@ public class ControladorPlanificacion {
         planificacion.quitarAsignacion(idEvento, idAsignacion);
     }
 
-    /** Personal activo con lo que ya tiene asignado en otros eventos durante ese horario. */
+    /** Personal activo con lo que ya tiene asignado (en este u otros eventos) durante ese horario. */
     @GetMapping("/{idEvento}/personal-disponible")
     @PreAuthorize(ReglasAccesoLogistica.GESTIONAR)
     public List<PersonalDisponible> disponibles(
             @PathVariable Integer idEvento,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin) {
-        return personal.disponibles(new Periodo(inicio, fin), planificacion.idPlan(idEvento));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin,
+            @RequestParam(required = false) Integer idAsignacion) {
+        return personal.disponibles(new Periodo(inicio, fin), idAsignacion);
     }
 }
