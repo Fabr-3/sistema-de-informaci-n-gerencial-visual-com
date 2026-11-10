@@ -7,6 +7,8 @@ export interface ElementoMenu {
   readonly ruta: string;
   /** Sin permiso: visible para todo usuario autenticado. */
   readonly permiso?: string;
+  /** Alternativa a permiso: visible con cualquiera de estos permisos. */
+  readonly permisos?: readonly string[];
 }
 
 export interface GrupoMenu {
@@ -79,6 +81,17 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
     ],
   },
   {
+    titulo: 'Finanzas',
+    elementos: [
+      {
+        etiqueta: 'Proveedores',
+        icono: 'storefront',
+        ruta: rutaAbsoluta(Rutas.FINANZAS, Rutas.PROVEEDORES),
+        permisos: [Permisos.FINANZAS_VER, Permisos.PROVEEDORES_VER],
+      },
+    ],
+  },
+  {
     titulo: 'Activos e inventario',
     elementos: [
       { etiqueta: 'Activos', icono: 'videocam', ruta: rutaAbsoluta(Rutas.ACTIVOS), permiso: Permisos.ACTIVOS_VER },
@@ -127,10 +140,17 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
   },
 ];
 
+function elementoPermitido(elemento: ElementoMenu, tienePermiso: (permiso: string) => boolean): boolean {
+  if (elemento.permisos) {
+    return elemento.permisos.some(tienePermiso);
+  }
+  return !elemento.permiso || tienePermiso(elemento.permiso);
+}
+
 /** Filtra el menu segun los permisos del usuario y descarta los grupos vacios. */
 export function menuPermitido(tienePermiso: (permiso: string) => boolean): GrupoMenu[] {
   return MENU_PRINCIPAL.map((grupo) => ({
     ...grupo,
-    elementos: grupo.elementos.filter((elemento) => !elemento.permiso || tienePermiso(elemento.permiso)),
+    elementos: grupo.elementos.filter((elemento) => elementoPermitido(elemento, tienePermiso)),
   })).filter((grupo) => grupo.elementos.length > 0);
 }

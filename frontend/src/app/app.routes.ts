@@ -53,6 +53,10 @@ export const routes: Routes = [
         loadChildren: () => import('./modulos/logistica/presentacion/rutas-logistica').then((m) => m.RUTAS_LOGISTICA),
       },
       {
+        path: Rutas.FINANZAS,
+        loadChildren: () => import('./modulos/finanzas/presentacion/rutas-finanzas').then((m) => m.RUTAS_FINANZAS),
+      },
+      {
         path: Rutas.ACTIVOS,
         loadChildren: () => import('./modulos/activos/presentacion/rutas-activos').then((m) => m.RUTAS_ACTIVOS),
       },

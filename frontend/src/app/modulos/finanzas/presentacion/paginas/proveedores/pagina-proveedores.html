@@ -1,0 +1,78 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Proveedores</h1>
+      <p>Empresas y personas a las que se compra, se alquila equipo o se subcontratan servicios.</p>
+    </div>
+    @if (puedeGestionar) {
+      <button mat-flat-button (click)="editar()"><mat-icon>add_business</mat-icon>Nuevo proveedor</button>
+    }
+  </header>
+
+  <section class="panel">
+    <div class="filtros">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Buscar</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [formControl]="busqueda" placeholder="Nombre, NIT o servicio" />
+      </mat-form-field>
+    </div>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.contenido ?? []">
+        <ng-container matColumnDef="razonSocial">
+          <th mat-header-cell *matHeaderCellDef>Proveedor</th>
+          <td mat-cell *matCellDef="let proveedor"><strong>{{ proveedor.razonSocial }}</strong></td>
+        </ng-container>
+        <ng-container matColumnDef="nit">
+          <th mat-header-cell *matHeaderCellDef>NIT</th>
+          <td mat-cell *matCellDef="let proveedor" class="codigo">{{ proveedor.nit ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="contacto">
+          <th mat-header-cell *matHeaderCellDef>Contacto</th>
+          <td mat-cell *matCellDef="let proveedor">
+            {{ proveedor.telefono ?? '—' }}
+            @if (proveedor.email) {
+              <div class="texto-secundario detalle">{{ proveedor.email }}</div>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="servicios">
+          <th mat-header-cell *matHeaderCellDef>Servicios</th>
+          <td mat-cell *matCellDef="let proveedor" class="texto-secundario">{{ proveedor.servicios.join(', ') || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+          <td mat-cell *matCellDef="let proveedor" class="celda-acciones">
+            @if (puedeGestionar) {
+              <button mat-icon-button matTooltip="Editar" (click)="editar(proveedor)" [attr.aria-label]="'Editar ' + proveedor.razonSocial">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button matTooltip="Eliminar" (click)="eliminar(proveedor)" [attr.aria-label]="'Eliminar ' + proveedor.razonSocial">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas.length">
+            {{ cargando() ? 'Cargando proveedores…' : 'No se encontraron proveedores.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator
+      [length]="resultado()?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación de proveedores"
+    />
+  </section>
+</div>

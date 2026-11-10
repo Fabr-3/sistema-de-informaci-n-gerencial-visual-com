@@ -34,10 +34,10 @@ export const invitadoGuard: CanActivateFn = () => {
   return !sesion.estaAutenticado() || inject(Router).createUrlTree([rutaAbsoluta(Rutas.INICIO)]);
 };
 
-/** Restringe una ruta a quienes tienen el permiso indicado. */
-export function permisoGuard(permiso: string): CanActivateFn {
+/** Restringe una ruta a quienes tienen alguno de los permisos indicados. */
+export function permisoGuard(...permisos: string[]): CanActivateFn {
   return () => {
     const sesion = inject(ServicioSesion);
-    return sesion.tienePermiso(permiso) || inject(Router).createUrlTree([rutaAbsoluta(Rutas.INICIO)]);
+    return sesion.tieneAlgunPermiso(...permisos) || inject(Router).createUrlTree([rutaAbsoluta(Rutas.INICIO)]);
   };
 }

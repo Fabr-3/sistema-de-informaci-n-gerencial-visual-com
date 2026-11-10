@@ -8,7 +8,8 @@ describe('guardias de sesion', () => {
   const sesion = {
     estaAutenticado: vi.fn(() => false),
     debeCambiarContrasena: vi.fn(() => false),
-    tienePermiso: vi.fn(() => false),
+    tienePermiso: vi.fn((_permiso: string) => false),
+    tieneAlgunPermiso: vi.fn((...permisos: string[]) => permisos.some((permiso) => sesion.tienePermiso(permiso))),
   };
   const ruta = {} as ActivatedRouteSnapshot;
   const estado = { url: '/accesos/usuarios' } as RouterStateSnapshot;
@@ -45,8 +46,10 @@ describe('guardias de sesion', () => {
   it('la guardia de permiso redirige al inicio si falta el permiso', () => {
     expect(url(ejecutar(permisoGuard('AUDITORIA_VER')))).toBe('/');
 
-    sesion.tienePermiso.mockReturnValue(true);
+    sesion.tienePermiso.mockImplementation((permiso: string) => permiso === 'AUDITORIA_VER');
     expect(ejecutar(permisoGuard('AUDITORIA_VER'))).toBe(true);
+    expect(ejecutar(permisoGuard('USUARIOS_GESTIONAR', 'AUDITORIA_VER'))).toBe(true);
+    expect(url(ejecutar(permisoGuard('USUARIOS_GESTIONAR')))).toBe('/');
   });
 
   it('un usuario autenticado no ve el inicio de sesion', () => {
