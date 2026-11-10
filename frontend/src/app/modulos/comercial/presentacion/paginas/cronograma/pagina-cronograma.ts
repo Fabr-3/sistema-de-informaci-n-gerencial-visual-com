@@ -25,7 +25,7 @@ import { ServicioNotificaciones } from '../../../../../nucleo/notificaciones/ser
 import { GestionProyectos } from '../../../aplicacion/gestion-proyectos';
 import { ESTADOS_EVENTO, EstadoEvento, EventoCalendario } from '../../../dominio/modelos/proyecto';
 
-/** Configuracion regional del calendario: semana de lunes a domingo, en espanol. */
+/** Configuracion regional del calendario: semana de lunes a domingo. */
 const LOCALE = 'es-BO';
 const LUNES = 1;
 const HORA_INICIO_DIA = 6;
