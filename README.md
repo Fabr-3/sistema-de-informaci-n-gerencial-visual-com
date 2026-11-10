@@ -8,14 +8,14 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 | Gestión de activos e inventario (activos, lotes, uso, mantenimiento, módulos LED) | ✅ Implementado |
 | Comercial y planificación de proyectos (clientes, cotizaciones, proyectos, eventos, contratos y cronograma) | ✅ Implementado |
 | Logística (personal técnico, jornadas de montaje y desmontaje, asignación de personal) | ✅ Implementado |
-| Financiero | Pendiente |
+| Financiero (ingresos y egresos, ventas, proveedores, márgenes por proyecto y evento, indicadores del gerente) | ✅ Implementado |
 | Información gerencial | Pendiente |
 | Subcontratación y consumibles | Pendiente |
 
 ## Tecnologías
 
 - **Backend** (`backend/`): Java 21, Spring Boot 4.1, Spring Security con JWT (resource server), Spring Data JPA/Hibernate, Flyway y OpenPDF (cotizaciones y contratos en PDF).
-- **Frontend** (`frontend/`): Angular 22, Angular Material, angular-calendar (cronograma), SCSS y Vitest.
+- **Frontend** (`frontend/`): Angular 22, Angular Material, angular-calendar (cronograma), SCSS y Vitest. Los gráficos de indicadores se dibujan en SVG sin librerías adicionales.
 - **Base de datos**: PostgreSQL local, base `proyecto-visual-com`.
 
 ## Arquitectura (clean architecture)
@@ -28,6 +28,7 @@ backend/src/main/java/com/visual/backend/
 ├── activos/                    Activos por unidad y por lote, historial de uso, mantenimiento y módulos LED
 ├── comercial/                  Clientes, cotizaciones, proyectos, eventos, contratos y documentos PDF
 ├── logistica/                  Personal técnico, planes logísticos por evento y asignaciones de personal
+├── finanzas/                   Proveedores, ingresos y egresos, ventas, resultados por proyecto e indicadores
 ├── accesos/
 │   ├── dominio/                Modelos y reglas de negocio (sin Spring ni JPA) + puertos (interfaces)
 │   ├── aplicacion/             Casos de uso (servicios) y DTO de entrada y salida
@@ -91,6 +92,8 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V5`: prefijo de código por modelo (`modelos_activo.prefijo_codigo`) para generar los códigos de inventario de sus unidades.
   - `V6`: módulo comercial. Estados de cotización (`BORRADOR`, `ACEPTADA`, `RECHAZADA`, `VENCIDA`), vigencia, título, periodo del evento y datos de la resolución; trigger que impide modificar las líneas de una cotización resuelta; unidad de medida de servicios, ciudad de lugares, descripción de proyectos y tipos iniciales de cliente, documento y contacto.
   - `V7`: logística. Jornadas de montaje y desmontaje (`jornadas_logisticas`, reemplazan a las fechas únicas del plan); se elimina la restricción `EXCLUDE` de `asignaciones_personal` porque los cruces solo se alertan; teléfono, estado y cuenta vinculada del personal técnico; especialidades y roles de evento iniciales; el gerente recibe `LOGISTICA_GESTIONAR`.
+  - `V8`: teléfono y correo de los proveedores.
+  - `V9`: finanzas. Tipos de movimiento (indican si exigen proveedor o descuentan inventario); proyecto y evento opcionales en los movimientos, con trigger que exige que el evento sea del proyecto; número de factura; detalle de ventas (`ventas_detalle`); estado `VENDIDO` de los activos y movimientos de lote `VENTA` y `ANULACION_VENTA`.
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -158,6 +161,19 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `LOGISTICA_GESTIONAR` (administrador y gerente): planificar jornadas, transporte y asignaciones, y registrar personal.
   - `ASIGNACIONES_VER_PROPIAS` (técnico y sub-contratado): consultar sus propias asignaciones.
 
+## Reglas del módulo financiero
+
+- **Movimientos:** cada ingreso o egreso tiene tipo, concepto, monto en Bs, fecha (no futura) y, opcionalmente, número de factura (la facturación es externa). Se imputan a un proyecto y a uno de sus eventos, o quedan como movimiento general de la empresa. No se editan ni se eliminan: un error se corrige anulando con motivo y registrando de nuevo.
+- **Tipos:** cobros de servicios, alquiler y venta de equipos y otros ingresos; compras, alquiler de equipos a terceros, subcontrataciones, transporte y viáticos, gastos generales y otros egresos. Las compras, los subalquileres y las subcontrataciones exigen proveedor; los ingresos no llevan proveedor.
+- **Ventas de equipos:** indican las unidades y las cantidades de lote vendidas. En la misma operación las unidades pasan a *Vendido* (ya no se editan, no registran uso ni reciben módulos LED) y los lotes registran una salida `VENTA` en su bodega; si algo no está disponible, no se registra nada. Anular la venta devuelve todo al inventario.
+- **Proveedores:** registro básico con NIT opcional y único, contacto y servicios. Uno con movimientos no se elimina; al eliminarlo se libera su NIT.
+- **Resultados:** margen = ingresos − costos directos (egresos imputados al proyecto, sin sueldos), con su porcentaje sobre los ingresos. Lo por cobrar es el importe de la cotización aceptada menos lo cobrado. El desglose por evento agrupa aparte lo imputado sin evento. Los movimientos anulados nunca se cuentan.
+- **Indicadores del gerente** (por defecto, el mes en curso, frente al periodo anterior de igual duración): ingresos, costos directos, margen bruto, gastos generales (egresos sin proyecto) y resultado neto; evolución de los últimos 12 meses; proyectos de mayor margen y con margen bajo (menos del 20 %) o negativo; cuentas por cobrar; y movimientos de los últimos 30 días desde Bs 5.000 (configurable en `app.finanzas`).
+- **Permisos:**
+  - `FINANZAS_VER` (gerente): consultar movimientos, resultados e indicadores.
+  - `FINANZAS_GESTIONAR` (administrador y gerente): registrar y anular movimientos.
+  - Los proveedores se consultan con `FINANZAS_VER` o `PROVEEDORES_VER` y se registran con `FINANZAS_GESTIONAR` o `PROVEEDORES_GESTIONAR`.
+
 ## Respaldos
 
 Se generan con `pg_dump` en formato personalizado: uno automático cada día a las 02:00 y otros manuales desde **Administración de accesos → Respaldos**. Las copias firmadas de los contratos no están en la base: hay que copiar también la carpeta `CONTRATOS_DIRECTORIO`. Para restaurar uno:
@@ -173,11 +189,13 @@ Los scripts de `database/datos_prueba/` cargan datos similares a la operación r
 - `01_accesos_activos.sql`: personal con sus roles, modelos y equipos con códigos, uso en eventos, mantenimientos, módulos LED e inventario por lotes.
 - `02_comercial.sql`: servicios y lugares, ocho clientes con documentos y contactos, cotizaciones en todos los estados, proyectos con su cronograma de eventos y contratos.
 - `03_logistica.sql`: nueve personas del personal técnico (cinco vinculadas a las cuentas de prueba), planes logísticos de eventos pasados y próximos con sus jornadas y asignaciones. Incluye un cruce a propósito: Daniela Gutiérrez está el 11/12 en dos eventos a la vez.
+- `04_finanzas.sql`: seis proveedores; cobros y costos de los proyectos (por evento cuando corresponde); alquileres de equipos y gastos generales de cada mes de 2026; compras de equipos; una venta de cables DMX con su salida de inventario; y un cobro anulado. La feria FEXPOCRUZ queda con margen bajo y el festival con saldo por cobrar.
 
 ```bash
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/01_accesos_activos.sql
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/02_comercial.sql
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/03_logistica.sql
+psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/04_finanzas.sql
 ```
 
 Todos los usuarios de prueba tienen la contraseña `VisualCom2026`:
