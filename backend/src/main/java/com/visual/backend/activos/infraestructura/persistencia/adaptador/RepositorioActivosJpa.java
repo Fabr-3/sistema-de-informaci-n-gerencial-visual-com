@@ -173,7 +173,7 @@ public class RepositorioActivosJpa implements RepositorioActivos {
                 condiciones.add(cb.equal(raiz.get("estado"), filtro.estado()));
             }
             if (filtro.soloAlertas()) {
-                condiciones.add(cb.notEqual(raiz.get("estado"), EstadoOperativo.BAJA));
+                condiciones.add(cb.not(raiz.get("estado").in(EstadoOperativo.FUERA_DE_INVENTARIO)));
                 condiciones.add(alcanzoUmbral(raiz, consulta.subquery(Integer.class), cb, porcentajeAlerta));
             }
             return cb.and(condiciones.toArray(Predicate[]::new));

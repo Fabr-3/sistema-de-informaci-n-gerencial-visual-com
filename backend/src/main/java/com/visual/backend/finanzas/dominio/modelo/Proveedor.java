@@ -54,8 +54,8 @@ public class Proveedor {
         fechaEliminacion = ahora;
     }
 
-    public ResumenProveedor resumen() {
-        return new ResumenProveedor(id, razonSocial);
+    public Referencia comoReferencia() {
+        return new Referencia(id, razonSocial);
     }
 
     private void aplicar(DatosProveedor datos) {

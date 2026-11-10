@@ -30,6 +30,7 @@ import {
   ESTADOS_OPERATIVOS,
   NIVELES_ALERTA,
   avanceMantenimiento,
+  fueraDeInventario,
   reglasActivo,
   tipoVisualAlerta,
   tipoVisualEstado,
@@ -79,6 +80,7 @@ export class PaginaDetalleActivo {
   protected readonly niveles = NIVELES_ALERTA;
   protected readonly tipoVisualEstado = tipoVisualEstado;
   protected readonly tipoVisualAlerta = tipoVisualAlerta;
+  protected readonly fueraDeInventario = fueraDeInventario;
   protected readonly rutaListado = rutaAbsoluta(Rutas.ACTIVOS);
   protected readonly activo = signal<Activo | null>(null);
   protected readonly noEncontrado = signal(false);

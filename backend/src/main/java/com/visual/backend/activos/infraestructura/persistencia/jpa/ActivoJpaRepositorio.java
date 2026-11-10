@@ -1,5 +1,6 @@
 package com.visual.backend.activos.infraestructura.persistencia.jpa;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,10 +33,10 @@ public interface ActivoJpaRepositorio extends JpaRepository<ActivoEntidad, Integ
 
     @Query("""
             select a.modelo.id as idModelo, count(a) as cantidad from ActivoEntidad a
-            where a.fechaEliminacion is null and a.estado <> :excluido
+            where a.fechaEliminacion is null and a.estado not in :excluidos
             group by a.modelo.id
             """)
-    List<ConteoPorModelo> contarPorModelo(@Param("excluido") EstadoOperativo excluido);
+    List<ConteoPorModelo> contarPorModelo(@Param("excluidos") Collection<EstadoOperativo> excluidos);
 
     interface ConteoPorModelo {
 

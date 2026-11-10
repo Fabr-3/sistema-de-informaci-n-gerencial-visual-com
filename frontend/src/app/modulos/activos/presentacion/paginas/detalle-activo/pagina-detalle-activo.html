@@ -15,7 +15,7 @@
           Acciones<mat-icon iconPositionEnd>expand_more</mat-icon>
         </button>
         <mat-menu #menuAcciones="matMenu" xPosition="before">
-          <button mat-menu-item (click)="editar(activo)" [disabled]="activo.estado === 'BAJA'">
+          <button mat-menu-item (click)="editar(activo)" [disabled]="fueraDeInventario(activo.estado)">
             <mat-icon>edit</mat-icon><span>Editar</span>
           </button>
           <button mat-menu-item (click)="darDeBaja(activo)" [disabled]="!puedeDarDeBaja()">

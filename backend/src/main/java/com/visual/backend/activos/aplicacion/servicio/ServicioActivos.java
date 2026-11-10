@@ -136,6 +136,30 @@ public class ServicioActivos {
         return actualizado;
     }
 
+    /** Marca el equipo como vendido; lo invoca el modulo financiero al registrar la venta. */
+    @Transactional
+    public VistaActivo vender(Integer id, String referencia) {
+        Activo activo = buscarActivo(id);
+        VistaActivo anterior = vista(activo);
+        activo.vender(referencia, contexto.idUsuarioActual(), LocalDateTime.now(reloj));
+        VistaActivo actualizado = vista(repositorio.guardar(activo));
+        auditoria.registrarOperacion(AccionAuditoria.ACTUALIZAR, ENTIDAD, id, anterior.comoMapaAuditoria(),
+                actualizado.comoMapaAuditoria(), "Venta del activo: " + referencia);
+        return actualizado;
+    }
+
+    /** Devuelve el equipo al inventario al anular su venta. */
+    @Transactional
+    public VistaActivo revertirVenta(Integer id, String referencia) {
+        Activo activo = buscarActivo(id);
+        VistaActivo anterior = vista(activo);
+        activo.revertirVenta(referencia, contexto.idUsuarioActual(), LocalDateTime.now(reloj));
+        VistaActivo actualizado = vista(repositorio.guardar(activo));
+        auditoria.registrarOperacion(AccionAuditoria.ACTUALIZAR, ENTIDAD, id, anterior.comoMapaAuditoria(),
+                actualizado.comoMapaAuditoria(), "Venta anulada: " + referencia);
+        return actualizado;
+    }
+
     /**
      * Solo para corregir registros erroneos: un activo con historial no se
      * elimina, se da de baja para conservar su trazabilidad.

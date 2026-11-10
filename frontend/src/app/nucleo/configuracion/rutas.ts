@@ -23,6 +23,7 @@ export const Rutas = {
   MIS_ASIGNACIONES: 'mis-asignaciones',
   FINANZAS: 'finanzas',
   PROVEEDORES: 'proveedores',
+  MOVIMIENTOS: 'movimientos',
 } as const;
 
 /** Parametro de consulta con la URL a la que se vuelve tras iniciar sesion. */

@@ -1,0 +1,40 @@
+.totales {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--vc-espacio);
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 20px;
+
+  strong {
+    font-size: 22px;
+    font-weight: 600;
+  }
+}
+
+.ingreso {
+  color: var(--vc-exito);
+}
+
+.egreso {
+  color: var(--vc-rojo);
+}
+
+.monto {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.anulado {
+  color: var(--vc-texto-secundario);
+  text-decoration: line-through;
+
+  .estado,
+  .detalle {
+    text-decoration: none;
+  }
+}

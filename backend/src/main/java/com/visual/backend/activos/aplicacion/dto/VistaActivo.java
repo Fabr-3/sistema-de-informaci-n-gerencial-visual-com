@@ -39,7 +39,7 @@ public record VistaActivo(
 
     public static VistaActivo de(Activo activo, UsoActivo uso, int porcentajeAlerta) {
         Integer intervalo = activo.getModelo().horasMantenimiento();
-        NivelAlertaMantenimiento nivel = activo.estaDadoDeBaja()
+        NivelAlertaMantenimiento nivel = activo.estaFueraDeInventario()
                 ? NivelAlertaMantenimiento.SIN_PLAN
                 : NivelAlertaMantenimiento.calcular(uso.horasDesdeMantenimiento(), intervalo, porcentajeAlerta);
         return new VistaActivo(

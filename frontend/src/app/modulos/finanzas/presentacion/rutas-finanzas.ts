@@ -11,7 +11,19 @@ export const RUTAS_FINANZAS: Routes = [
     path: '',
     providers: [PROVEEDOR_PAGINADOR_ESPANOL],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: Rutas.PROVEEDORES },
+      { path: '', pathMatch: 'full', redirectTo: Rutas.MOVIMIENTOS },
+      {
+        path: Rutas.MOVIMIENTOS,
+        title: 'Ingresos y egresos',
+        canActivate: [permisoGuard(Permisos.FINANZAS_VER)],
+        loadComponent: () => import('./paginas/movimientos/pagina-movimientos').then((m) => m.PaginaMovimientos),
+      },
+      {
+        path: `${Rutas.MOVIMIENTOS}/${Rutas.NUEVA}`,
+        title: 'Registrar movimiento',
+        canActivate: [permisoGuard(Permisos.FINANZAS_GESTIONAR)],
+        loadComponent: () => import('./paginas/movimientos/registro-movimiento').then((m) => m.RegistroMovimiento),
+      },
       {
         path: Rutas.PROVEEDORES,
         title: 'Proveedores',

@@ -1,0 +1,82 @@
+.volver {
+  align-self: flex-start;
+  margin-left: -12px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vc-espacio);
+}
+
+.bloque {
+  padding: 16px 20px 4px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+.naturaleza {
+  margin-bottom: 16px;
+}
+
+.formulario--cuatro {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  .doble {
+    grid-column: span 2;
+  }
+
+  .triple {
+    grid-column: span 3;
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+
+    .doble,
+    .triple {
+      grid-column: auto;
+    }
+  }
+}
+
+.lote {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  button {
+    margin-top: 10px;
+  }
+}
+
+.vendidos {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+
+    span {
+      flex: 1;
+    }
+  }
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

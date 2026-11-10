@@ -57,7 +57,7 @@ class ActivoTest {
 
         activo.finalizarMantenimiento(CondicionFinal.NO_REPARABLE, "Placa quemada", 1, AHORA);
 
-        assertThat(activo.estaDadoDeBaja()).isTrue();
+        assertThat(activo.estaFueraDeInventario()).isTrue();
         assertThat(activo.getMotivoBaja()).isEqualTo("Placa quemada");
     }
 
@@ -68,7 +68,7 @@ class ActivoTest {
 
         activo.darDeBaja("Robo", 1, AHORA);
 
-        assertThatThrownBy(() -> activo.darDeBaja("Otra", 1, AHORA)).hasMessageContaining("ya está dado de baja");
+        assertThatThrownBy(() -> activo.darDeBaja("Otra", 1, AHORA)).hasMessageContaining("ya no está en el inventario");
         assertThatThrownBy(() -> activo.iniciarMantenimiento(1, AHORA)).isInstanceOf(ReglaNegocioExcepcion.class);
     }
 
@@ -78,5 +78,24 @@ class ActivoTest {
         activo.iniciarMantenimiento(1, AHORA);
 
         assertThatThrownBy(() -> activo.darDeBaja("Falla", 1, AHORA)).hasMessageContaining("Solo se puede dar de baja");
+    }
+
+    @Test
+    void laVentaSacaAlEquipoDelInventarioYSuAnulacionLoDevuelve() {
+        Activo activo = activo();
+        activo.iniciarMantenimiento(1, AHORA);
+        assertThatThrownBy(() -> activo.vender("Movimiento financiero N.º 9", 1, AHORA))
+                .isInstanceOf(ReglaNegocioExcepcion.class).hasMessageContaining("disponible");
+        activo.finalizarMantenimiento(CondicionFinal.OPERATIVO, null, 1, AHORA);
+
+        activo.vender("Movimiento financiero N.º 9", 1, AHORA);
+
+        assertThat(activo.getEstado()).isEqualTo(EstadoOperativo.VENDIDO);
+        assertThat(activo.estaFueraDeInventario()).isTrue();
+        assertThat(activo.getObservaciones()).contains("Vendido: Movimiento financiero N.º 9");
+        assertThatThrownBy(activo::validarPuedeRegistrarUso).isInstanceOf(ReglaNegocioExcepcion.class);
+        activo.revertirVenta("Movimiento financiero N.º 9", 1, AHORA);
+        assertThat(activo.getEstado()).isEqualTo(EstadoOperativo.DISPONIBLE);
+        assertThatThrownBy(() -> activo.revertirVenta("Otra", 1, AHORA)).isInstanceOf(ReglaNegocioExcepcion.class);
     }
 }

@@ -1,0 +1,144 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Ingresos y egresos</h1>
+      <p>Cobros, ventas, alquileres, compras, subcontrataciones y gastos, con o sin proyecto.</p>
+    </div>
+    @if (puedeGestionar) {
+      <a mat-flat-button [routerLink]="rutaRegistro"><mat-icon>add</mat-icon>Registrar movimiento</a>
+    }
+  </header>
+
+  @if (resultado(); as listado) {
+    <div class="totales">
+      <section class="panel total">
+        <span class="texto-secundario">Ingresos</span>
+        <strong class="ingreso">{{ listado.ingresos | currency: 'BOB' : 'Bs ' }}</strong>
+      </section>
+      <section class="panel total">
+        <span class="texto-secundario">Egresos</span>
+        <strong class="egreso">{{ listado.egresos | currency: 'BOB' : 'Bs ' }}</strong>
+      </section>
+      <section class="panel total">
+        <span class="texto-secundario">Saldo</span>
+        <strong [class.egreso]="listado.saldo < 0">{{ listado.saldo | currency: 'BOB' : 'Bs ' }}</strong>
+      </section>
+    </div>
+  }
+
+  <section class="panel">
+    <div class="filtros">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Buscar</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [formControl]="busqueda" placeholder="Concepto o factura" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Fechas</mat-label>
+        <mat-date-range-input [formGroup]="rango" [rangePicker]="selectorRango">
+          <input matStartDate formControlName="desde" placeholder="Desde" />
+          <input matEndDate formControlName="hasta" placeholder="Hasta" />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="selectorRango" />
+        <mat-date-range-picker #selectorRango />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Naturaleza</mat-label>
+        <mat-select [value]="criterios().filtro.naturaleza" (selectionChange)="filtrarNaturaleza($event.value)">
+          <mat-option [value]="undefined">Todas</mat-option>
+          @for (naturaleza of naturalezas | keyvalue: ordenOriginal; track naturaleza.key) {
+            <mat-option [value]="naturaleza.key">{{ naturaleza.value }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Tipo</mat-label>
+        <mat-select [value]="criterios().filtro.idTipo" (selectionChange)="filtrar({ idTipo: $event.value })">
+          <mat-option [value]="undefined">Todos</mat-option>
+          @for (tipo of tiposFiltrados(); track tipo.id) {
+            <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Estado</mat-label>
+        <mat-select [value]="criterios().filtro.estado" (selectionChange)="filtrar({ estado: $event.value })">
+          <mat-option [value]="undefined">Todos</mat-option>
+          @for (estado of estados | keyvalue: ordenOriginal; track estado.key) {
+            <mat-option [value]="estado.key">{{ estado.value }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.pagina?.contenido ?? []">
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let movimiento">{{ movimiento.fecha | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="tipo">
+          <th mat-header-cell *matHeaderCellDef>Tipo</th>
+          <td mat-cell *matCellDef="let movimiento">
+            <span class="estado estado--{{ tipoVisualNaturaleza(movimiento.tipo.naturaleza) }}">{{ movimiento.tipo.nombre }}</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="concepto">
+          <th mat-header-cell *matHeaderCellDef>Concepto</th>
+          <td mat-cell *matCellDef="let movimiento" [class.anulado]="movimiento.estado === 'ANULADO'">
+            {{ movimiento.concepto }}
+            @if (movimiento.estado === 'ANULADO') {
+              <span class="estado estado--neutro">Anulado</span>
+            }
+            <div class="texto-secundario detalle">
+              {{ movimiento.proyecto?.nombre ?? 'General de la empresa' }}{{ movimiento.evento ? ' · ' + movimiento.evento.nombre : '' }}{{ movimiento.proveedor ? ' · ' + movimiento.proveedor.nombre : '' }}
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="factura">
+          <th mat-header-cell *matHeaderCellDef>Factura</th>
+          <td mat-cell *matCellDef="let movimiento" class="codigo">{{ movimiento.numeroFactura ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="monto">
+          <th mat-header-cell *matHeaderCellDef class="numero">Monto</th>
+          <td mat-cell *matCellDef="let movimiento" class="numero monto" [class.ingreso]="movimiento.tipo.naturaleza === 'INGRESO'"
+              [class.egreso]="movimiento.tipo.naturaleza === 'EGRESO'" [class.anulado]="movimiento.estado === 'ANULADO'">
+            {{ montoConSigno(movimiento) | currency: 'BOB' : 'Bs ' }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+          <td mat-cell *matCellDef="let movimiento" class="celda-acciones">
+            <button mat-icon-button [matMenuTriggerFor]="menu" [attr.aria-label]="'Acciones del movimiento ' + movimiento.id">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu" xPosition="before">
+              <button mat-menu-item (click)="verDetalle(movimiento)"><mat-icon>visibility</mat-icon><span>Ver detalle</span></button>
+              @if (puedeGestionar && movimiento.estado === 'REGISTRADO') {
+                <button mat-menu-item (click)="anular(movimiento)"><mat-icon>block</mat-icon><span>Anular</span></button>
+              }
+            </mat-menu>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas.length">
+            {{ cargando() ? 'Cargando movimientos…' : 'No hay movimientos con los filtros aplicados.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator
+      [length]="resultado()?.pagina?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación de movimientos"
+    />
+  </section>
+</div>

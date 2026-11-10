@@ -73,9 +73,28 @@ public class ServicioLotes {
         if (comando.tipo().esTraslado()) {
             throw new ReglaNegocioExcepcion("Los traslados se registran con la operación de traslado");
         }
+        if (comando.tipo().esDeVenta()) {
+            throw new ReglaNegocioExcepcion("Las ventas se registran como movimiento financiero");
+        }
         ExistenciaLote existencia = mover(comando.idModelo(), comando.idBodega(), comando.tipo(),
                 comando.cantidad(), comando.motivo());
         return VistaExistencia.de(existencia);
+    }
+
+    /**
+     * Salida (VENTA) o reingreso (ANULACION_VENTA) de existencias por una venta;
+     * lo invoca el modulo financiero dentro de su transaccion.
+     */
+    @Transactional
+    public VistaExistencia moverPorVenta(Integer idExistencia, TipoMovimientoLote tipo, int cantidad,
+                                         String referencia) {
+        if (!tipo.esDeVenta()) {
+            throw new IllegalArgumentException("Tipo de movimiento ajeno a una venta: " + tipo);
+        }
+        ExistenciaLote existencia = repositorio.buscarPorId(idExistencia)
+                .orElseThrow(() -> new RecursoNoEncontradoExcepcion("la existencia", idExistencia));
+        return VistaExistencia.de(mover(existencia.getModelo().id(), existencia.getBodega().id(), tipo, cantidad,
+                referencia));
     }
 
     /** Traslado entre bodegas: salida en el origen y entrada en el destino, en una sola transaccion. */

@@ -6,6 +6,8 @@ export const TIPOS_MOVIMIENTO = {
   AJUSTE: 'Ajuste',
   TRASLADO_SALIDA: 'Traslado (salida)',
   TRASLADO_ENTRADA: 'Traslado (entrada)',
+  VENTA: 'Venta',
+  ANULACION_VENTA: 'Venta anulada',
 } as const;
 
 export type TipoMovimientoLote = keyof typeof TIPOS_MOVIMIENTO;

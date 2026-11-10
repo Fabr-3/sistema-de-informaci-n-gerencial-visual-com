@@ -13,6 +13,7 @@ describe('reglas de activos', () => {
   it('refleja las transiciones permitidas por el backend', () => {
     expect(reglasActivo.puedeRegistrarUso(activo())).toBe(true);
     expect(reglasActivo.puedeRegistrarUso(activo({ estado: 'EN_MANTENIMIENTO' }))).toBe(false);
+    expect(reglasActivo.puedeRegistrarUso(activo({ estado: 'VENDIDO' }))).toBe(false);
     expect(reglasActivo.puedeIniciarMantenimiento(activo({ estado: 'RESERVADO' }))).toBe(false);
     expect(reglasActivo.puedeDarDeBaja(activo({ estado: 'EN_USO' }))).toBe(false);
     expect(reglasActivo.puedeDarDeBaja(activo({ estado: 'BAJA' }))).toBe(false);

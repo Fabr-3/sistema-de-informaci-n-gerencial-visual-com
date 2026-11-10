@@ -7,6 +7,7 @@ export const ESTADOS_OPERATIVOS = {
   EN_USO: 'En uso',
   EN_MANTENIMIENTO: 'En mantenimiento',
   BAJA: 'Dado de baja',
+  VENDIDO: 'Vendido',
 } as const;
 
 export type EstadoOperativo = keyof typeof ESTADOS_OPERATIVOS;
@@ -88,6 +89,7 @@ const TIPO_VISUAL_ESTADO: Readonly<Record<EstadoOperativo, TipoEstadoVisual>> = 
   EN_USO: 'neutro',
   EN_MANTENIMIENTO: 'alerta',
   BAJA: 'peligro',
+  VENDIDO: 'neutro',
 };
 
 const TIPO_VISUAL_ALERTA: Readonly<Record<NivelAlertaMantenimiento, TipoEstadoVisual>> = {
@@ -114,9 +116,15 @@ export function avanceMantenimiento(activo: Activo): number | null {
   return Math.min(Math.round(avance), 100);
 }
 
+/** Dado de baja o vendido: ya no forma parte del inventario. */
+export function fueraDeInventario(estado: EstadoOperativo): boolean {
+  return estado === 'BAJA' || estado === 'VENDIDO';
+}
+
 /** Reglas de interfaz que reflejan las del backend (el backend siempre valida). */
 export const reglasActivo = {
-  puedeRegistrarUso: (activo: Activo): boolean => activo.estado !== 'BAJA' && activo.estado !== 'EN_MANTENIMIENTO',
+  puedeRegistrarUso: (activo: Activo): boolean =>
+    !fueraDeInventario(activo.estado) && activo.estado !== 'EN_MANTENIMIENTO',
   puedeIniciarMantenimiento: (activo: Activo): boolean => activo.estado === 'DISPONIBLE',
   /** En mantenimiento se da de baja al finalizarlo como no reparable. */
   puedeDarDeBaja: (activo: Activo): boolean => activo.estado === 'DISPONIBLE',

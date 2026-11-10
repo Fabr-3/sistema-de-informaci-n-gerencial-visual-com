@@ -78,8 +78,8 @@ public class Activo {
     }
 
     public void darDeBaja(String motivo, Integer actor, LocalDateTime ahora) {
-        if (estaDadoDeBaja()) {
-            throw new ReglaNegocioExcepcion("El activo " + codigoInventario + " ya está dado de baja");
+        if (estaFueraDeInventario()) {
+            throw new ReglaNegocioExcepcion("El activo " + codigoInventario + " ya no está en el inventario");
         }
         // Un activo en mantenimiento se da de baja al finalizarlo como NO_REPARABLE,
         // para no dejar el mantenimiento abierto.
@@ -120,8 +120,9 @@ public class Activo {
 
     /** El uso historico se registra solo para activos operativos. */
     public void validarPuedeRegistrarUso() {
-        if (estaDadoDeBaja() || estado == EstadoOperativo.EN_MANTENIMIENTO) {
-            throw new ReglaNegocioExcepcion("No se puede registrar uso de un activo dado de baja o en mantenimiento");
+        if (estaFueraDeInventario() || estado == EstadoOperativo.EN_MANTENIMIENTO) {
+            throw new ReglaNegocioExcepcion(
+                    "No se puede registrar uso de un activo dado de baja, vendido o en mantenimiento");
         }
     }
 
@@ -130,8 +131,34 @@ public class Activo {
         registrarModificacion(actor, ahora);
     }
 
-    public boolean estaDadoDeBaja() {
-        return estado == EstadoOperativo.BAJA;
+    /** Dado de baja o vendido. */
+    public boolean estaFueraDeInventario() {
+        return estado.fueraDeInventario();
+    }
+
+    /** Solo se vende un equipo disponible; la referencia identifica el movimiento de venta. */
+    public void vender(String referencia, Integer actor, LocalDateTime ahora) {
+        if (estado != EstadoOperativo.DISPONIBLE) {
+            throw new ReglaNegocioExcepcion("Solo se puede vender un equipo disponible: " + codigoInventario
+                    + " está " + estado.name().toLowerCase().replace('_', ' '));
+        }
+        estado = EstadoOperativo.VENDIDO;
+        observaciones = anotar(observaciones, "Vendido: " + referencia);
+        registrarModificacion(actor, ahora);
+    }
+
+    /** Al anular la venta el equipo vuelve a estar disponible. */
+    public void revertirVenta(String referencia, Integer actor, LocalDateTime ahora) {
+        if (estado != EstadoOperativo.VENDIDO) {
+            throw new ReglaNegocioExcepcion("El equipo " + codigoInventario + " no figura como vendido");
+        }
+        estado = EstadoOperativo.DISPONIBLE;
+        observaciones = anotar(observaciones, "Venta anulada: " + referencia);
+        registrarModificacion(actor, ahora);
+    }
+
+    private static String anotar(String observaciones, String nota) {
+        return observaciones == null || observaciones.isBlank() ? nota : observaciones + "\n" + nota;
     }
 
     private void registrarModificacion(Integer actor, LocalDateTime ahora) {

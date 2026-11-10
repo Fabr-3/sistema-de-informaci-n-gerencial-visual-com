@@ -11,12 +11,19 @@ public enum TipoMovimientoLote {
     BAJA(-1),
     AJUSTE(0),
     TRASLADO_SALIDA(-1),
-    TRASLADO_ENTRADA(1);
+    TRASLADO_ENTRADA(1),
+    VENTA(-1),
+    ANULACION_VENTA(1);
 
     private final int signo;
 
     TipoMovimientoLote(int signo) {
         this.signo = signo;
+    }
+
+    /** Las ventas y sus anulaciones las registra el modulo financiero. */
+    public boolean esDeVenta() {
+        return this == VENTA || this == ANULACION_VENTA;
     }
 
     /** Los traslados se registran mediante la operacion de traslado, no individualmente. */

@@ -15,7 +15,7 @@ import { ServicioNotificaciones } from '../../../../../../nucleo/notificaciones/
 import { ServicioSesion } from '../../../../../accesos/aplicacion/servicio-sesion';
 import { Permisos } from '../../../../../accesos/dominio/modelos/permisos';
 import { HistorialActivos } from '../../../../aplicacion/historial-activos';
-import { Activo } from '../../../../dominio/modelos/activo';
+import { Activo, fueraDeInventario } from '../../../../dominio/modelos/activo';
 import { ESTADOS_MODULO, EstadoModuloLed, ModuloLed, tipoVisualModulo } from '../../../../dominio/modelos/historial';
 
 const LONGITUD_CODIGO_MODULO = 50;
@@ -42,7 +42,7 @@ export class SeccionModulos {
   protected readonly modulos = signal<ModuloLed[]>([]);
   private readonly version = signal(0);
   protected readonly puedeAgregar = computed(
-    () => this.sesion.tienePermiso(Permisos.ACTIVOS_GESTIONAR) && this.activo().estado !== 'BAJA',
+    () => this.sesion.tienePermiso(Permisos.ACTIVOS_GESTIONAR) && !fueraDeInventario(this.activo().estado),
   );
   protected readonly puedeCambiarEstado = computed(() =>
     this.sesion.tieneAlgunPermiso(Permisos.ACTIVOS_GESTIONAR, Permisos.MANTENIMIENTOS_REGISTRAR),

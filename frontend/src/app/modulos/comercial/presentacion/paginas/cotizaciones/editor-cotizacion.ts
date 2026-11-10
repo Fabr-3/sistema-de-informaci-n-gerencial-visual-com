@@ -12,17 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { Router, RouterLink } from '@angular/router';
-import {
-  Observable,
-  catchError,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  map,
-  of,
-  startWith,
-  switchMap,
-} from 'rxjs';
+import { Observable, filter, map, of, switchMap } from 'rxjs';
 
 import {
   DatosConfirmacion,
@@ -33,6 +23,7 @@ import {
   DialogoEntradaTexto,
 } from '../../../../../compartido/componentes/dialogo-entrada-texto/dialogo-entrada-texto';
 import { EtiquetaPipe } from '../../../../../compartido/pipes/etiqueta.pipe';
+import { busquedaRemota } from '../../../../../compartido/utilidades/busqueda-remota';
 import { descargarArchivo } from '../../../../../compartido/utilidades/archivos';
 import { aFechaIso, desdeFechaIso } from '../../../../../compartido/utilidades/fechas';
 import { requiereSeleccion } from '../../../../../compartido/utilidades/validadores-seleccion';
@@ -54,9 +45,8 @@ import {
   totalCotizacion,
 } from '../../../dominio/modelos/cotizacion';
 
-/** Sugerencias del buscador de clientes y espera tras cada tecla. */
+/** Sugerencias del buscador de clientes. */
 const CLIENTES_SUGERIDOS = 10;
-const ESPERA_BUSQUEDA_MS = 300;
 const DIAS_VALIDEZ_POR_DEFECTO = 15;
 const LONGITUD_TITULO = 200;
 const LONGITUD_CONDICIONES = 4000;
@@ -123,17 +113,10 @@ export class EditorCotizacion {
 
   /** Busca en el servidor mientras se escribe; un cliente elegido no dispara busquedas. */
   protected readonly clientesSugeridos = toSignal(
-    this.formulario.controls.cliente.valueChanges.pipe(
-      startWith(''),
-      filter((valor): valor is string => typeof valor === 'string'),
-      debounceTime(ESPERA_BUSQUEDA_MS),
-      distinctUntilChanged(),
-      switchMap((texto) =>
-        this.comercial.listarClientes({ texto }, { pagina: 0, tamano: CLIENTES_SUGERIDOS }).pipe(
-          map((pagina): ResumenCliente[] => [...pagina.contenido]),
-          catchError(() => of<ResumenCliente[]>([])),
-        ),
-      ),
+    busquedaRemota(this.formulario.controls.cliente, (texto) =>
+      this.comercial
+        .listarClientes({ texto }, { pagina: 0, tamano: CLIENTES_SUGERIDOS })
+        .pipe(map((pagina): ResumenCliente[] => [...pagina.contenido])),
     ),
     { initialValue: [] },
   );

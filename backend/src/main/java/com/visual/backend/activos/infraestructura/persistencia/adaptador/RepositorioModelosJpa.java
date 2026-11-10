@@ -66,7 +66,7 @@ public class RepositorioModelosJpa implements RepositorioModelos {
     @Override
     public Map<Integer, Long> contarInventarioPorModelo() {
         Map<Integer, Long> conteo = new HashMap<>();
-        activos.contarPorModelo(EstadoOperativo.BAJA)
+        activos.contarPorModelo(EstadoOperativo.FUERA_DE_INVENTARIO)
                 .forEach(fila -> conteo.put(fila.getIdModelo(), fila.getCantidad()));
         existencias.sumarPorModelo().forEach(fila -> conteo.put(fila.getIdModelo(), fila.getCantidad()));
         return conteo;

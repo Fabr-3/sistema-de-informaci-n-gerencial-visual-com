@@ -26,8 +26,8 @@ public class ModuloLed {
     }
 
     public static ModuloLed nuevo(Activo pantalla, String codigo, LocalDateTime ahora) {
-        if (pantalla.estaDadoDeBaja()) {
-            throw new ReglaNegocioExcepcion("No se pueden agregar módulos a un activo dado de baja");
+        if (pantalla.estaFueraDeInventario()) {
+            throw new ReglaNegocioExcepcion("No se pueden agregar módulos a un activo dado de baja o vendido");
         }
         return new ModuloLed(null, pantalla.getId(), codigo.trim().toUpperCase(Locale.ROOT),
                 EstadoModuloLed.ACTIVO, ahora, null);

@@ -1,0 +1,147 @@
+<div class="pagina">
+  <a mat-button class="volver" [routerLink]="rutaListado"><mat-icon>arrow_back</mat-icon>Movimientos</a>
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Registrar movimiento</h1>
+      <p>Un movimiento no se edita: si hay un error, se anula y se registra de nuevo.</p>
+    </div>
+  </header>
+
+  <form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+    <section class="panel bloque">
+      <mat-button-toggle-group formControlName="naturaleza" aria-label="Ingreso o egreso" class="naturaleza">
+        @for (naturaleza of naturalezas; track naturaleza) {
+          <mat-button-toggle [value]="naturaleza">{{ etiquetasNaturaleza[naturaleza] }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+      <div class="formulario formulario--cuatro">
+        <mat-form-field appearance="outline" class="doble">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="idTipo">
+            @for (tipo of tiposDisponibles(); track tipo.id) {
+              <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Seleccione el tipo</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha</mat-label>
+          <input matInput [matDatepicker]="selectorFecha" formControlName="fecha" [max]="hoy" />
+          <mat-datepicker-toggle matIconSuffix [for]="selectorFecha" />
+          <mat-datepicker #selectorFecha />
+          <mat-error>Indique una fecha que no sea futura</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Monto (Bs)</mat-label>
+          <input matInput type="number" min="0.01" step="0.01" formControlName="monto" />
+          <mat-error>Ingrese un monto mayor a cero</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="triple">
+          <mat-label>Concepto</mat-label>
+          <input matInput formControlName="concepto" placeholder="Anticipo del 50 %, alquiler de generador…" />
+          <mat-error>Ingrese el concepto</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>N.º de factura (opcional)</mat-label>
+          <input matInput formControlName="numeroFactura" />
+        </mat-form-field>
+      </div>
+    </section>
+
+    <section class="panel bloque">
+      <h2>Imputación</h2>
+      <p class="indicacion">Sin proyecto, el movimiento cuenta como gasto o ingreso general de la empresa.</p>
+      <div class="formulario formulario--cuatro">
+        <mat-form-field appearance="outline" class="doble">
+          <mat-label>Proyecto (opcional)</mat-label>
+          <input matInput formControlName="proyecto" [matAutocomplete]="autocompletarProyecto" placeholder="Buscar proyecto o cliente" />
+          <mat-autocomplete #autocompletarProyecto="matAutocomplete" [displayWith]="mostrarProyecto">
+            @for (proyecto of proyectosSugeridos(); track proyecto.id) {
+              <mat-option [value]="proyecto">{{ proyecto.nombre }} <span class="texto-secundario">· {{ proyecto.cliente.razonSocial }}</span></mat-option>
+            }
+          </mat-autocomplete>
+          <mat-error>Elija un proyecto de la lista o deje el campo vacío</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="doble">
+          <mat-label>Evento (opcional)</mat-label>
+          <mat-select formControlName="idEvento">
+            <mat-option [value]="null">Todo el proyecto</mat-option>
+            @for (evento of eventos(); track evento.id) {
+              <mat-option [value]="evento.id">{{ evento.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        @if (formulario.controls.naturaleza.value === 'EGRESO') {
+          <mat-form-field appearance="outline" class="doble">
+            <mat-label>Proveedor{{ tipo()?.requiereProveedor ? '' : ' (opcional)' }}</mat-label>
+            <input matInput formControlName="proveedor" [matAutocomplete]="autocompletarProveedor" placeholder="Buscar por nombre, NIT o servicio" />
+            <mat-autocomplete #autocompletarProveedor="matAutocomplete" [displayWith]="mostrarProveedor">
+              @for (proveedor of proveedoresSugeridos(); track proveedor.id) {
+                <mat-option [value]="proveedor">{{ proveedor.razonSocial }}</mat-option>
+              }
+            </mat-autocomplete>
+            <mat-error>Elija el proveedor de la lista</mat-error>
+          </mat-form-field>
+        }
+      </div>
+    </section>
+
+    @if (esVenta()) {
+      <section class="panel bloque">
+        <h2>Equipos vendidos</h2>
+        <p class="indicacion">Las unidades pasan a «Vendido» y los lotes registran la salida en su bodega.</p>
+        <div class="formulario formulario--cuatro">
+          <mat-form-field appearance="outline" class="doble">
+            <mat-label>Agregar unidad disponible</mat-label>
+            <input matInput [formControl]="busquedaUnidad" [matAutocomplete]="autocompletarUnidad" placeholder="Código o modelo" />
+            <mat-autocomplete #autocompletarUnidad="matAutocomplete" [displayWith]="mostrarUnidad" (optionSelected)="agregarUnidad($event)">
+              @for (activo of unidadesSugeridas(); track activo.id) {
+                <mat-option [value]="activo">{{ activo.codigoInventario }} · {{ activo.modelo }}</mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Lote</mat-label>
+            <mat-select [formControl]="loteElegido">
+              @for (existencia of existencias(); track existencia.id) {
+                <mat-option [value]="existencia">{{ existencia.modelo }} · {{ existencia.bodega }} ({{ existencia.cantidad }})</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <div class="lote">
+            <mat-form-field appearance="outline">
+              <mat-label>Cantidad</mat-label>
+              <input matInput type="number" min="1" [formControl]="cantidadLote" />
+            </mat-form-field>
+            <button mat-stroked-button type="button" (click)="agregarLote()" [disabled]="!loteElegido.value">Agregar</button>
+          </div>
+        </div>
+        <ul class="vendidos">
+          @for (activo of unidades(); track activo.id) {
+            <li>
+              <mat-icon>videocam</mat-icon><span>{{ activo.codigoInventario }} · {{ activo.modelo }}</span>
+              <button mat-icon-button type="button" (click)="quitarUnidad(activo)" aria-label="Quitar unidad"><mat-icon>close</mat-icon></button>
+            </li>
+          }
+          @for (lote of lotesVendidos(); track lote.existencia.id) {
+            <li>
+              <mat-icon>inventory_2</mat-icon><span>{{ lote.cantidad }} × {{ lote.existencia.modelo }} ({{ lote.existencia.bodega }})</span>
+              <button mat-icon-button type="button" (click)="quitarLote(lote)" aria-label="Quitar lote"><mat-icon>close</mat-icon></button>
+            </li>
+          } @empty {
+            @if (!unidades().length) {
+              <li class="texto-secundario">Aún no se agregaron equipos.</li>
+            }
+          }
+        </ul>
+      </section>
+    }
+
+    <div class="acciones">
+      <a mat-button [routerLink]="rutaListado">Cancelar</a>
+      <button mat-flat-button type="submit" [disabled]="guardando()">
+        Registrar {{ formulario.controls.monto.value ? (formulario.controls.monto.value | currency: 'BOB' : 'Bs ') : '' }}
+      </button>
+    </div>
+  </form>
+</div>
