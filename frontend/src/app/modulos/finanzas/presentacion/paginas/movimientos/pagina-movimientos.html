@@ -26,6 +26,14 @@
     </div>
   }
 
+  @if (criterios().filtro.idProyecto) {
+    <div class="aviso aviso--alerta" role="status">
+      <mat-icon>filter_alt</mat-icon>
+      <span>Se muestran solo los movimientos del proyecto elegido, de todas las fechas.</span>
+      <button mat-button type="button" (click)="quitarFiltroProyecto()">Ver todos</button>
+    </div>
+  }
+
   <section class="panel">
     <div class="filtros">
       <mat-form-field appearance="outline" subscriptSizing="dynamic">

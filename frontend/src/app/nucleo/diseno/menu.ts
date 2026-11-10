@@ -90,6 +90,12 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
         permiso: Permisos.FINANZAS_VER,
       },
       {
+        etiqueta: 'Resultados por proyecto',
+        icono: 'query_stats',
+        ruta: rutaAbsoluta(Rutas.FINANZAS, Rutas.RESULTADOS),
+        permiso: Permisos.FINANZAS_VER,
+      },
+      {
         etiqueta: 'Proveedores',
         icono: 'storefront',
         ruta: rutaAbsoluta(Rutas.FINANZAS, Rutas.PROVEEDORES),

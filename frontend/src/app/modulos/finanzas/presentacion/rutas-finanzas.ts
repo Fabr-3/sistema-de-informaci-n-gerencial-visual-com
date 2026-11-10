@@ -25,6 +25,18 @@ export const RUTAS_FINANZAS: Routes = [
         loadComponent: () => import('./paginas/movimientos/registro-movimiento').then((m) => m.RegistroMovimiento),
       },
       {
+        path: Rutas.RESULTADOS,
+        title: 'Resultados por proyecto',
+        canActivate: [permisoGuard(Permisos.FINANZAS_VER)],
+        loadComponent: () => import('./paginas/resultados/pagina-resultados').then((m) => m.PaginaResultados),
+      },
+      {
+        path: `${Rutas.RESULTADOS}/:id`,
+        title: 'Resultado del proyecto',
+        canActivate: [permisoGuard(Permisos.FINANZAS_VER)],
+        loadComponent: () => import('./paginas/resultados/detalle-resultado').then((m) => m.DetalleResultado),
+      },
+      {
         path: Rutas.PROVEEDORES,
         title: 'Proveedores',
         canActivate: [permisoGuard(Permisos.FINANZAS_VER, Permisos.PROVEEDORES_VER)],

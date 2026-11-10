@@ -17,4 +17,8 @@ public final class Filtros {
                               Integer idProyecto, Integer idEvento, Integer idProveedor, EstadoMovimiento estado,
                               String texto) {
     }
+
+    /** El texto busca en el proyecto y el cliente; el estado es el del proyecto. */
+    public record ResultadosProyectos(String texto, String estado) {
+    }
 }

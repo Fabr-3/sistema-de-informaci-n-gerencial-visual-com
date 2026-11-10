@@ -106,6 +106,44 @@ class FlujoMovimientosIntegracionTest {
     }
 
     @Test
+    void calculaElMargenDelProyectoPorEventoYLoPorCobrar() throws Exception {
+        int[] proyectoYEvento = proyectoConEvento();
+        int idProyecto = proyectoYEvento[0];
+        registrar("Cobro de servicios", "Anticipo", "3000", idProyecto, proyectoYEvento[1]);
+        registrar("Transporte y viáticos", "Flete de equipos", "1000", idProyecto, proyectoYEvento[1]);
+        registrar("Gastos generales", "Impresión de credenciales", "200", idProyecto, null);
+        int duplicado = registrar("Cobro de servicios", "Cobro duplicado", "500", idProyecto, null);
+        ejecutar(post(RUTA + "/" + duplicado + "/anulacion"), Map.of("motivo", "Duplicado")).andExpect(status().isOk());
+        nuevaSolicitud();
+
+        JsonNode detalle = leer(get("/api/finanzas/resultados/proyectos/{id}", idProyecto));
+        JsonNode proyecto = detalle.get("proyecto");
+        assertThat(proyecto.get("contratado").decimalValue()).isEqualByComparingTo("4220");
+        assertThat(proyecto.get("porCobrar").decimalValue()).isEqualByComparingTo("1220");
+        assertThat(proyecto.get("margen").get("margen").decimalValue()).isEqualByComparingTo("1800");
+        assertThat(proyecto.get("margen").get("porcentaje").decimalValue()).isEqualByComparingTo("60.0");
+        assertThat(detalle.get("eventos")).hasSize(2);
+        assertThat(detalle.get("eventos").get(0).get("margen").get("margen").decimalValue())
+                .isEqualByComparingTo("2000");
+        assertThat(detalle.get("eventos").get(1).get("idEvento").isNull()).isTrue();
+        assertThat(detalle.get("porTipo")).hasSize(3);
+
+        JsonNode listado = leer(get("/api/finanzas/resultados/proyectos").param("texto", "finanzas de prueba"));
+        assertThat(listado.get("contenido")).singleElement()
+                .satisfies(fila -> assertThat(fila.get("idProyecto").asInt()).isEqualTo(idProyecto));
+        mvc.perform(autorizado(get("/api/finanzas/resultados/proyectos/{id}", 999999)))
+                .andExpect(status().isNotFound());
+    }
+
+    private int registrar(String tipo, String concepto, String monto, int idProyecto, Integer idEvento)
+            throws Exception {
+        Map<String, Object> movimiento = movimiento(tipo, concepto, monto);
+        movimiento.put("idProyecto", idProyecto);
+        movimiento.put("idEvento", idEvento);
+        return crear(RUTA, movimiento);
+    }
+
+    @Test
     void laVentaDescuentaElInventarioYSuAnulacionLoRepone() throws Exception {
         int idBodega = leer(get("/api/activos/catalogos/bodegas")).get(0).get("id").asInt();
         int idCategoria = leer(get("/api/activos/catalogos/categorias")).get(0).get("id").asInt();

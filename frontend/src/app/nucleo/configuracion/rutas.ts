@@ -24,6 +24,7 @@ export const Rutas = {
   FINANZAS: 'finanzas',
   PROVEEDORES: 'proveedores',
   MOVIMIENTOS: 'movimientos',
+  RESULTADOS: 'resultados',
 } as const;
 
 /** Parametro de consulta con la URL a la que se vuelve tras iniciar sesion. */

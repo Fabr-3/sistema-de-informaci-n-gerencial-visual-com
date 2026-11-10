@@ -1,0 +1,103 @@
+<div class="pagina">
+  <a mat-button class="volver" [routerLink]="rutaListado"><mat-icon>arrow_back</mat-icon>Resultados por proyecto</a>
+
+  @let actual = detalle();
+  @if (actual === undefined) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (actual) {
+    @let proyecto = actual.proyecto;
+    <header class="pagina__encabezado">
+      <div>
+        <h1>
+          {{ proyecto.proyecto }}
+          <span class="estado estado--{{ tipoVisualProyecto(proyecto.estado) }}">{{ proyecto.estado | etiqueta: estados }}</span>
+        </h1>
+        <p>{{ proyecto.cliente }}</p>
+      </div>
+      <a mat-stroked-button [routerLink]="rutaMovimientos" [queryParams]="{ idProyecto: proyecto.idProyecto }">
+        <mat-icon>receipt_long</mat-icon>Ver movimientos
+      </a>
+    </header>
+
+    <div class="cifras">
+      <section class="panel cifra"><span class="texto-secundario">Contratado</span><strong>{{ proyecto.contratado | currency: 'BOB' : 'Bs ' }}</strong></section>
+      <section class="panel cifra"><span class="texto-secundario">Ingresos</span><strong class="ingreso">{{ proyecto.margen.ingresos | currency: 'BOB' : 'Bs ' }}</strong></section>
+      <section class="panel cifra"><span class="texto-secundario">Costos directos</span><strong class="egreso">{{ proyecto.margen.costos | currency: 'BOB' : 'Bs ' }}</strong></section>
+      <section class="panel cifra">
+        <span class="texto-secundario">Margen</span>
+        <strong>{{ proyecto.margen.margen | currency: 'BOB' : 'Bs ' }}</strong>
+        <span><span class="estado estado--{{ tipoVisualMargen(proyecto.margen) }}">{{ textoPorcentaje(proyecto.margen) }}</span></span>
+      </section>
+      <section class="panel cifra"><span class="texto-secundario">Por cobrar</span><strong [class.pendiente]="proyecto.porCobrar > 0">{{ proyecto.porCobrar | currency: 'BOB' : 'Bs ' }}</strong></section>
+    </div>
+
+    <section class="panel">
+      <div class="seccion__encabezado">
+        <h2 class="titulo-seccion">Resultado por evento</h2>
+        <p class="texto-secundario">Los cobros registrados para todo el proyecto aparecen en «Sin evento»; un evento sin cobros propios muestra solo sus costos.</p>
+      </div>
+      <div class="tabla-contenedor">
+        <table mat-table [dataSource]="actual.eventos">
+          <ng-container matColumnDef="evento">
+            <th mat-header-cell *matHeaderCellDef>Evento</th>
+            <td mat-cell *matCellDef="let fila">
+              <strong>{{ fila.evento }}</strong>
+              @if (fila.fechaInicio) {
+                <div class="texto-secundario detalle">{{ fila.fechaInicio | date: 'dd/MM/yyyy HH:mm' }}</div>
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="ingresos">
+            <th mat-header-cell *matHeaderCellDef class="numero">Ingresos</th>
+            <td mat-cell *matCellDef="let fila" class="numero monto">{{ fila.margen.ingresos | currency: 'BOB' : 'Bs ' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="costos">
+            <th mat-header-cell *matHeaderCellDef class="numero">Costos</th>
+            <td mat-cell *matCellDef="let fila" class="numero monto">{{ fila.margen.costos | currency: 'BOB' : 'Bs ' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="margen">
+            <th mat-header-cell *matHeaderCellDef class="numero">Margen</th>
+            <td mat-cell *matCellDef="let fila" class="numero monto">
+              @if (fila.margen.ingresos > 0) {
+                {{ fila.margen.margen | currency: 'BOB' : 'Bs ' }}
+                <div><span class="estado estado--{{ tipoVisualMargen(fila.margen) }}">{{ textoPorcentaje(fila.margen) }}</span></div>
+              } @else {
+                <span class="texto-secundario">Solo costos</span>
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="columnasEventos"></tr>
+          <tr mat-row *matRowDef="let fila; columns: columnasEventos"></tr>
+          <tr class="mat-row" *matNoDataRow>
+            <td class="vacio" [attr.colspan]="columnasEventos.length">El proyecto no tiene eventos ni movimientos.</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="seccion__encabezado"><h2 class="titulo-seccion">Ingresos y costos por tipo</h2></div>
+      <div class="tabla-contenedor">
+        <table mat-table [dataSource]="actual.porTipo">
+          <ng-container matColumnDef="tipo">
+            <th mat-header-cell *matHeaderCellDef>Tipo</th>
+            <td mat-cell *matCellDef="let fila">{{ fila.tipo }}</td>
+          </ng-container>
+          <ng-container matColumnDef="monto">
+            <th mat-header-cell *matHeaderCellDef class="numero">Monto</th>
+            <td mat-cell *matCellDef="let fila" class="numero monto" [class.ingreso]="fila.naturaleza === 'INGRESO'" [class.egreso]="fila.naturaleza === 'EGRESO'">
+              {{ (fila.naturaleza === 'INGRESO' ? fila.monto : -fila.monto) | currency: 'BOB' : 'Bs ' }}
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="columnasTipos"></tr>
+          <tr mat-row *matRowDef="let fila; columns: columnasTipos"></tr>
+          <tr class="mat-row" *matNoDataRow>
+            <td class="vacio" [attr.colspan]="columnasTipos.length">Sin movimientos registrados.</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+  } @else {
+    <p class="texto-secundario">No se pudo cargar el resultado del proyecto.</p>
+  }
+</div>

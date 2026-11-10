@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe, KeyValuePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -72,6 +72,9 @@ interface CriteriosMovimientos {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaginaMovimientos {
+  /** Parametro de consulta: muestra solo los movimientos de ese proyecto (todas las fechas). */
+  readonly idProyecto = input<string>();
+
   private readonly gestion = inject(GestionMovimientos);
   private readonly notificaciones = inject(ServicioNotificaciones);
   private readonly dialogos = inject(MatDialog);
@@ -103,6 +106,15 @@ export class PaginaMovimientos {
   });
 
   constructor() {
+    toObservable(this.idProyecto)
+      .pipe(
+        filter((id): id is string => !!id),
+        takeUntilDestroyed(),
+      )
+      .subscribe((id) => {
+        this.rango.setValue({ desde: null, hasta: null }, { emitEvent: false });
+        this.filtrar({ idProyecto: Number(id), desde: undefined, hasta: undefined });
+      });
     this.busqueda.valueChanges
       .pipe(debounceTime(RETARDO_BUSQUEDA_MS), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe((texto) => this.filtrar({ texto }));
@@ -142,6 +154,10 @@ export class PaginaMovimientos {
   /** Al cambiar la naturaleza se descarta un tipo que ya no corresponde. */
   protected filtrarNaturaleza(naturaleza: FiltroMovimientos['naturaleza']): void {
     this.filtrar({ naturaleza, idTipo: undefined });
+  }
+
+  protected quitarFiltroProyecto(): void {
+    this.filtrar({ idProyecto: undefined });
   }
 
   protected cambiarPagina(evento: PageEvent): void {
