@@ -182,7 +182,9 @@ export interface DatosDialogoContrato {
   readonly contrato?: Contrato;
 }
 
-/** Registro del contrato firmado; el PDF se genera con la plantilla estandar. */
+/** Registro del contrato firmado; el PDF se genera con la plantilla estandar.
+ * Desarrollo basado en practicas de la empresa
+ */
 @Component({
   selector: 'app-dialogo-contrato',
   imports: [ReactiveFormsModule, MatButtonModule, MatDatepickerModule, MatDialogModule, MatFormFieldModule, MatInputModule],
@@ -231,7 +233,9 @@ export class DialogoContrato {
     fechaFirma: [desdeFechaIso(this.datos.contrato?.fechaFirma ?? null) ?? new Date(), Validators.required],
     terminos: [this.datos.contrato?.terminos ?? '', Validators.maxLength(LONGITUD_TERMINOS)],
   });
-
+/**
+ * guardado del pdf
+*/
   protected guardar(): void {
     if (this.formulario.invalid || this.guardando()) {
       this.formulario.markAllAsTouched();
