@@ -1,0 +1,125 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Indicadores financieros</h1>
+      <p>Comparados con el periodo anterior de igual duración. Margen bruto = ingresos − costos directos (sin sueldos).</p>
+    </div>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="periodo">
+      <mat-label>Periodo</mat-label>
+      <mat-date-range-input [formGroup]="rango" [rangePicker]="selectorRango">
+        <input matStartDate formControlName="desde" placeholder="Desde" />
+        <input matEndDate formControlName="hasta" placeholder="Hasta" />
+      </mat-date-range-input>
+      <mat-datepicker-toggle matIconSuffix [for]="selectorRango" />
+      <mat-date-range-picker #selectorRango />
+    </mat-form-field>
+  </header>
+
+  @let datos = indicadores();
+  @if (datos === undefined) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (datos) {
+    <p class="texto-secundario periodo-anterior">
+      Periodo anterior: {{ datos.anterior.desde | date: 'dd/MM/yyyy' }} – {{ datos.anterior.hasta | date: 'dd/MM/yyyy' }}
+    </p>
+    <div class="tarjetas">
+      @for (tarjeta of tarjetas(); track tarjeta.titulo) {
+        <section class="panel tarjeta">
+          <span class="texto-secundario">{{ tarjeta.titulo }}</span>
+          <strong>{{ tarjeta.valor | currency: 'BOB' : 'Bs ' }}</strong>
+          @if (tarjeta.detalle) {
+            <span class="texto-secundario detalle">{{ tarjeta.detalle }} de los ingresos</span>
+          }
+          <span class="variacion {{ claseVariacion(tarjeta) }}">
+            @if (tarjeta.variacion; as cambio) {
+              <mat-icon aria-hidden="true">{{ cambio.sentido === 'sube' ? 'arrow_upward' : cambio.sentido === 'baja' ? 'arrow_downward' : 'remove' }}</mat-icon>
+              {{ cambio.sentido === 'sube' ? 'Sube' : cambio.sentido === 'baja' ? 'Baja' : 'Igual' }} {{ cambio.porcentaje | number: '1.0-1' }} %
+            } @else {
+              Sin datos del periodo anterior
+            }
+          </span>
+        </section>
+      }
+    </div>
+
+    <section class="panel bloque">
+      <h2>Evolución mensual</h2>
+      <app-grafico-evolucion [datos]="datos.evolucion" />
+    </section>
+
+    <div class="columnas">
+      <section class="panel bloque">
+        <h2>Margen por proyecto</h2>
+        @if (extremos().enAlerta.length) {
+          <h3><mat-icon aria-hidden="true">warning</mat-icon>Margen bajo o negativo (menos del {{ margenMinimo }} %)</h3>
+          <ul class="lista">
+            @for (proyecto of extremos().enAlerta; track proyecto.idProyecto) {
+              <li>
+                <a [routerLink]="rutaResultado(proyecto.idProyecto)">{{ proyecto.proyecto }}</a>
+                <span class="monto">{{ proyecto.margen.margen | currency: 'BOB' : 'Bs ' }}</span>
+                <span class="estado estado--{{ tipoVisualMargen(proyecto.margen) }}">{{ textoPorcentaje(proyecto.margen) }}</span>
+              </li>
+            }
+          </ul>
+        }
+        <h3>Mayor margen</h3>
+        <ul class="lista">
+          @for (proyecto of extremos().mejores; track proyecto.idProyecto) {
+            <li>
+              <a [routerLink]="rutaResultado(proyecto.idProyecto)">{{ proyecto.proyecto }}</a>
+              <span class="monto">{{ proyecto.margen.margen | currency: 'BOB' : 'Bs ' }}</span>
+              <span class="estado estado--{{ tipoVisualMargen(proyecto.margen) }}">{{ textoPorcentaje(proyecto.margen) }}</span>
+            </li>
+          } @empty {
+            <li class="texto-secundario">Aún no hay proyectos con movimientos.</li>
+          }
+        </ul>
+      </section>
+
+      <section class="panel bloque">
+        <div class="titulo-con-total">
+          <h2>Cuentas por cobrar</h2>
+          <strong class="pendiente">{{ datos.totalPorCobrar | currency: 'BOB' : 'Bs ' }}</strong>
+        </div>
+        <ul class="lista">
+          @for (proyecto of datos.cuentasPorCobrar; track proyecto.idProyecto) {
+            <li>
+              <span class="nombre">
+                <a [routerLink]="rutaResultado(proyecto.idProyecto)">{{ proyecto.proyecto }}</a>
+                <span class="texto-secundario detalle">{{ proyecto.cliente }}</span>
+              </span>
+              <span class="monto">{{ proyecto.porCobrar | currency: 'BOB' : 'Bs ' }}</span>
+            </li>
+          } @empty {
+            <li class="texto-secundario">No hay saldos pendientes de cobro.</li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <section class="panel bloque">
+      <h2>Movimientos significativos recientes</h2>
+      <p class="texto-secundario indicacion">
+        Últimos 30 días, desde {{ datos.umbralSignificativo | currency: 'BOB' : 'Bs ' : '1.0-0' }}.
+      </p>
+      <ul class="lista">
+        @for (movimiento of datos.movimientosSignificativos; track movimiento.id) {
+          <li>
+            <span class="fecha">{{ movimiento.fecha | date: 'dd/MM' }}</span>
+            <span class="nombre">
+              {{ movimiento.concepto }}
+              <span class="texto-secundario detalle">{{ movimiento.tipo }} · {{ movimiento.proyecto ?? 'General de la empresa' }}</span>
+            </span>
+            <span class="monto" [class.ingreso]="movimiento.naturaleza === 'INGRESO'" [class.egreso]="movimiento.naturaleza === 'EGRESO'">
+              {{ (movimiento.naturaleza === 'INGRESO' ? movimiento.monto : -movimiento.monto) | currency: 'BOB' : 'Bs ' }}
+            </span>
+          </li>
+        } @empty {
+          <li class="texto-secundario">No hubo movimientos de ese monto en los últimos 30 días.</li>
+        }
+      </ul>
+    </section>
+  } @else {
+    <p class="texto-secundario">No se pudieron calcular los indicadores.</p>
+  }
+</div>

@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,6 +134,14 @@ class FlujoMovimientosIntegracionTest {
                 .satisfies(fila -> assertThat(fila.get("idProyecto").asInt()).isEqualTo(idProyecto));
         mvc.perform(autorizado(get("/api/finanzas/resultados/proyectos/{id}", 999999)))
                 .andExpect(status().isNotFound());
+
+        JsonNode indicadores = leer(get("/api/finanzas/indicadores").param("desde", hoy.toString())
+                .param("hasta", hoy.toString()));
+        assertThat(indicadores.get("actual").get("ingresos").decimalValue()).isGreaterThanOrEqualTo(
+                new BigDecimal("3000"));
+        assertThat(indicadores.get("evolucion")).hasSize(12);
+        assertThat(indicadores.get("cuentasPorCobrar")).anySatisfy(fila ->
+                assertThat(fila.get("idProyecto").asInt()).isEqualTo(idProyecto));
     }
 
     private int registrar(String tipo, String concepto, String monto, int idProyecto, Integer idEvento)

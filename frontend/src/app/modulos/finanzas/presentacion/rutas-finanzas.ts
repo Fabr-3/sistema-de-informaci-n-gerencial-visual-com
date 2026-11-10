@@ -11,7 +11,13 @@ export const RUTAS_FINANZAS: Routes = [
     path: '',
     providers: [PROVEEDOR_PAGINADOR_ESPANOL],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: Rutas.MOVIMIENTOS },
+      { path: '', pathMatch: 'full', redirectTo: Rutas.INDICADORES },
+      {
+        path: Rutas.INDICADORES,
+        title: 'Indicadores financieros',
+        canActivate: [permisoGuard(Permisos.FINANZAS_VER)],
+        loadComponent: () => import('./paginas/indicadores/pagina-indicadores').then((m) => m.PaginaIndicadores),
+      },
       {
         path: Rutas.MOVIMIENTOS,
         title: 'Ingresos y egresos',

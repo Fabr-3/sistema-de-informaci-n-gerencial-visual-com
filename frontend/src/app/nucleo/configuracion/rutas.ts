@@ -25,6 +25,7 @@ export const Rutas = {
   PROVEEDORES: 'proveedores',
   MOVIMIENTOS: 'movimientos',
   RESULTADOS: 'resultados',
+  INDICADORES: 'indicadores',
 } as const;
 
 /** Parametro de consulta con la URL a la que se vuelve tras iniciar sesion. */

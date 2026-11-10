@@ -1,0 +1,115 @@
+// Series categoricas validadas (azul / naranja) sobre la superficie clara
+:host {
+  --serie-ingresos: #2a78d6;
+  --serie-egresos: #eb6834;
+
+  display: block;
+}
+
+.leyenda {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+  color: var(--vc-texto-secundario);
+  font-size: 13px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.muestra {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+
+  &--ingresos {
+    background: var(--serie-ingresos);
+  }
+
+  &--egresos {
+    background: var(--serie-egresos);
+  }
+}
+
+.lienzo {
+  position: relative;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+.guia {
+  stroke: var(--vc-borde);
+  stroke-width: 1;
+}
+
+.base {
+  stroke: var(--vc-texto-secundario);
+  stroke-width: 1;
+}
+
+.eje {
+  fill: var(--vc-texto-secundario);
+  font-size: 11px;
+}
+
+.serie--ingresos {
+  fill: var(--serie-ingresos);
+}
+
+.serie--egresos {
+  fill: var(--serie-egresos);
+}
+
+.resalte {
+  fill: var(--vc-fondo);
+}
+
+.zona {
+  fill: transparent;
+  cursor: pointer;
+  outline: none;
+
+  &:focus-visible {
+    stroke: var(--vc-texto);
+    stroke-width: 1;
+  }
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 170px;
+  padding: 8px 10px;
+  transform: translateX(-50%);
+  border: 1px solid var(--vc-borde);
+  border-radius: var(--vc-radio);
+  background: var(--vc-superficie);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  color: var(--vc-texto);
+  font-size: 12px;
+  pointer-events: none;
+  text-transform: capitalize;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: none;
+  }
+
+  .saldo {
+    color: var(--vc-texto-secundario);
+  }
+}

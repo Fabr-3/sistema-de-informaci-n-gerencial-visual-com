@@ -1,0 +1,148 @@
+.periodo {
+  min-width: 260px;
+}
+
+.periodo-anterior {
+  margin: -8px 0 0;
+  font-size: 13px;
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--vc-espacio);
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px;
+
+  strong {
+    font-size: 22px;
+    font-weight: 600;
+  }
+}
+
+.variacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 500;
+
+  .mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+
+  &--favorable {
+    color: var(--vc-exito);
+  }
+
+  &--desfavorable {
+    color: var(--vc-rojo);
+  }
+
+  &--neutra {
+    color: var(--vc-texto-secundario);
+  }
+}
+
+.bloque {
+  padding: 16px 20px;
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0 4px;
+    color: var(--vc-texto-secundario);
+    font-size: 13px;
+    font-weight: 600;
+
+    .mat-icon {
+      width: 18px;
+      height: 18px;
+      color: var(--vc-alerta);
+      font-size: 18px;
+    }
+  }
+}
+
+.columnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: var(--vc-espacio);
+}
+
+.titulo-con-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--vc-borde);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    > a,
+    .nombre {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .nombre {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}
+
+.fecha {
+  width: 44px;
+  color: var(--vc-texto-secundario);
+  font-size: 13px;
+}
+
+.monto {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ingreso {
+  color: var(--vc-exito);
+}
+
+.egreso {
+  color: var(--vc-rojo);
+}
+
+.pendiente {
+  color: var(--vc-alerta);
+}
+
+.indicacion {
+  margin: -8px 0 8px;
+  font-size: 13px;
+}

@@ -84,6 +84,12 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
     titulo: 'Finanzas',
     elementos: [
       {
+        etiqueta: 'Indicadores',
+        icono: 'monitoring',
+        ruta: rutaAbsoluta(Rutas.FINANZAS, Rutas.INDICADORES),
+        permiso: Permisos.FINANZAS_VER,
+      },
+      {
         etiqueta: 'Ingresos y egresos',
         icono: 'payments',
         ruta: rutaAbsoluta(Rutas.FINANZAS, Rutas.MOVIMIENTOS),
