@@ -16,6 +16,6 @@ public interface ConsultaGerencial {
     /** Equipos por unidad que siguen en el inventario, agrupados por categoria. */
     List<UtilizacionCategoria> utilizacionEquipos(Periodo periodo);
 
-    /** Personal tecnico activo, ordenado por nombre. */
+    /** Personal tecnico activo, del mas al menos ocupado. */
     List<UtilizacionPersonal> utilizacionPersonal(Periodo periodo);
 }

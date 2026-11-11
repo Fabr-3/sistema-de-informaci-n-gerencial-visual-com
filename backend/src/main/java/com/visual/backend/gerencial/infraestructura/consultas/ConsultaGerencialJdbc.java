@@ -103,7 +103,7 @@ public class ConsultaGerencialJdbc implements ConsultaGerencial {
             left join dias d on d.id_personal = p.id_personal
             left join totales t on t.id_personal = p.id_personal
             where p.fecha_eliminacion is null and p.activo
-            order by nombre
+            order by coalesce(d.dias, 0) desc, nombre
             """;
 
     private final NamedParameterJdbcTemplate jdbc;
