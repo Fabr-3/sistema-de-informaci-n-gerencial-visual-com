@@ -9,6 +9,7 @@ export const ACCIONES_AUDITORIA = {
   ELIMINAR: 'Eliminación',
   RESPALDO_CREADO: 'Respaldo generado',
   RESPALDO_DESCARGADO: 'Respaldo descargado',
+  REPORTE_GENERADO: 'Reporte generado',
 } as const;
 
 export type AccionAuditoria = keyof typeof ACCIONES_AUDITORIA;
