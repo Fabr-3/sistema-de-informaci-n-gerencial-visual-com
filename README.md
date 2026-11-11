@@ -9,12 +9,12 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 | Comercial y planificación de proyectos (clientes, cotizaciones, proyectos, eventos, contratos y cronograma) | ✅ Implementado |
 | Logística (personal técnico, jornadas de montaje y desmontaje, asignación de personal) | ✅ Implementado |
 | Financiero (ingresos y egresos, ventas, proveedores, márgenes por proyecto y evento, indicadores del gerente) | ✅ Implementado |
-| Información gerencial | Pendiente |
+| Información gerencial (KPIs, alertas de estado de activos y reportes operativos en PDF) | ✅ Implementado |
 | Subcontratación y consumibles | Pendiente |
 
 ## Tecnologías
 
-- **Backend** (`backend/`): Java 21, Spring Boot 4.1, Spring Security con JWT (resource server), Spring Data JPA/Hibernate, Flyway y OpenPDF (cotizaciones y contratos en PDF).
+- **Backend** (`backend/`): Java 21, Spring Boot 4.1, Spring Security con JWT (resource server), Spring Data JPA/Hibernate, Flyway y OpenPDF (cotizaciones, contratos y reportes en PDF).
 - **Frontend** (`frontend/`): Angular 22, Angular Material, angular-calendar (cronograma), SCSS y Vitest. Los gráficos de indicadores se dibujan en SVG sin librerías adicionales.
 - **Base de datos**: PostgreSQL local, base `proyecto-visual-com`.
 
@@ -24,11 +24,12 @@ Las dependencias apuntan siempre hacia el dominio.
 
 ```
 backend/src/main/java/com/visual/backend/
-├── compartido/                 Núcleo común: excepciones de negocio, paginación, manejo global de errores y correlativos
+├── compartido/                 Núcleo común: excepciones de negocio, paginación, manejo global de errores, correlativos y estilo PDF
 ├── activos/                    Activos por unidad y por lote, historial de uso, mantenimiento y módulos LED
 ├── comercial/                  Clientes, cotizaciones, proyectos, eventos, contratos y documentos PDF
 ├── logistica/                  Personal técnico, planes logísticos por evento y asignaciones de personal
 ├── finanzas/                   Proveedores, ingresos y egresos, ventas, resultados por proyecto e indicadores
+├── gerencial/                  KPIs del gerente, alertas de estado de activos y reportes operativos en PDF
 ├── accesos/
 │   ├── dominio/                Modelos y reglas de negocio (sin Spring ni JPA) + puertos (interfaces)
 │   ├── aplicacion/             Casos de uso (servicios) y DTO de entrada y salida
@@ -95,6 +96,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V8`: teléfono y correo de los proveedores.
   - `V9`: finanzas. Tipos de movimiento (indican si exigen proveedor o descuentan inventario); proyecto y evento opcionales en los movimientos, con trigger que exige que el evento sea del proyecto; número de factura; detalle de ventas (`ventas_detalle`); estado `VENDIDO` de los activos y movimientos de lote `VENTA` y `ANULACION_VENTA`.
   - `V10`: costo de los mantenimientos en finanzas. Tipo de movimiento de sistema *Mantenimiento de equipos* (`codigo_sistema`), vínculo `id_mantenimiento` de los movimientos y registro de los costos de los mantenimientos ya finalizados.
+  - `V11`: información gerencial. Acción de auditoría `REPORTE_GENERADO`; los KPIs y alertas se calculan sobre las tablas existentes y el permiso `REPORTES_VER` existe desde `V3`.
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -176,6 +178,18 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `FINANZAS_GESTIONAR` (administrador y gerente): registrar y anular movimientos.
   - Los proveedores se consultan con `FINANZAS_VER` o `PROVEEDORES_VER` y se registran con `FINANZAS_GESTIONAR` o `PROVEEDORES_GESTIONAR`.
 
+## Reglas del módulo de información gerencial
+
+- **Periodo:** por defecto, el mes en curso hasta hoy; los KPIs financieros se comparan con el periodo anterior de igual duración. Los importes provienen de los movimientos registrados (los anulados no cuentan).
+- **KPIs:**
+  - *Ganancias* (utilidad neta) = ingresos − costos directos − gastos generales. La utilidad bruta descuenta solo los costos directos.
+  - *Margen de utilidad bruta* = utilidad bruta / ingresos; *margen de beneficio neto* = ganancia / ingresos. Sin ingresos no se calculan. Su variación se expresa en puntos porcentuales.
+  - *Rentabilidad recurrente anual (basada en proyectos):* en los 12 meses que terminan en la fecha final, margen de los proyectos de clientes recurrentes (con 2 o más proyectos no cancelados contratados) sobre sus ingresos. También se informa qué parte del margen anual de todos los proyectos aportan.
+  - *Tasa de utilización de recursos:* días con uso registrado de los equipos por unidad que siguen en el inventario, sobre los días disponibles desde su adquisición (por categoría y total); y días con asignaciones del personal técnico activo en eventos no cancelados, sobre los días del periodo. Bajo 20 % se marca para revisión.
+- **Alertas de estado de activos** (situación actual): mantenimiento preventivo vencido (crítica) o próximo según horas de uso; mantenimiento en proceso desde hace 7 días o más; módulos LED defectuosos; 3 o más correctivos en los últimos 12 meses (fallas recurrentes); y equipos disponibles sin uso en los últimos 90 días (informativa). Los umbrales se configuran en `app.gerencial`.
+- **Reportes operativos en PDF:** resumen gerencial, eventos del periodo, estado de activos e inventario (situación actual), mantenimientos de equipos con su costo y utilización del personal técnico. Cada emisión queda en la auditoría.
+- **Permisos:** `REPORTES_VER` (administrador y gerente) para el tablero, las alertas y los reportes.
+
 ## Respaldos
 
 Se generan con `pg_dump` en formato personalizado: uno automático cada día a las 02:00 y otros manuales desde **Administración de accesos → Respaldos**. Las copias firmadas de los contratos no están en la base: hay que copiar también la carpeta `CONTRATOS_DIRECTORIO`. Para restaurar uno:
@@ -191,13 +205,15 @@ Los scripts de `database/datos_prueba/` cargan datos similares a la operación r
 - `01_accesos_activos.sql`: personal con sus roles, modelos y equipos con códigos, uso en eventos, mantenimientos, módulos LED e inventario por lotes.
 - `02_comercial.sql`: servicios y lugares, ocho clientes con documentos y contactos, cotizaciones en todos los estados, proyectos con su cronograma de eventos y contratos.
 - `03_logistica.sql`: nueve personas del personal técnico (cinco vinculadas a las cuentas de prueba), planes logísticos de eventos pasados y próximos con sus jornadas y asignaciones. Incluye un cruce a propósito: Daniela Gutiérrez está el 11/12 en dos eventos a la vez.
-- `04_finanzas.sql`: seis proveedores; cobros y costos de los proyectos (por evento cuando corresponde); alquileres de equipos y gastos generales de cada mes de 2026; compras de equipos; una venta de cables DMX con su salida de inventario; y un cobro anulado. La feria FEXPOCRUZ queda con margen bajo y el festival con saldo por cobrar.
+- `04_finanzas.sql`: seis proveedores; cobros y costos de los proyectos (por evento cuando corresponde); alquileres de equipos y gastos generales de cada mes de 2026; compras de equipos; una venta de cables DMX con su salida de inventario; y un cobro anulado. La feria FEXPOCRUZ queda con margen bajo y el festival con saldo por cobrar. También registra como egresos los costos de los mantenimientos finalizados.
+- `05_gerencial.sql`: dos correctivos más de ROEBM-0003 (fallas recurrentes) con sus egresos y un mantenimiento en proceso desde fines de octubre en ABPL-0021 (prolongado), para ver todos los tipos de alerta.
 
 ```bash
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/01_accesos_activos.sql
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/02_comercial.sql
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/03_logistica.sql
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/04_finanzas.sql
+psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/05_gerencial.sql
 ```
 
 Todos los usuarios de prueba tienen la contraseña `VisualCom2026`:
