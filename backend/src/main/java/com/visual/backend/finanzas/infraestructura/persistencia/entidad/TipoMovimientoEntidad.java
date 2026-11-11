@@ -34,4 +34,7 @@ public class TipoMovimientoEntidad {
 
     @Column(name = "descuenta_inventario", nullable = false)
     private boolean descuentaInventario;
+
+    @Column(name = "codigo_sistema", length = 30)
+    private String codigoSistema;
 }

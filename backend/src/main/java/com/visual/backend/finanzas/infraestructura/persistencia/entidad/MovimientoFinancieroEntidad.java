@@ -69,6 +69,9 @@ public class MovimientoFinancieroEntidad {
     @Column(name = "numero_factura", length = 30, updatable = false)
     private String numeroFactura;
 
+    @Column(name = "id_mantenimiento", updatable = false)
+    private Integer idMantenimiento;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 12)
     private EstadoMovimiento estado;

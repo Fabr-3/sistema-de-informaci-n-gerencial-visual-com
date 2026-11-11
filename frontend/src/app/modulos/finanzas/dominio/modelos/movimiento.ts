@@ -21,6 +21,8 @@ export interface TipoMovimiento {
   readonly naturaleza: Naturaleza;
   readonly requiereProveedor: boolean;
   readonly descuentaInventario: boolean;
+  /** Los tipos con codigo de sistema los registra la aplicacion, no el usuario. */
+  readonly codigoSistema: string | null;
 }
 
 /** Proyecto, evento o proveedor imputado, con su nombre visible. */
@@ -49,6 +51,8 @@ export interface Movimiento {
   readonly estado: EstadoMovimiento;
   readonly motivoAnulacion: string | null;
   readonly items: readonly ItemVenta[];
+  /** Mantenimiento que origino el egreso automatico. */
+  readonly idMantenimiento: number | null;
   readonly nombreCreador: string | null;
   readonly fechaCreacion: string;
 }
@@ -99,6 +103,7 @@ export function tipoVisualNaturaleza(naturaleza: Naturaleza): TipoEstadoVisual {
   return naturaleza === 'INGRESO' ? 'activo' : 'peligro';
 }
 
-export function tiposDe(tipos: readonly TipoMovimiento[], naturaleza: Naturaleza): TipoMovimiento[] {
-  return tipos.filter((tipo) => tipo.naturaleza === naturaleza);
+/** Tipos de la naturaleza indicada que el usuario puede registrar a mano. */
+export function tiposRegistrables(tipos: readonly TipoMovimiento[], naturaleza: Naturaleza): TipoMovimiento[] {
+  return tipos.filter((tipo) => tipo.naturaleza === naturaleza && tipo.codigoSistema === null);
 }

@@ -24,11 +24,13 @@ class ReglasMovimientosTest {
     private static final LocalDateTime AHORA = LocalDateTime.of(2026, 11, 10, 9, 0);
     private static final LocalDate HOY = AHORA.toLocalDate();
     private static final TipoMovimiento COBRO = new TipoMovimiento(1, "Cobro de servicios", Naturaleza.INGRESO,
-            false, false);
+            false, false, null);
     private static final TipoMovimiento VENTA = new TipoMovimiento(3, "Venta de equipos", Naturaleza.INGRESO,
-            false, true);
+            false, true, null);
     private static final TipoMovimiento SUBCONTRATACION = new TipoMovimiento(7, "Subcontratación de servicios",
-            Naturaleza.EGRESO, true, false);
+            Naturaleza.EGRESO, true, false, null);
+    private static final TipoMovimiento MANTENIMIENTO = new TipoMovimiento(11, "Mantenimiento de equipos",
+            Naturaleza.EGRESO, false, false, TipoMovimiento.CODIGO_MANTENIMIENTO);
     private static final Referencia PROYECTO = new Referencia(3, "Cena de gala de fin de año");
     private static final Referencia PROVEEDOR = new Referencia(2, "Generadores Andinos S.R.L.");
 
@@ -88,5 +90,22 @@ class ReglasMovimientosTest {
         cobro.anular("Monto duplicado", 1, AHORA);
         assertThat(cobro.getEstado()).isEqualTo(EstadoMovimiento.ANULADO);
         assertThatThrownBy(() -> cobro.anular("Otra vez", 1, AHORA)).isInstanceOf(ReglaNegocioExcepcion.class);
+    }
+
+    @Test
+    void losTiposAutomaticosNoSeRegistranAMano() {
+        assertThatThrownBy(() -> MovimientoFinanciero.registrar(datos(MANTENIMIENTO, "300", HOY, null, null),
+                1, AHORA)).isInstanceOf(ReglaNegocioExcepcion.class).hasMessageContaining("automáticamente");
+        assertThatThrownBy(() -> MovimientoFinanciero.costoMantenimiento(COBRO, "Mantenimiento", BigDecimal.TEN,
+                HOY, 4, 1, AHORA)).isInstanceOf(ReglaNegocioExcepcion.class);
+        assertThatThrownBy(() -> MovimientoFinanciero.costoMantenimiento(MANTENIMIENTO, "Mantenimiento",
+                BigDecimal.ZERO, HOY, 4, 1, AHORA)).isInstanceOf(ReglaNegocioExcepcion.class);
+
+        MovimientoFinanciero costo = MovimientoFinanciero.costoMantenimiento(MANTENIMIENTO,
+                "Mantenimiento correctivo · ABPL-0003", new BigDecimal("420.5"), HOY, 4, 1, AHORA);
+        assertThat(costo.getMonto()).isEqualByComparingTo("420.50");
+        assertThat(costo.getIdMantenimiento()).isEqualTo(4);
+        assertThat(costo.getProyecto()).isNull();
+        assertThat(costo.montoConSigno().signum()).isNegative();
     }
 }

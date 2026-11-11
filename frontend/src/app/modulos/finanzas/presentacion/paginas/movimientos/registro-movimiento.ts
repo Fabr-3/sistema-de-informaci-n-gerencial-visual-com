@@ -26,7 +26,7 @@ import { GestionProyectos } from '../../../../comercial/aplicacion/gestion-proye
 import { Evento, Proyecto } from '../../../../comercial/dominio/modelos/proyecto';
 import { GestionMovimientos } from '../../../aplicacion/gestion-movimientos';
 import { GestionProveedores } from '../../../aplicacion/gestion-proveedores';
-import { NATURALEZAS, Naturaleza, TipoMovimiento, tiposDe } from '../../../dominio/modelos/movimiento';
+import { NATURALEZAS, Naturaleza, TipoMovimiento, tiposRegistrables } from '../../../dominio/modelos/movimiento';
 import { Proveedor } from '../../../dominio/modelos/proveedor';
 
 const SUGERENCIAS = 10;
@@ -102,7 +102,7 @@ export class RegistroMovimiento {
   private readonly idTipo = toSignal(this.formulario.controls.idTipo.valueChanges, {
     initialValue: this.formulario.controls.idTipo.value,
   });
-  protected readonly tiposDisponibles = computed(() => tiposDe(this.tipos(), this.naturaleza()));
+  protected readonly tiposDisponibles = computed(() => tiposRegistrables(this.tipos(), this.naturaleza()));
   protected readonly tipo = computed(() => this.tipos().find((tipo) => tipo.id === this.idTipo()) ?? null);
   protected readonly esVenta = computed(() => !!this.tipo()?.descuentaInventario);
 

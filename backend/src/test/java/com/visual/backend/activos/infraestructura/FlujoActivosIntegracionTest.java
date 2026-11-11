@@ -69,7 +69,7 @@ class FlujoActivosIntegracionTest {
     }
 
     @Test
-    void lasHorasDeUsoGeneranAlertaYElMantenimientoPreventivoLaReinicia() throws Exception {
+    void lasHorasDeUsoGeneranAlertaYElMantenimientoPreventivoLaReiniciaYRegistraSuCosto() throws Exception {
         int idModelo = crearModelo("Pantalla prueba", "UNIDAD", 10);
         int idActivo = registrarActivos(Map.of("codigoInventario", "prb-0001", "idModelo", idModelo,
                 "idBodega", idBodegaPrincipal, "cantidad", 1)).get(0).get("id").asInt();
@@ -94,8 +94,15 @@ class FlujoActivosIntegracionTest {
                 .andExpect(status().isUnprocessableContent());
 
         ejecutar(post("/api/activos/{id}/mantenimientos/{idM}/finalizacion", idActivo, idMantenimiento),
-                Map.of("fechaFin", base.plusDays(2).toString(), "condicionFinal", "OPERATIVO"), tokenAdministrador)
-                .andExpect(status().isOk());
+                Map.of("fechaFin", base.plusDays(2).toString(), "condicionFinal", "OPERATIVO", "costo", 350.5),
+                tokenAdministrador).andExpect(status().isOk());
+        JsonNode egreso = leer(get("/api/finanzas/movimientos").param("texto", "PRB-0001"), tokenAdministrador)
+                .get("pagina").get("contenido").get(0);
+        assertThat(egreso.get("concepto").asString()).isEqualTo("Mantenimiento preventivo · PRB-0001");
+        assertThat(egreso.get("monto").decimalValue()).isEqualByComparingTo("350.50");
+        assertThat(egreso.get("fecha").asString()).isEqualTo(base.plusDays(2).toLocalDate().toString());
+        assertThat(egreso.get("idMantenimiento").asInt()).isEqualTo(idMantenimiento);
+        assertThat(egreso.get("proyecto").isNull()).isTrue();
         JsonNode reparado = leer(get("/api/activos/{id}", idActivo), tokenAdministrador);
         assertThat(reparado.get("estado").asString()).isEqualTo("DISPONIBLE");
         assertThat(reparado.get("horasTotales").decimalValue()).isEqualByComparingTo("9.50");

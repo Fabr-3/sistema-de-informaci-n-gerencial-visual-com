@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,7 @@ import com.visual.backend.accesos.aplicacion.servicio.ServicioAuditoria;
 import com.visual.backend.accesos.dominio.modelo.AccionAuditoria;
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud;
 import com.visual.backend.activos.aplicacion.dto.ComandoFinalizarMantenimiento;
+import com.visual.backend.activos.aplicacion.evento.MantenimientoFinalizado;
 import com.visual.backend.activos.aplicacion.dto.ComandoIniciarMantenimiento;
 import com.visual.backend.activos.dominio.modelo.Activo;
 import com.visual.backend.activos.dominio.modelo.Mantenimiento;
@@ -26,6 +28,7 @@ import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepc
 /**
  * Mantenimientos de activos. Iniciar uno pone el activo en mantenimiento;
  * al finalizarlo vuelve a estar disponible o se da de baja si no es reparable.
+ * La finalizacion se publica para que finanzas registre su costo.
  */
 @Service
 public class ServicioMantenimientos {
@@ -37,16 +40,18 @@ public class ServicioMantenimientos {
     private final RepositorioCatalogosActivos catalogos;
     private final ServicioAuditoria auditoria;
     private final ContextoSolicitud contexto;
+    private final ApplicationEventPublisher eventos;
     private final Clock reloj;
 
     public ServicioMantenimientos(RepositorioMantenimientos repositorio, RepositorioActivos activos,
                                   RepositorioCatalogosActivos catalogos, ServicioAuditoria auditoria,
-                                  ContextoSolicitud contexto, Clock reloj) {
+                                  ContextoSolicitud contexto, ApplicationEventPublisher eventos, Clock reloj) {
         this.repositorio = repositorio;
         this.activos = activos;
         this.catalogos = catalogos;
         this.auditoria = auditoria;
         this.contexto = contexto;
+        this.eventos = eventos;
         this.reloj = reloj;
     }
 
@@ -91,6 +96,8 @@ public class ServicioMantenimientos {
         activos.guardar(activo);
         auditoria.registrarOperacion(AccionAuditoria.ACTUALIZAR, ENTIDAD, idMantenimiento, anterior,
                 mapa(activo, guardado), "Finalización de mantenimiento");
+        eventos.publishEvent(new MantenimientoFinalizado(guardado.getId(), activo.getCodigoInventario(),
+                guardado.getTipo().nombre(), guardado.getFechaFin(), guardado.getCosto()));
         return guardado;
     }
 

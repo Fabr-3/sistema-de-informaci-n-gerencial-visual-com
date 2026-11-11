@@ -38,6 +38,10 @@ import { ESTADOS_MOVIMIENTO, Movimiento, NATURALEZAS } from '../../../dominio/mo
           <dt>Proveedor</dt>
           <dd>{{ movimiento.proveedor.nombre }}</dd>
         }
+        @if (movimiento.idMantenimiento) {
+          <dt>Origen</dt>
+          <dd>Registrado automáticamente al finalizar el mantenimiento del equipo</dd>
+        }
         <dt>Factura</dt>
         <dd>{{ movimiento.numeroFactura ?? '—' }}</dd>
         <dt>Estado</dt>

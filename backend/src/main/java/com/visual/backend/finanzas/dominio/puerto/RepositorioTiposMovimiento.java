@@ -12,6 +12,8 @@ public interface RepositorioTiposMovimiento {
 
     Optional<TipoMovimiento> buscarPorId(Integer id);
 
+    Optional<TipoMovimiento> buscarPorCodigoSistema(String codigo);
+
     default TipoMovimiento obtener(Integer id) {
         return buscarPorId(id).orElseThrow(() -> new RecursoNoEncontradoExcepcion("el tipo de movimiento", id));
     }

@@ -41,7 +41,7 @@ final class MapeadorFinanzas {
 
     static TipoMovimiento aDominio(TipoMovimientoEntidad entidad) {
         return new TipoMovimiento(entidad.getId(), entidad.getNombre(), entidad.getNaturaleza(),
-                entidad.isRequiereProveedor(), entidad.isDescuentaInventario());
+                entidad.isRequiereProveedor(), entidad.isDescuentaInventario(), entidad.getCodigoSistema());
     }
 
     static MovimientoFinanciero aDominio(MovimientoFinancieroEntidad entidad) {
@@ -61,6 +61,7 @@ final class MapeadorFinanzas {
                 .estado(entidad.getEstado())
                 .motivoAnulacion(entidad.getMotivoAnulacion())
                 .items(entidad.getDetalle().stream().map(MapeadorFinanzas::item).toList())
+                .idMantenimiento(entidad.getIdMantenimiento())
                 .creadoPor(entidad.getCreadoPor())
                 .nombreCreador(entidad.getCreador() == null ? null : entidad.getCreador().nombreCompleto())
                 .fechaCreacion(entidad.getFechaCreacion())

@@ -96,6 +96,7 @@ public class RepositorioMovimientosJpa implements RepositorioMovimientos {
         entidad.setProveedor(movimiento.getProveedor() == null ? null
                 : entityManager.getReference(ProveedorEntidad.class, movimiento.getProveedor().id()));
         entidad.setNumeroFactura(movimiento.getNumeroFactura());
+        entidad.setIdMantenimiento(movimiento.getIdMantenimiento());
         entidad.setCreadoPor(movimiento.getCreadoPor());
         entidad.setFechaCreacion(movimiento.getFechaCreacion());
         for (ItemVenta item : movimiento.getItems()) {

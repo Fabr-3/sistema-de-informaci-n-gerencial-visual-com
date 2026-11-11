@@ -30,4 +30,9 @@ public class RepositorioTiposMovimientoJpa implements RepositorioTiposMovimiento
     public Optional<TipoMovimiento> buscarPorId(Integer id) {
         return tipos.findById(id).map(MapeadorFinanzas::aDominio);
     }
+
+    @Override
+    public Optional<TipoMovimiento> buscarPorCodigoSistema(String codigo) {
+        return tipos.findByCodigoSistema(codigo).map(MapeadorFinanzas::aDominio);
+    }
 }

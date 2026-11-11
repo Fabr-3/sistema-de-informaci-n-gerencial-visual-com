@@ -40,6 +40,7 @@ const LONGITUD_OBSERVACIONES = 2000;
           <mat-form-field appearance="outline">
             <mat-label>Costo en Bs (opcional)</mat-label>
             <input matInput type="number" min="0" step="0.01" formControlName="costo" />
+            <mat-hint>Se registra como egreso en finanzas</mat-hint>
             <mat-error>El costo no puede ser negativo</mat-error>
           </mat-form-field>
           <mat-form-field appearance="outline" class="completo">

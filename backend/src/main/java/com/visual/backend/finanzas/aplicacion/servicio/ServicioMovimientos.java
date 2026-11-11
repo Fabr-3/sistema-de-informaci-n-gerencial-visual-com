@@ -1,6 +1,8 @@
 package com.visual.backend.finanzas.aplicacion.servicio;
 
+import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +16,7 @@ import com.visual.backend.accesos.dominio.modelo.AccionAuditoria;
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud;
 import com.visual.backend.compartido.aplicacion.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
+import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 import com.visual.backend.finanzas.aplicacion.dto.ComandoMovimiento;
 import com.visual.backend.finanzas.aplicacion.dto.ListadoMovimientos;
 import com.visual.backend.finanzas.dominio.modelo.DatosMovimiento;
@@ -89,6 +92,20 @@ public class ServicioMovimientos {
         MovimientoFinanciero resultado = repositorio.obtener(guardado.getId());
         auditoria.registrarOperacion(AccionAuditoria.CREAR, ENTIDAD, resultado.getId(), null, mapa(resultado), null);
         return resultado;
+    }
+
+    /** Egreso general automatico por el costo de un mantenimiento finalizado. */
+    @Transactional
+    public MovimientoFinanciero registrarCostoMantenimiento(Integer idMantenimiento, String concepto,
+                                                            BigDecimal costo, LocalDate fecha) {
+        TipoMovimiento tipo = tipos.buscarPorCodigoSistema(TipoMovimiento.CODIGO_MANTENIMIENTO)
+                .orElseThrow(() -> new ReglaNegocioExcepcion(
+                        "No está configurado el tipo de movimiento para los costos de mantenimiento"));
+        MovimientoFinanciero guardado = repositorio.guardar(MovimientoFinanciero.costoMantenimiento(tipo, concepto,
+                costo, fecha, idMantenimiento, contexto.idUsuarioActual(), LocalDateTime.now(reloj)));
+        auditoria.registrarOperacion(AccionAuditoria.CREAR, ENTIDAD, guardado.getId(), null, mapa(guardado),
+                "Costo de mantenimiento");
+        return guardado;
     }
 
     /** La anulacion de una venta devuelve al inventario lo vendido. */

@@ -41,6 +41,8 @@ public class MovimientoFinanciero {
     private EstadoMovimiento estado;
     private String motivoAnulacion;
     private List<ItemVenta> items;
+    /** Mantenimiento cuyo costo origino el egreso (registro automatico). */
+    private Integer idMantenimiento;
     private Integer creadoPor;
     private String nombreCreador;
     private LocalDateTime fechaCreacion;
@@ -60,6 +62,29 @@ public class MovimientoFinanciero {
                 .numeroFactura(textoOpcional(datos.numeroFactura()))
                 .estado(EstadoMovimiento.REGISTRADO)
                 .items(datos.items() == null ? List.of() : List.copyOf(datos.items()))
+                .creadoPor(actor)
+                .fechaCreacion(ahora)
+                .build();
+    }
+
+    /** Egreso general por el costo de un mantenimiento finalizado en el modulo de activos. */
+    public static MovimientoFinanciero costoMantenimiento(TipoMovimiento tipo, String concepto, BigDecimal monto,
+                                                          LocalDate fecha, Integer idMantenimiento, Integer actor,
+                                                          LocalDateTime ahora) {
+        if (!TipoMovimiento.CODIGO_MANTENIMIENTO.equals(tipo.codigoSistema())) {
+            throw new ReglaNegocioExcepcion("El tipo " + tipo.nombre() + " no corresponde a mantenimientos");
+        }
+        if (monto == null || monto.signum() <= 0) {
+            throw new ReglaNegocioExcepcion("El costo del mantenimiento debe ser mayor a cero");
+        }
+        return MovimientoFinanciero.builder()
+                .tipo(tipo)
+                .concepto(concepto)
+                .monto(monto.setScale(DECIMALES, RoundingMode.HALF_UP))
+                .fecha(fecha)
+                .estado(EstadoMovimiento.REGISTRADO)
+                .items(List.of())
+                .idMantenimiento(idMantenimiento)
                 .creadoPor(actor)
                 .fechaCreacion(ahora)
                 .build();
@@ -93,6 +118,10 @@ public class MovimientoFinanciero {
     }
 
     private static void validar(DatosMovimiento datos, LocalDate hoy) {
+        if (datos.tipo().esAutomatico()) {
+            throw new ReglaNegocioExcepcion("Los movimientos de tipo " + datos.tipo().nombre()
+                    + " se registran automáticamente desde su módulo de origen");
+        }
         if (datos.concepto() == null || datos.concepto().isBlank()) {
             throw new ReglaNegocioExcepcion("Indique el concepto del movimiento");
         }

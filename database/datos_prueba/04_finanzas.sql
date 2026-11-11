@@ -1,13 +1,15 @@
 -- =====================================================================
 -- Datos de prueba: modulo financiero (proveedores, ingresos y egresos).
--- Requiere las migraciones V8 y V9 y los scripts 01, 02 y 03 cargados.
+-- Requiere las migraciones V8 a V10 y los scripts 01, 02 y 03 cargados.
 -- Uso:
 --   psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/04_finanzas.sql
 -- Incluye cobros y costos de los proyectos de 02_comercial.sql (por evento
 -- cuando corresponde), gastos generales mensuales, alquileres de equipos sin
 -- proyecto, una venta de cables con su salida de inventario y un cobro
 -- anulado. La feria FEXPOCRUZ queda con margen bajo y el festival con saldo
--- por cobrar, para probar las alertas de los indicadores.
+-- por cobrar, para probar las alertas de los indicadores. Los costos de los
+-- mantenimientos finalizados de 01_accesos_activos.sql se registran como
+-- egresos, igual que lo hace la aplicacion al finalizar un mantenimiento.
 -- =====================================================================
 \set ON_ERROR_STOP on
 
@@ -218,5 +220,17 @@ SELECT v.id_existencia, 'VENTA', -v.cantidad,
        TIMESTAMP '2026-08-20 11:00', ref.admin
 FROM ref, venta_prueba v, movimientos_financieros m
 WHERE m.concepto = 'Venta de cables DMX usados al Teatro Municipal';
+
+-- Costos de los mantenimientos finalizados (la aplicacion los registra al finalizar)
+INSERT INTO movimientos_financieros (id_tipo_movimiento, concepto, monto, fecha_movimiento, id_mantenimiento,
+                                     creado_por, fecha_creacion)
+SELECT t.id_tipo_movimiento, 'Mantenimiento ' || LOWER(tm.nombre) || ' · ' || a.codigo_inventario,
+       m.costo, m.fecha_fin::DATE, m.id_mantenimiento, m.modificado_por, COALESCE(m.fecha_modificacion, m.fecha_fin)
+FROM mantenimientos m
+JOIN tipos_mantenimiento tm ON tm.id_tipo_mantenimiento = m.id_tipo_mantenimiento
+JOIN activos a ON a.id_activo = m.id_activo
+JOIN tipos_movimiento t ON t.codigo_sistema = 'MANTENIMIENTO'
+WHERE m.estado = 'FINALIZADO' AND m.fecha_eliminacion IS NULL AND m.costo > 0
+ON CONFLICT (id_mantenimiento) DO NOTHING;
 
 COMMIT;
