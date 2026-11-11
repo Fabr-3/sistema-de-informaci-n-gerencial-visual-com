@@ -1,0 +1,278 @@
+$color-barra: #2a78d6;
+
+.periodo {
+  min-width: 260px;
+}
+
+.periodo-anterior {
+  margin: -8px 0 0;
+  font-size: 13px;
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--vc-espacio);
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px;
+
+  strong {
+    font-size: 22px;
+    font-weight: 600;
+  }
+}
+
+.titulo-tarjeta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ayuda {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  cursor: help;
+}
+
+.detalle {
+  font-size: 12px;
+}
+
+.variacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 500;
+
+  .mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+
+  &--sube {
+    color: var(--vc-exito);
+  }
+
+  &--baja {
+    color: var(--vc-rojo);
+  }
+
+  &--igual {
+    color: var(--vc-texto-secundario);
+  }
+}
+
+.columnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: var(--vc-espacio);
+}
+
+.bloque {
+  padding: 16px 20px;
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+.indicacion {
+  margin: -8px 0 8px;
+  font-size: 13px;
+}
+
+.resultados {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--vc-borde);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th:first-child {
+    text-align: left;
+    white-space: normal;
+  }
+
+  thead th {
+    color: var(--vc-texto-secundario);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  tbody th {
+    font-weight: 400;
+  }
+
+  .destacada th,
+  .destacada td:nth-child(2) {
+    font-weight: 600;
+  }
+
+  tr:last-child th,
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.negativo {
+  color: var(--vc-rojo);
+}
+
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--vc-borde);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .nombre {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+}
+
+.monto {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.porcentaje {
+  width: 56px;
+  color: var(--vc-texto-secundario);
+  text-align: right;
+}
+
+.pie {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(80px, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__etiqueta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__pista {
+    height: 10px;
+    overflow: hidden;
+    background: var(--vc-neutro-suave);
+    border-radius: 4px;
+  }
+
+  &__relleno {
+    display: block;
+    height: 100%;
+    background: $color-barra;
+    border-radius: 0 4px 4px 0;
+  }
+
+  &__valor {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 72px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+
+    &.baja {
+      color: var(--vc-alerta);
+    }
+
+    .mat-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+    }
+  }
+}
+
+.alertas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  h2 {
+    margin: 0 8px 0 0;
+  }
+
+  &__resumen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+
+    .estado {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .mat-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+    }
+  }
+
+  &__enlaces {
+    display: flex;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 599px) {
+  .barras li {
+    grid-template-columns: 1fr auto;
+
+    .barras__pista {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+  }
+}

@@ -1,0 +1,182 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Tablero gerencial</h1>
+      <p>Ganancias y márgenes comparados con el periodo anterior de igual duración, rentabilidad recurrente y uso de recursos.</p>
+    </div>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="periodo">
+      <mat-label>Periodo</mat-label>
+      <mat-date-range-input [formGroup]="rango" [rangePicker]="selectorRango">
+        <input matStartDate formControlName="desde" placeholder="Desde" />
+        <input matEndDate formControlName="hasta" placeholder="Hasta" />
+      </mat-date-range-input>
+      <mat-datepicker-toggle matIconSuffix [for]="selectorRango" />
+      <mat-date-range-picker #selectorRango />
+    </mat-form-field>
+  </header>
+
+  @let datos = kpis();
+  @if (datos === undefined) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (datos) {
+    <p class="texto-secundario periodo-anterior">
+      Periodo anterior: {{ datos.anterior.desde | date: 'dd/MM/yyyy' }} – {{ datos.anterior.hasta | date: 'dd/MM/yyyy' }}
+    </p>
+    <div class="tarjetas">
+      @for (tarjeta of tarjetas(); track tarjeta.titulo) {
+        <section class="panel tarjeta">
+          <span class="texto-secundario titulo-tarjeta">
+            {{ tarjeta.titulo }}
+            <mat-icon class="ayuda" [matTooltip]="tarjeta.ayuda" aria-hidden="false" [attr.aria-label]="tarjeta.ayuda">help_outline</mat-icon>
+          </span>
+          <strong>{{ tarjeta.valor }}</strong>
+          @if (tarjeta.detalle) {
+            <span class="texto-secundario detalle">{{ tarjeta.detalle }}</span>
+          }
+          @if (tarjeta.cambio; as cambio) {
+            <span class="variacion variacion--{{ cambio.sentido }}">
+              <mat-icon aria-hidden="true">{{ iconoCambio(cambio.sentido) }}</mat-icon>
+              {{ cambio.sentido === 'sube' ? 'Sube' : cambio.sentido === 'baja' ? 'Baja' : 'Igual' }} {{ cambio.texto }}
+            </span>
+          } @else {
+            <span class="variacion variacion--igual">{{ tarjeta.sinComparacion ?? 'Sin datos del periodo anterior' }}</span>
+          }
+        </section>
+      }
+    </div>
+
+    <div class="columnas">
+      <section class="panel bloque">
+        <h2>Resultados del periodo</h2>
+        <table class="resultados">
+          <thead>
+            <tr>
+              <th scope="col">Concepto</th>
+              <th scope="col">Periodo</th>
+              <th scope="col">Anterior</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fila of filasResultado(); track fila.concepto) {
+              <tr [class.destacada]="fila.destacada">
+                <th scope="row">{{ fila.concepto }}</th>
+                <td [class.negativo]="fila.actual < 0">{{ fila.actual | currency: 'BOB' : 'Bs ' }}</td>
+                <td class="texto-secundario">{{ fila.anterior | currency: 'BOB' : 'Bs ' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+
+      <section class="panel bloque">
+        @let recurrente = datos.rentabilidadRecurrente;
+        <h2>Rentabilidad recurrente anual</h2>
+        <p class="texto-secundario indicacion">
+          {{ recurrente.desde | date: 'dd/MM/yyyy' }} – {{ recurrente.hasta | date: 'dd/MM/yyyy' }} ·
+          clientes con {{ recurrente.minimoProyectos }} o más proyectos contratados
+        </p>
+        <ul class="lista">
+          @for (cliente of recurrente.clientes; track cliente.idCliente) {
+            <li>
+              <span class="nombre">
+                {{ cliente.cliente }}
+                <span class="texto-secundario detalle">
+                  {{ cliente.proyectosContratados }} proyectos · ingresos {{ cliente.ingresos | currency: 'BOB' : 'Bs ' }}
+                </span>
+              </span>
+              <span class="monto" [class.negativo]="cliente.margen < 0">{{ cliente.margen | currency: 'BOB' : 'Bs ' }}</span>
+              <span class="porcentaje">{{ cliente.porcentaje === null ? '—' : (cliente.porcentaje | number: '1.1-1') + ' %' }}</span>
+            </li>
+          } @empty {
+            <li class="texto-secundario">Ningún cliente recurrente tuvo movimientos en los últimos 12 meses.</li>
+          }
+        </ul>
+        @if (recurrente.clientes.length) {
+          <p class="texto-secundario pie">
+            Margen total de proyectos del año: {{ recurrente.margenTotalProyectos | currency: 'BOB' : 'Bs ' }}
+          </p>
+        }
+      </section>
+    </div>
+
+    <div class="columnas">
+      <section class="panel bloque">
+        <h2>Utilización de equipos por categoría</h2>
+        <p class="texto-secundario indicacion">Días con uso registrado sobre los días disponibles. Bajo {{ utilizacionBaja }} % se marca para revisión.</p>
+        <ul class="barras">
+          @for (categoria of datos.utilizacion.porCategoria; track categoria.categoria) {
+            <li>
+              <span class="barras__etiqueta">
+                {{ categoria.categoria }}
+                <span class="texto-secundario detalle">{{ categoria.tasa.recursos }} equipos · {{ categoria.tasa.diasOcupados }} de {{ categoria.tasa.diasDisponibles }} días</span>
+              </span>
+              <span
+                class="barras__pista"
+                role="meter"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                [attr.aria-valuenow]="categoria.tasa.porcentaje ?? 0"
+                [attr.aria-label]="'Utilización de ' + categoria.categoria"
+              >
+                <span class="barras__relleno" [style.width.%]="anchoBarra(categoria.tasa)"></span>
+              </span>
+              <span class="barras__valor" [class.baja]="esBaja(categoria.tasa)">
+                @if (esBaja(categoria.tasa)) {
+                  <mat-icon aria-hidden="true">south</mat-icon>
+                }
+                {{ categoria.tasa.porcentaje === null ? '—' : (categoria.tasa.porcentaje | number: '1.1-1') + ' %' }}
+              </span>
+            </li>
+          } @empty {
+            <li class="texto-secundario">No hay equipos por unidad en el inventario.</li>
+          }
+        </ul>
+      </section>
+
+      <section class="panel bloque">
+        <h2>Utilización del personal técnico</h2>
+        <p class="texto-secundario indicacion">Días con asignaciones en eventos no cancelados.</p>
+        <ul class="barras">
+          @for (tecnico of datos.utilizacion.porTecnico; track tecnico.idPersonal) {
+            <li>
+              <span class="barras__etiqueta">
+                {{ tecnico.nombre }}
+                <span class="texto-secundario detalle">{{ tecnico.eventos }} eventos · {{ tecnico.horas | number: '1.0-1' }} h</span>
+              </span>
+              <span
+                class="barras__pista"
+                role="meter"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                [attr.aria-valuenow]="tecnico.tasa.porcentaje ?? 0"
+                [attr.aria-label]="'Utilización de ' + tecnico.nombre"
+              >
+                <span class="barras__relleno" [style.width.%]="anchoBarra(tecnico.tasa)"></span>
+              </span>
+              <span class="barras__valor">{{ tecnico.tasa.diasOcupados }} d · {{ tecnico.tasa.porcentaje === null ? '—' : (tecnico.tasa.porcentaje | number: '1.1-1') + ' %' }}</span>
+            </li>
+          } @empty {
+            <li class="texto-secundario">No hay personal técnico activo.</li>
+          }
+        </ul>
+      </section>
+    </div>
+
+    <section class="panel bloque alertas">
+      <div class="alertas__resumen">
+        <h2>Alertas de estado de activos</h2>
+        <span class="estado estado--peligro"><mat-icon aria-hidden="true">error</mat-icon>{{ datos.alertas.criticas }} críticas</span>
+        <span class="estado estado--alerta"><mat-icon aria-hidden="true">warning</mat-icon>{{ datos.alertas.advertencias }} advertencias</span>
+        <span class="estado estado--neutro"><mat-icon aria-hidden="true">info</mat-icon>{{ datos.alertas.informativas }} informativas</span>
+      </div>
+      <div class="alertas__enlaces">
+        @if (totalAlertas()) {
+          <a [routerLink]="rutaAlertas">Ver alertas</a>
+        }
+        <a [routerLink]="rutaReportes">Reportes en PDF</a>
+      </div>
+    </section>
+  } @else {
+    <p class="texto-secundario">No se pudieron calcular los indicadores.</p>
+  }
+</div>
