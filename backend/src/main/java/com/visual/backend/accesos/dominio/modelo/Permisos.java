@@ -25,6 +25,7 @@ public final class Permisos {
     public static final String FINANZAS_GESTIONAR = "FINANZAS_GESTIONAR";
     public static final String PROVEEDORES_VER = "PROVEEDORES_VER";
     public static final String PROVEEDORES_GESTIONAR = "PROVEEDORES_GESTIONAR";
+    public static final String REPORTES_VER = "REPORTES_VER";
 
     private Permisos() {
     }

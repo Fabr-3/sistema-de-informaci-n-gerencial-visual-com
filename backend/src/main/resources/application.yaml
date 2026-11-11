@@ -61,6 +61,15 @@ app:
     umbral-movimiento-significativo: 5000
     # Dias hacia atras que abarcan los movimientos destacados
     dias-movimientos-recientes: 30
+  gerencial:
+    # Dias en mantenimiento desde los que se alerta un mantenimiento prolongado
+    dias-mantenimiento-prolongado: 7
+    # Dias sin uso de un equipo disponible desde los que se alerta
+    dias-sin-uso: 90
+    # Mantenimientos correctivos en el ultimo año que indican fallas recurrentes
+    correctivos-fallas-recurrentes: 3
+    # Proyectos contratados desde los que un cliente se considera recurrente
+    proyectos-cliente-recurrente: 2
   activos:
     # Porcentaje del intervalo de horas desde el que se avisa el mantenimiento preventivo
     porcentaje-alerta-mantenimiento: 90
