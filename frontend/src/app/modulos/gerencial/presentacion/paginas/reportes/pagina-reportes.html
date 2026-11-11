@@ -1,0 +1,43 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Reportes operativos</h1>
+      <p>Documentos en PDF con la identidad de la empresa. Cada descarga queda registrada en la auditoría.</p>
+    </div>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="periodo">
+      <mat-label>Periodo</mat-label>
+      <mat-date-range-input [formGroup]="rango" [rangePicker]="selectorRango">
+        <input matStartDate formControlName="desde" placeholder="Desde" />
+        <input matEndDate formControlName="hasta" placeholder="Hasta" />
+      </mat-date-range-input>
+      <mat-datepicker-toggle matIconSuffix [for]="selectorRango" />
+      <mat-date-range-picker #selectorRango />
+      <mat-error>Indique el periodo del reporte</mat-error>
+    </mat-form-field>
+  </header>
+
+  <div class="reportes">
+    @for (reporte of reportes; track reporte.tipo) {
+      <section class="panel reporte">
+        <mat-icon class="reporte__icono" aria-hidden="true">{{ reporte.icono }}</mat-icon>
+        <div class="reporte__texto">
+          <h2>{{ reporte.titulo }}</h2>
+          <p class="texto-secundario">{{ reporte.descripcion }}</p>
+        </div>
+        <button
+          mat-stroked-button
+          (click)="descargar(reporte)"
+          [disabled]="generando() !== null"
+          [attr.aria-label]="'Descargar ' + reporte.titulo + ' en PDF'"
+        >
+          @if (generando() === reporte.tipo) {
+            <mat-spinner diameter="18" />
+          } @else {
+            <mat-icon>download</mat-icon>
+          }
+          Descargar PDF
+        </button>
+      </section>
+    }
+  </div>
+</div>

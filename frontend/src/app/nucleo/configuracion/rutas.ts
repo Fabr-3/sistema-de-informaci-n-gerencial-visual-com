@@ -26,6 +26,10 @@ export const Rutas = {
   MOVIMIENTOS: 'movimientos',
   RESULTADOS: 'resultados',
   INDICADORES: 'indicadores',
+  GERENCIAL: 'gerencial',
+  KPIS: 'kpis',
+  ALERTAS: 'alertas',
+  REPORTES: 'reportes',
 } as const;
 
 /** Parametro de consulta con la URL a la que se vuelve tras iniciar sesion. */

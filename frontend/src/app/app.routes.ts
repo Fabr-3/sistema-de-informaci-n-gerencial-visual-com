@@ -57,6 +57,10 @@ export const routes: Routes = [
         loadChildren: () => import('./modulos/finanzas/presentacion/rutas-finanzas').then((m) => m.RUTAS_FINANZAS),
       },
       {
+        path: Rutas.GERENCIAL,
+        loadChildren: () => import('./modulos/gerencial/presentacion/rutas-gerencial').then((m) => m.RUTAS_GERENCIAL),
+      },
+      {
         path: Rutas.ACTIVOS,
         loadChildren: () => import('./modulos/activos/presentacion/rutas-activos').then((m) => m.RUTAS_ACTIVOS),
       },

@@ -1,0 +1,44 @@
+.periodo {
+  min-width: 260px;
+}
+
+.reportes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: var(--vc-espacio);
+}
+
+.reporte {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 8px 14px;
+  padding: 16px 20px;
+
+  &__icono {
+    color: var(--vc-rojo);
+  }
+
+  &__texto {
+    h2 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+    }
+  }
+
+  button {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  mat-spinner {
+    display: inline-block;
+    margin-right: 8px;
+  }
+}

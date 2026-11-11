@@ -19,6 +19,7 @@ export const Permisos = {
   FINANZAS_GESTIONAR: 'FINANZAS_GESTIONAR',
   PROVEEDORES_VER: 'PROVEEDORES_VER',
   PROVEEDORES_GESTIONAR: 'PROVEEDORES_GESTIONAR',
+  REPORTES_VER: 'REPORTES_VER',
 } as const;
 
 export type CodigoPermiso = (typeof Permisos)[keyof typeof Permisos];

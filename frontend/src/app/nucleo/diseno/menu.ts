@@ -23,6 +23,29 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
     elementos: [{ etiqueta: 'Inicio', icono: 'home', ruta: rutaAbsoluta(Rutas.INICIO) }],
   },
   {
+    titulo: 'Información gerencial',
+    elementos: [
+      {
+        etiqueta: 'Tablero gerencial',
+        icono: 'insights',
+        ruta: rutaAbsoluta(Rutas.GERENCIAL, Rutas.KPIS),
+        permiso: Permisos.REPORTES_VER,
+      },
+      {
+        etiqueta: 'Alertas de activos',
+        icono: 'notification_important',
+        ruta: rutaAbsoluta(Rutas.GERENCIAL, Rutas.ALERTAS),
+        permiso: Permisos.REPORTES_VER,
+      },
+      {
+        etiqueta: 'Reportes',
+        icono: 'picture_as_pdf',
+        ruta: rutaAbsoluta(Rutas.GERENCIAL, Rutas.REPORTES),
+        permiso: Permisos.REPORTES_VER,
+      },
+    ],
+  },
+  {
     titulo: 'Comercial y planificación',
     elementos: [
       {
