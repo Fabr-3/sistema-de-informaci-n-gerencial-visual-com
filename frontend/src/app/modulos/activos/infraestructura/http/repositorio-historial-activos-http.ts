@@ -6,12 +6,15 @@ import { Pagina, SolicitudPagina } from '../../../../compartido/modelos/pagina';
 import { parametrosConsulta } from '../../../../compartido/utilidades/parametros-http';
 import { URL_API } from '../../../../nucleo/configuracion/api';
 import {
+  EntradaHistorialModulo,
   EstadoModuloLed,
   FinMantenimiento,
   InicioMantenimiento,
   Mantenimiento,
   ModuloLed,
   NuevoRegistroUso,
+  ReasignacionModulo,
+  ReemplazoModulo,
   RegistroUso,
   ReservaVigente,
 } from '../../dominio/modelos/historial';
@@ -51,6 +54,18 @@ export class RepositorioHistorialActivosHttp extends RepositorioHistorialActivos
       `${this.url}/${idActivo}/mantenimientos/${idMantenimiento}/finalizacion`,
       fin,
     );
+  }
+
+  reemplazarModulo(idActivo: number, idModulo: number, datos: ReemplazoModulo): Observable<ModuloLed> {
+    return this.http.post<ModuloLed>(`${this.url}/${idActivo}/modulos/${idModulo}/reemplazo`, datos);
+  }
+
+  reasignarModulo(idActivo: number, idModulo: number, datos: ReasignacionModulo): Observable<ModuloLed> {
+    return this.http.post<ModuloLed>(`${this.url}/${idActivo}/modulos/${idModulo}/reasignacion`, datos);
+  }
+
+  historialModulo(idActivo: number, idModulo: number): Observable<EntradaHistorialModulo[]> {
+    return this.http.get<EntradaHistorialModulo[]>(`${this.url}/${idActivo}/modulos/${idModulo}/historial`);
   }
 
   listarReservas(idActivo: number): Observable<ReservaVigente[]> {

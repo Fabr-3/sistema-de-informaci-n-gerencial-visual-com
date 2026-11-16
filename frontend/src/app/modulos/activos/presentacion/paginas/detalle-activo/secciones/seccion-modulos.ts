@@ -16,11 +16,23 @@ import { ServicioSesion } from '../../../../../accesos/aplicacion/servicio-sesio
 import { Permisos } from '../../../../../accesos/dominio/modelos/permisos';
 import { HistorialActivos } from '../../../../aplicacion/historial-activos';
 import { Activo, fueraDeInventario } from '../../../../dominio/modelos/activo';
-import { ESTADOS_MODULO, EstadoModuloLed, ModuloLed, tipoVisualModulo } from '../../../../dominio/modelos/historial';
+import {
+  ESTADOS_MODULO,
+  EstadoModuloLed,
+  ModuloLed,
+  reglasModulo,
+  tipoVisualModulo,
+} from '../../../../dominio/modelos/historial';
+import {
+  DatosDialogoModulo,
+  DialogoHistorialModulo,
+  DialogoReasignacionModulo,
+  DialogoReemplazoModulo,
+} from '../dialogos/dialogos-modulos';
 
 const LONGITUD_CODIGO_MODULO = 50;
 
-/** Modulos LED de una pantalla, rastreados uno por uno. */
+/** Modulos LED de una pantalla, rastreados uno por uno, con su reemplazo, reasignacion e historial. */
 @Component({
   selector: 'app-seccion-modulos',
   imports: [KeyValuePipe, MatButtonModule, MatIconModule, MatMenuModule],
@@ -38,12 +50,15 @@ export class SeccionModulos {
 
   protected readonly estados = ESTADOS_MODULO;
   protected readonly tipoVisualModulo = tipoVisualModulo;
+  protected readonly reglas = reglasModulo;
   protected readonly ordenOriginal = (): number => 0;
   protected readonly modulos = signal<ModuloLed[]>([]);
   private readonly version = signal(0);
   protected readonly puedeAgregar = computed(
     () => this.sesion.tienePermiso(Permisos.ACTIVOS_GESTIONAR) && !fueraDeInventario(this.activo().estado),
   );
+  /** Reemplazar y reasignar exigen gestionar activos y una pantalla que siga en el inventario. */
+  protected readonly puedeGestionar = this.puedeAgregar;
   protected readonly puedeCambiarEstado = computed(() =>
     this.sesion.tieneAlgunPermiso(Permisos.ACTIVOS_GESTIONAR, Permisos.MANTENIMIENTOS_REGISTRAR),
   );
@@ -97,6 +112,35 @@ export class SeccionModulos {
     this.historial.cambiarEstadoModulo(this.activo().id, modulo.id, estado).subscribe({
       next: () => this.recargar(`Módulo ${modulo.codigo}: ${ESTADOS_MODULO[estado].toLowerCase()}`),
       error: (error: unknown) => this.notificaciones.error(error),
+    });
+  }
+
+  protected reemplazar(modulo: ModuloLed): void {
+    this.dialogos
+      .open<DialogoReemplazoModulo, DatosDialogoModulo, ModuloLed>(DialogoReemplazoModulo, {
+        data: { activo: this.activo(), modulo },
+        width: '480px',
+      })
+      .afterClosed()
+      .pipe(filter((nuevo): nuevo is ModuloLed => !!nuevo))
+      .subscribe((nuevo) => this.recargar(`Módulo ${modulo.codigo} reemplazado por ${nuevo.codigo}`));
+  }
+
+  protected reasignar(modulo: ModuloLed): void {
+    this.dialogos
+      .open<DialogoReasignacionModulo, DatosDialogoModulo, ModuloLed>(DialogoReasignacionModulo, {
+        data: { activo: this.activo(), modulo },
+        width: '480px',
+      })
+      .afterClosed()
+      .pipe(filter((reasignado): reasignado is ModuloLed => !!reasignado))
+      .subscribe(() => this.recargar(`Módulo ${modulo.codigo} reasignado`));
+  }
+
+  protected verHistorial(modulo: ModuloLed): void {
+    this.dialogos.open<DialogoHistorialModulo, DatosDialogoModulo>(DialogoHistorialModulo, {
+      data: { activo: this.activo(), modulo },
+      width: '840px',
     });
   }
 

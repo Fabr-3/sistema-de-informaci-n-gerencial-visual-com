@@ -78,6 +78,60 @@ export function tipoVisualModulo(estado: EstadoModuloLed): TipoEstadoVisual {
   return TIPO_VISUAL_MODULO[estado];
 }
 
+/** Reglas del backend: se reemplaza un modulo activo o defectuoso; solo se reasigna uno activo. */
+export const reglasModulo = {
+  puedeReemplazarse: (modulo: ModuloLed): boolean => modulo.estado !== 'RETIRADO',
+  puedeReasignarse: (modulo: ModuloLed): boolean => modulo.estado === 'ACTIVO',
+};
+
+export const TIPOS_CAMBIO_MODULO = {
+  ALTA: 'Alta',
+  CAMBIO_ESTADO: 'Cambio de estado',
+  REEMPLAZO: 'Reemplazo',
+  REASIGNACION: 'Reasignación',
+} as const;
+
+export type TipoCambioModulo = keyof typeof TIPOS_CAMBIO_MODULO;
+
+export interface EntradaHistorialModulo {
+  readonly tipo: TipoCambioModulo;
+  readonly pantallaOrigen: string | null;
+  readonly pantallaDestino: string | null;
+  readonly estadoAnterior: EstadoModuloLed | null;
+  readonly estadoNuevo: EstadoModuloLed | null;
+  readonly moduloRelacionado: string | null;
+  readonly motivo: string | null;
+  readonly fecha: string;
+  readonly registradoPor: string | null;
+}
+
+export interface ReemplazoModulo {
+  readonly codigoNuevo: string;
+  readonly motivo: string;
+}
+
+export interface ReasignacionModulo {
+  readonly idActivoDestino: number;
+  readonly motivo: string;
+}
+
+/** Texto del cambio para la linea de tiempo del modulo. */
+export function detalleCambio(entrada: EntradaHistorialModulo): string {
+  const estado = (valor: EstadoModuloLed | null): string => (valor ? ESTADOS_MODULO[valor].toLowerCase() : '');
+  switch (entrada.tipo) {
+    case 'ALTA':
+      return `Registrado en ${entrada.pantallaDestino ?? '—'} (${estado(entrada.estadoNuevo)})`;
+    case 'CAMBIO_ESTADO':
+      return `De ${estado(entrada.estadoAnterior)} a ${estado(entrada.estadoNuevo)}`;
+    case 'REEMPLAZO':
+      return entrada.estadoAnterior
+        ? `Reemplazado por ${entrada.moduloRelacionado} (estaba ${estado(entrada.estadoAnterior)})`
+        : `Reemplaza a ${entrada.moduloRelacionado}`;
+    case 'REASIGNACION':
+      return `De ${entrada.pantallaOrigen} a ${entrada.pantallaDestino}`;
+  }
+}
+
 /** Reserva del equipo para un evento que aun no termina (la registra logistica). */
 export interface ReservaVigente {
   readonly idReserva: number;

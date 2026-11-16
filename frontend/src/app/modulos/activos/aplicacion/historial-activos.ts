@@ -3,12 +3,15 @@ import { Observable } from 'rxjs';
 
 import { Pagina, SolicitudPagina } from '../../../compartido/modelos/pagina';
 import {
+  EntradaHistorialModulo,
   EstadoModuloLed,
   FinMantenimiento,
   InicioMantenimiento,
   Mantenimiento,
   ModuloLed,
   NuevoRegistroUso,
+  ReasignacionModulo,
+  ReemplazoModulo,
   RegistroUso,
   ReservaVigente,
 } from '../dominio/modelos/historial';
@@ -53,6 +56,22 @@ export class HistorialActivos {
 
   cambiarEstadoModulo(idActivo: number, idModulo: number, estado: EstadoModuloLed): Observable<ModuloLed> {
     return this.repositorio.cambiarEstadoModulo(idActivo, idModulo, estado);
+  }
+
+  /** El codigo nuevo se normaliza igual que al agregar un modulo. */
+  reemplazarModulo(idActivo: number, idModulo: number, datos: ReemplazoModulo): Observable<ModuloLed> {
+    return this.repositorio.reemplazarModulo(idActivo, idModulo, {
+      codigoNuevo: datos.codigoNuevo.trim().toUpperCase(),
+      motivo: datos.motivo.trim(),
+    });
+  }
+
+  reasignarModulo(idActivo: number, idModulo: number, datos: ReasignacionModulo): Observable<ModuloLed> {
+    return this.repositorio.reasignarModulo(idActivo, idModulo, { ...datos, motivo: datos.motivo.trim() });
+  }
+
+  historialModulo(idActivo: number, idModulo: number): Observable<EntradaHistorialModulo[]> {
+    return this.repositorio.historialModulo(idActivo, idModulo);
   }
 
   /** Proximas reservas del equipo para eventos (solo lectura). */

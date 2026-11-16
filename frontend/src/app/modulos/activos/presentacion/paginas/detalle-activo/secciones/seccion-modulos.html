@@ -14,18 +14,25 @@
       <li class="modulo">
         <span class="modulo__codigo">{{ modulo.codigo }}</span>
         <span class="estado estado--{{ tipoVisualModulo(modulo.estado) }}">{{ estados[modulo.estado] }}</span>
-        @if (puedeCambiarEstado() && modulo.estado !== 'RETIRADO') {
-          <button mat-icon-button [matMenuTriggerFor]="menuEstado" [attr.aria-label]="'Cambiar estado de ' + modulo.codigo">
-            <mat-icon>more_vert</mat-icon>
-          </button>
-          <mat-menu #menuEstado="matMenu" xPosition="before">
+        <button mat-icon-button [matMenuTriggerFor]="menuModulo" [attr.aria-label]="'Acciones del módulo ' + modulo.codigo">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menuModulo="matMenu" xPosition="before">
+          @if (puedeCambiarEstado() && modulo.estado !== 'RETIRADO') {
             @for (estado of estados | keyvalue: ordenOriginal; track estado.key) {
               @if (estado.key !== modulo.estado) {
                 <button mat-menu-item (click)="cambiarEstado(modulo, estado.key)">Marcar como {{ estado.value.toLowerCase() }}</button>
               }
             }
-          </mat-menu>
-        }
+          }
+          @if (puedeGestionar() && reglas.puedeReemplazarse(modulo)) {
+            <button mat-menu-item (click)="reemplazar(modulo)"><mat-icon>swap_horiz</mat-icon><span>Reemplazar</span></button>
+          }
+          @if (puedeGestionar() && reglas.puedeReasignarse(modulo)) {
+            <button mat-menu-item (click)="reasignar(modulo)"><mat-icon>move_down</mat-icon><span>Reasignar a otra pantalla</span></button>
+          }
+          <button mat-menu-item (click)="verHistorial(modulo)"><mat-icon>history</mat-icon><span>Ver historial</span></button>
+        </mat-menu>
       </li>
     }
   </ul>

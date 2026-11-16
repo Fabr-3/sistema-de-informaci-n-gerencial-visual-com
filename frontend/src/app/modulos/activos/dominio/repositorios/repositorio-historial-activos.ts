@@ -2,12 +2,15 @@ import { Observable } from 'rxjs';
 
 import { Pagina, SolicitudPagina } from '../../../../compartido/modelos/pagina';
 import {
+  EntradaHistorialModulo,
   EstadoModuloLed,
   FinMantenimiento,
   InicioMantenimiento,
   Mantenimiento,
   ModuloLed,
   NuevoRegistroUso,
+  ReasignacionModulo,
+  ReemplazoModulo,
   RegistroUso,
   ReservaVigente,
 } from '../modelos/historial';
@@ -22,6 +25,9 @@ export abstract class RepositorioHistorialActivos {
   abstract finalizarMantenimiento(idActivo: number, idMantenimiento: number, fin: FinMantenimiento): Observable<Mantenimiento>;
   abstract listarModulos(idActivo: number): Observable<ModuloLed[]>;
   abstract agregarModulo(idActivo: number, codigo: string): Observable<ModuloLed>;
+  abstract reemplazarModulo(idActivo: number, idModulo: number, datos: ReemplazoModulo): Observable<ModuloLed>;
+  abstract reasignarModulo(idActivo: number, idModulo: number, datos: ReasignacionModulo): Observable<ModuloLed>;
+  abstract historialModulo(idActivo: number, idModulo: number): Observable<EntradaHistorialModulo[]>;
   abstract listarReservas(idActivo: number): Observable<ReservaVigente[]>;
   abstract cambiarEstadoModulo(idActivo: number, idModulo: number, estado: EstadoModuloLed): Observable<ModuloLed>;
 }
