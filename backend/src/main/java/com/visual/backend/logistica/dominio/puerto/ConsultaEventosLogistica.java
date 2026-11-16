@@ -18,5 +18,8 @@ public interface ConsultaEventosLogistica {
         return buscarPorId(idEvento).orElseThrow(() -> new RecursoNoEncontradoExcepcion("el evento", idEvento));
     }
 
+    /** El proyecto esta en planificacion o en ejecucion. */
+    boolean proyectoVigente(Integer idProyecto);
+
     Pagina<ResumenLogisticoEvento> buscar(Filtros.Eventos filtro, SolicitudPagina solicitud);
 }

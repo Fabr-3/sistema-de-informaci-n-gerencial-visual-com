@@ -25,12 +25,15 @@ import com.visual.backend.activos.dominio.modelo.Bodega;
 import com.visual.backend.activos.dominio.modelo.DatosActivo;
 import com.visual.backend.activos.dominio.modelo.FiltroActivos;
 import com.visual.backend.activos.dominio.modelo.ModeloActivo;
+import com.visual.backend.activos.dominio.modelo.ReservaVigenteActivo;
 import com.visual.backend.activos.dominio.modelo.UsoActivo;
+import com.visual.backend.activos.dominio.puerto.ConsultaReservasActivo;
 import com.visual.backend.activos.dominio.puerto.RepositorioActivos;
 import com.visual.backend.activos.dominio.puerto.RepositorioCatalogosActivos;
 import com.visual.backend.activos.dominio.puerto.RepositorioModelos;
 import com.visual.backend.compartido.dominio.Pagina;
 import com.visual.backend.compartido.dominio.SolicitudPagina;
+import com.visual.backend.compartido.dominio.excepcion.ConflictoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.DatoDuplicadoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
@@ -44,17 +47,20 @@ public class ServicioActivos {
     private final RepositorioActivos repositorio;
     private final RepositorioModelos modelos;
     private final RepositorioCatalogosActivos catalogos;
+    private final ConsultaReservasActivo reservas;
     private final ServicioAuditoria auditoria;
     private final ContextoSolicitud contexto;
     private final ParametrosActivos parametros;
     private final Clock reloj;
 
     public ServicioActivos(RepositorioActivos repositorio, RepositorioModelos modelos,
-                           RepositorioCatalogosActivos catalogos, ServicioAuditoria auditoria,
-                           ContextoSolicitud contexto, ParametrosActivos parametros, Clock reloj) {
+                           RepositorioCatalogosActivos catalogos, ConsultaReservasActivo reservas,
+                           ServicioAuditoria auditoria, ContextoSolicitud contexto, ParametrosActivos parametros,
+                           Clock reloj) {
         this.repositorio = repositorio;
         this.modelos = modelos;
         this.catalogos = catalogos;
+        this.reservas = reservas;
         this.auditoria = auditoria;
         this.contexto = contexto;
         this.parametros = parametros;
@@ -128,6 +134,7 @@ public class ServicioActivos {
     @Transactional
     public VistaActivo darDeBaja(Integer id, String motivo) {
         Activo activo = buscarActivo(id);
+        exigirSinReservasVigentes(activo, "dar de baja");
         VistaActivo anterior = vista(activo);
         activo.darDeBaja(motivo, contexto.idUsuarioActual(), LocalDateTime.now(reloj));
         VistaActivo actualizado = vista(repositorio.guardar(activo));
@@ -140,6 +147,7 @@ public class ServicioActivos {
     @Transactional
     public VistaActivo vender(Integer id, String referencia) {
         Activo activo = buscarActivo(id);
+        exigirSinReservasVigentes(activo, "vender");
         VistaActivo anterior = vista(activo);
         activo.vender(referencia, contexto.idUsuarioActual(), LocalDateTime.now(reloj));
         VistaActivo actualizado = vista(repositorio.guardar(activo));
@@ -176,6 +184,21 @@ public class ServicioActivos {
         repositorio.guardar(activo);
         auditoria.registrarOperacion(AccionAuditoria.ELIMINAR, ENTIDAD, id, anterior.comoMapaAuditoria(), null,
                 null);
+    }
+
+    /** Reservas activas del equipo en eventos que aun no terminan. */
+    @Transactional(readOnly = true)
+    public List<ReservaVigenteActivo> reservasVigentes(Integer id) {
+        buscarActivo(id);
+        return reservas.vigentes(id, LocalDateTime.now(reloj));
+    }
+
+    private void exigirSinReservasVigentes(Activo activo, String accion) {
+        List<ReservaVigenteActivo> vigentes = reservas.vigentes(activo.getId(), LocalDateTime.now(reloj));
+        if (!vigentes.isEmpty()) {
+            throw new ConflictoExcepcion("No se puede " + accion + " el equipo " + activo.getCodigoInventario()
+                    + ": tiene reservas para eventos próximos. Libérelas primero", vigentes);
+        }
     }
 
     private Activo buscarActivo(Integer id) {

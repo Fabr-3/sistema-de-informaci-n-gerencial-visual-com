@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.visual.backend.compartido.dominio.excepcion.AutenticacionFallidaExcepcion;
+import com.visual.backend.compartido.dominio.excepcion.ConflictoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.DatoDuplicadoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
@@ -35,6 +36,7 @@ public class ManejadorGlobalExcepciones extends ResponseEntityExceptionHandler {
 
     private static final Logger REGISTRO = LoggerFactory.getLogger(ManejadorGlobalExcepciones.class);
     private static final String PROPIEDAD_ERRORES = "errores";
+    private static final String PROPIEDAD_CONFLICTOS = "conflictos";
 
     @ExceptionHandler(RecursoNoEncontradoExcepcion.class)
     public ProblemDetail recursoNoEncontrado(RecursoNoEncontradoExcepcion excepcion) {
@@ -44,6 +46,13 @@ public class ManejadorGlobalExcepciones extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DatoDuplicadoExcepcion.class)
     public ProblemDetail datoDuplicado(DatoDuplicadoExcepcion excepcion) {
         return problema(HttpStatus.CONFLICT, excepcion.getMessage());
+    }
+
+    @ExceptionHandler(ConflictoExcepcion.class)
+    public ProblemDetail conflicto(ConflictoExcepcion excepcion) {
+        ProblemDetail detalle = problema(HttpStatus.CONFLICT, excepcion.getMessage());
+        detalle.setProperty(PROPIEDAD_CONFLICTOS, excepcion.getConflictos());
+        return detalle;
     }
 
     @ExceptionHandler(ReglaNegocioExcepcion.class)

@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,8 @@ import com.visual.backend.accesos.aplicacion.servicio.ServicioAuditoria;
 import com.visual.backend.accesos.dominio.modelo.AccionAuditoria;
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud;
 import com.visual.backend.comercial.aplicacion.dto.ComandoEvento;
+import com.visual.backend.comercial.aplicacion.evento.EventoCancelado;
+import com.visual.backend.comercial.aplicacion.evento.EventoReprogramado;
 import com.visual.backend.comercial.dominio.modelo.DatosEvento;
 import com.visual.backend.comercial.dominio.modelo.EstadoEvento;
 import com.visual.backend.comercial.dominio.modelo.Evento;
@@ -38,16 +41,18 @@ public class ServicioEventos {
     private final RepositorioCatalogosComerciales catalogos;
     private final ServicioAuditoria auditoria;
     private final ContextoSolicitud contexto;
+    private final ApplicationEventPublisher publicador;
     private final Clock reloj;
 
     public ServicioEventos(RepositorioEventos repositorio, RepositorioProyectos proyectos,
                            RepositorioCatalogosComerciales catalogos, ServicioAuditoria auditoria,
-                           ContextoSolicitud contexto, Clock reloj) {
+                           ContextoSolicitud contexto, ApplicationEventPublisher publicador, Clock reloj) {
         this.repositorio = repositorio;
         this.proyectos = proyectos;
         this.catalogos = catalogos;
         this.auditoria = auditoria;
         this.contexto = contexto;
+        this.publicador = publicador;
         this.reloj = reloj;
     }
 
@@ -74,9 +79,15 @@ public class ServicioEventos {
         Proyecto proyecto = proyectos.obtener(idProyecto);
         Evento evento = buscarDelProyecto(idProyecto, idEvento);
         Map<String, Object> anterior = mapa(evento);
+        LocalDateTime inicioAnterior = evento.getFechaInicio();
+        LocalDateTime finAnterior = evento.getFechaFin();
         evento.actualizar(proyecto, datos(comando), contexto.idUsuarioActual(), LocalDateTime.now(reloj));
         Evento guardado = repositorio.guardar(evento);
         auditoria.registrarOperacion(AccionAuditoria.ACTUALIZAR, ENTIDAD, idEvento, anterior, mapa(guardado), null);
+        if (!guardado.getFechaInicio().equals(inicioAnterior) || !guardado.getFechaFin().equals(finAnterior)) {
+            publicador.publishEvent(new EventoReprogramado(idEvento, guardado.getFechaInicio(),
+                    guardado.getFechaFin()));
+        }
         return guardado;
     }
 
@@ -95,6 +106,9 @@ public class ServicioEventos {
         Evento guardado = repositorio.guardar(evento);
         auditoria.registrarOperacion(AccionAuditoria.ACTUALIZAR, ENTIDAD, idEvento, anterior, mapa(guardado),
                 "Cambio de estado a " + estado);
+        if (estado == EstadoEvento.CANCELADO) {
+            publicador.publishEvent(new EventoCancelado(idEvento));
+        }
         return guardado;
     }
 

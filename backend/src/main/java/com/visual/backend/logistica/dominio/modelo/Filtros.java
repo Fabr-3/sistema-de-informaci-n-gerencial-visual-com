@@ -14,4 +14,8 @@ public final class Filtros {
 
     public record Personal(String texto, Boolean activo, Integer idEspecialidad) {
     }
+
+    /** Equipos por unidad que se pueden reservar; el texto busca en codigo, serie y modelo. */
+    public record ActivosReservables(String texto, Integer idCategoria) {
+    }
 }

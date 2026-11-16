@@ -3,6 +3,7 @@ package com.visual.backend.gerencial.infraestructura.consultas;
 import static com.visual.backend.gerencial.infraestructura.consultas.FragmentosSql.ACTIVO_CON_MODELO;
 
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -52,8 +53,9 @@ public class ConsultaReportesJdbc implements ConsultaReportes {
             """;
     private static final String INVENTARIO = """
             select c.nombre as categoria, count(*) as total,
-                   count(*) filter (where a.estado_operativo = 'DISPONIBLE') as disponibles,
-                   count(*) filter (where a.estado_operativo in ('RESERVADO', 'EN_USO')) as en_uso,
+                   count(*) filter (where a.estado_operativo = 'DISPONIBLE' and not r.reservado) as disponibles,
+                   count(*) filter (where (a.estado_operativo = 'DISPONIBLE' and r.reservado)
+                                     or a.estado_operativo in ('RESERVADO', 'EN_USO')) as en_uso,
                    count(*) filter (where a.estado_operativo = 'EN_MANTENIMIENTO') as en_mantenimiento,
                    count(*) filter (where a.estado_operativo = 'BAJA') as de_baja,
                    count(*) filter (where a.estado_operativo = 'VENDIDO') as vendidos,
@@ -61,6 +63,9 @@ public class ConsultaReportesJdbc implements ConsultaReportes {
                             filter (where a.estado_operativo not in ('BAJA', 'VENDIDO')), 0) as valor
             from activos a
             """ + ACTIVO_CON_MODELO + """
+            cross join lateral (select exists (
+                select 1 from reservas_activo ra where ra.id_activo = a.id_activo and ra.estado = 'ACTIVA'
+                  and ra.fecha_salida <= :ahora and ra.fecha_retorno > :ahora) as reservado) r
             where a.fecha_eliminacion is null and mo.tipo_control = 'UNIDAD'
             group by c.nombre
             order by c.nombre
@@ -77,9 +82,11 @@ public class ConsultaReportesJdbc implements ConsultaReportes {
             """;
 
     private final NamedParameterJdbcTemplate jdbc;
+    private final Clock reloj;
 
-    public ConsultaReportesJdbc(NamedParameterJdbcTemplate jdbc) {
+    public ConsultaReportesJdbc(NamedParameterJdbcTemplate jdbc, Clock reloj) {
         this.jdbc = jdbc;
+        this.reloj = reloj;
     }
 
     @Override
@@ -100,7 +107,7 @@ public class ConsultaReportesJdbc implements ConsultaReportes {
 
     @Override
     public List<FilaInventario> inventario() {
-        return jdbc.query(INVENTARIO, new MapSqlParameterSource(), (fila, n) -> new FilaInventario(
+        return jdbc.query(INVENTARIO, new MapSqlParameterSource("ahora", LocalDateTime.now(reloj)), (fila, n) -> new FilaInventario(
                 fila.getString("categoria"), fila.getInt("total"), fila.getInt("disponibles"), fila.getInt("en_uso"),
                 fila.getInt("en_mantenimiento"), fila.getInt("de_baja"), fila.getInt("vendidos"),
                 fila.getBigDecimal("valor")));

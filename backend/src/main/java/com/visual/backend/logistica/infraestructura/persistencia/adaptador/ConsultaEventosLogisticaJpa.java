@@ -47,6 +47,11 @@ public class ConsultaEventosLogisticaJpa implements ConsultaEventosLogistica {
     }
 
     @Override
+    public boolean proyectoVigente(Integer idProyecto) {
+        return eventos.proyectoVigente(idProyecto);
+    }
+
+    @Override
     public Pagina<ResumenLogisticoEvento> buscar(Filtros.Eventos filtro, SolicitudPagina solicitud) {
         Page<EventoEntidad> pagina = eventos.findAll(especificacion(filtro),
                 ConsultasJpa.paginacion(solicitud, ORDEN_POR_DEFECTO));

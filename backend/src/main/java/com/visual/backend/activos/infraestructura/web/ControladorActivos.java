@@ -21,6 +21,7 @@ import com.visual.backend.activos.aplicacion.dto.ComandoBaja;
 import com.visual.backend.activos.aplicacion.dto.VistaActivo;
 import com.visual.backend.activos.aplicacion.servicio.ServicioActivos;
 import com.visual.backend.activos.dominio.modelo.EstadoOperativo;
+import com.visual.backend.activos.dominio.modelo.ReservaVigenteActivo;
 import com.visual.backend.activos.dominio.modelo.FiltroActivos;
 import com.visual.backend.compartido.dominio.Pagina;
 import com.visual.backend.compartido.dominio.SolicitudPagina;
@@ -61,6 +62,13 @@ public class ControladorActivos {
     @PreAuthorize(ReglasAccesoActivos.VER)
     public VistaActivo obtener(@PathVariable Integer id) {
         return servicio.obtener(id);
+    }
+
+    /** Proximas reservas del equipo para eventos (solo lectura). */
+    @GetMapping("/{id}/reservas")
+    @PreAuthorize(ReglasAccesoActivos.VER)
+    public List<ReservaVigenteActivo> reservas(@PathVariable Integer id) {
+        return servicio.reservasVigentes(id);
     }
 
     @PostMapping

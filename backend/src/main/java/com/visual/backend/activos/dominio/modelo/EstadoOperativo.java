@@ -3,9 +3,10 @@ package com.visual.backend.activos.dominio.modelo;
 import java.util.Set;
 
 /**
- * Estado de un activo. RESERVADO y EN_USO los gestionara el modulo de
- * logistica; este modulo controla mantenimiento y baja, y el modulo
- * financiero marca los equipos vendidos.
+ * Estado de un activo. Este modulo controla mantenimiento y baja, y el modulo
+ * financiero marca los equipos vendidos. RESERVADO y EN_USO no se usan para
+ * las reservas de logistica: un equipo puede tener varias reservas futuras,
+ * por lo que su disponibilidad se deduce de las reservas activas.
  */
 public enum EstadoOperativo {
     DISPONIBLE,

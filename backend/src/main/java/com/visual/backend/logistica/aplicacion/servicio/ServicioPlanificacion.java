@@ -2,7 +2,6 @@ package com.visual.backend.logistica.aplicacion.servicio;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ import com.visual.backend.logistica.dominio.puerto.ConsultaEventosLogistica;
 import com.visual.backend.logistica.dominio.puerto.RepositorioAsignaciones;
 import com.visual.backend.logistica.dominio.puerto.RepositorioCatalogosLogistica;
 import com.visual.backend.logistica.dominio.puerto.RepositorioPersonal;
-import com.visual.backend.logistica.dominio.puerto.RepositorioPlanes;
 
 /**
  * Planificacion logistica de los eventos: transporte, jornadas de montaje y
@@ -43,11 +41,11 @@ import com.visual.backend.logistica.dominio.puerto.RepositorioPlanes;
 @Service
 public class ServicioPlanificacion {
 
-    public static final String ENTIDAD_PLAN = "planes_logisticos";
     public static final String ENTIDAD_ASIGNACION = "asignaciones_personal";
 
     private final ConsultaEventosLogistica eventos;
-    private final RepositorioPlanes planes;
+    private final PlanesEvento planes;
+    private final ServicioReservas reservas;
     private final RepositorioAsignaciones asignaciones;
     private final RepositorioPersonal personal;
     private final RepositorioCatalogosLogistica catalogos;
@@ -55,12 +53,13 @@ public class ServicioPlanificacion {
     private final ContextoSolicitud contexto;
     private final Clock reloj;
 
-    public ServicioPlanificacion(ConsultaEventosLogistica eventos, RepositorioPlanes planes,
+    public ServicioPlanificacion(ConsultaEventosLogistica eventos, PlanesEvento planes, ServicioReservas reservas,
                                  RepositorioAsignaciones asignaciones, RepositorioPersonal personal,
                                  RepositorioCatalogosLogistica catalogos, ServicioAuditoria auditoria,
                                  ContextoSolicitud contexto, Clock reloj) {
         this.eventos = eventos;
         this.planes = planes;
+        this.reservas = reservas;
         this.asignaciones = asignaciones;
         this.personal = personal;
         this.catalogos = catalogos;
@@ -77,7 +76,7 @@ public class ServicioPlanificacion {
     @Transactional(readOnly = true)
     public VistaPlanEvento detalle(Integer idEvento) {
         EventoLogistico evento = eventos.obtener(idEvento);
-        return planes.buscarPorEvento(idEvento).map(plan -> vista(evento, plan))
+        return planes.buscar(idEvento).map(plan -> vista(evento, plan))
                 .orElseGet(() -> new VistaPlanEvento(evento, evento.editable(), null, evento.fechaInicio(),
                         evento.fechaFin(), List.of(), List.of(), List.of()));
     }
@@ -85,8 +84,8 @@ public class ServicioPlanificacion {
     @Transactional
     public VistaPlanEvento guardarTransporte(Integer idEvento, String detalles) {
         EventoLogistico evento = eventos.obtener(idEvento);
-        PlanLogistico plan = planOCrear(evento);
-        Map<String, Object> anterior = mapa(plan);
+        PlanLogistico plan = planes.obtenerOCrear(evento);
+        Map<String, Object> anterior = PlanesEvento.mapa(plan);
         plan.actualizarTransporte(evento, detalles, contexto.idUsuarioActual(), ahora());
         return guardarPlan(evento, plan, anterior);
     }
@@ -94,36 +93,39 @@ public class ServicioPlanificacion {
     @Transactional
     public VistaPlanEvento agregarJornada(Integer idEvento, ComandoJornada comando) {
         EventoLogistico evento = eventos.obtener(idEvento);
-        PlanLogistico plan = planOCrear(evento);
-        Map<String, Object> anterior = mapa(plan);
+        PlanLogistico plan = planes.obtenerOCrear(evento);
+        Map<String, Object> anterior = PlanesEvento.mapa(plan);
         plan.agregarJornada(evento, jornada(null, comando), contexto.idUsuarioActual(), ahora());
+        reservas.recalcular(evento, plan);
         return guardarPlan(evento, plan, anterior);
     }
 
     @Transactional
     public VistaPlanEvento modificarJornada(Integer idEvento, Integer idJornada, ComandoJornada comando) {
         EventoLogistico evento = eventos.obtener(idEvento);
-        PlanLogistico plan = planExistente(idEvento);
-        Map<String, Object> anterior = mapa(plan);
+        PlanLogistico plan = planes.obtenerExistente(idEvento);
+        Map<String, Object> anterior = PlanesEvento.mapa(plan);
         plan.modificarJornada(evento, jornada(idJornada, comando), contexto.idUsuarioActual(), ahora());
         exigirAsignacionesDentro(evento, plan);
+        reservas.recalcular(evento, plan);
         return guardarPlan(evento, plan, anterior);
     }
 
     @Transactional
     public VistaPlanEvento quitarJornada(Integer idEvento, Integer idJornada) {
         EventoLogistico evento = eventos.obtener(idEvento);
-        PlanLogistico plan = planExistente(idEvento);
-        Map<String, Object> anterior = mapa(plan);
+        PlanLogistico plan = planes.obtenerExistente(idEvento);
+        Map<String, Object> anterior = PlanesEvento.mapa(plan);
         plan.quitarJornada(evento, idJornada, contexto.idUsuarioActual(), ahora());
         exigirAsignacionesDentro(evento, plan);
+        reservas.recalcular(evento, plan);
         return guardarPlan(evento, plan, anterior);
     }
 
     @Transactional
     public VistaAsignacion asignar(Integer idEvento, ComandoAsignacion comando) {
         EventoLogistico evento = eventos.obtener(idEvento);
-        PlanLogistico plan = planOCrear(evento);
+        PlanLogistico plan = planes.obtenerOCrear(evento);
         PersonalTecnico persona = personal.obtener(comando.idPersonal());
         Periodo periodo = new Periodo(comando.inicio(), comando.fin());
         exigirSinDuplicado(plan, persona, periodo, null);
@@ -137,7 +139,7 @@ public class ServicioPlanificacion {
     @Transactional
     public VistaAsignacion modificarAsignacion(Integer idEvento, Integer idAsignacion, ComandoAsignacion comando) {
         EventoLogistico evento = eventos.obtener(idEvento);
-        PlanLogistico plan = planExistente(idEvento);
+        PlanLogistico plan = planes.obtenerExistente(idEvento);
         Asignacion asignacion = asignacionDelPlan(plan, idAsignacion);
         Map<String, Object> anterior = VistaAsignacion.mapaAuditoria(asignacion);
         PersonalTecnico persona = personal.obtener(comando.idPersonal());
@@ -153,7 +155,7 @@ public class ServicioPlanificacion {
     @Transactional
     public void quitarAsignacion(Integer idEvento, Integer idAsignacion) {
         eventos.obtener(idEvento).exigirEditable();
-        Asignacion asignacion = asignacionDelPlan(planExistente(idEvento), idAsignacion);
+        Asignacion asignacion = asignacionDelPlan(planes.obtenerExistente(idEvento), idAsignacion);
         asignaciones.eliminar(idAsignacion);
         auditoria.registrarOperacion(AccionAuditoria.ELIMINAR, ENTIDAD_ASIGNACION, idAsignacion,
                 VistaAsignacion.mapaAuditoria(asignacion), null, null);
@@ -161,8 +163,8 @@ public class ServicioPlanificacion {
 
     private VistaPlanEvento guardarPlan(EventoLogistico evento, PlanLogistico plan, Map<String, Object> anterior) {
         PlanLogistico guardado = planes.guardar(plan);
-        auditoria.registrarOperacion(AccionAuditoria.ACTUALIZAR, ENTIDAD_PLAN, guardado.getId(), anterior,
-                mapa(guardado), null);
+        auditoria.registrarOperacion(AccionAuditoria.ACTUALIZAR, PlanesEvento.ENTIDAD_PLAN, guardado.getId(), anterior,
+                PlanesEvento.mapa(guardado), null);
         return vista(evento, guardado);
     }
 
@@ -178,21 +180,6 @@ public class ServicioPlanificacion {
     private VistaAsignacion conCruces(Asignacion asignacion) {
         return VistaAsignacion.de(asignacion, asignaciones.cruces(asignacion.getPersonal().id(),
                 asignacion.getPeriodo(), asignacion.getIdPlan()));
-    }
-
-    /** Un plan nuevo se guarda primero para que sus jornadas y asignaciones tengan a quien pertenecer. */
-    private PlanLogistico planOCrear(EventoLogistico evento) {
-        return planes.buscarPorEvento(evento.id()).orElseGet(() -> {
-            PlanLogistico creado = planes.guardar(PlanLogistico.nuevo(evento, contexto.idUsuarioActual(), ahora()));
-            auditoria.registrarOperacion(AccionAuditoria.CREAR, ENTIDAD_PLAN, creado.getId(), null, mapa(creado),
-                    null);
-            return creado;
-        });
-    }
-
-    private PlanLogistico planExistente(Integer idEvento) {
-        return planes.buscarPorEvento(idEvento)
-                .orElseThrow(() -> new RecursoNoEncontradoExcepcion("el plan logístico del evento", idEvento));
     }
 
     private Asignacion asignacionDelPlan(PlanLogistico plan, Integer idAsignacion) {
@@ -224,16 +211,6 @@ public class ServicioPlanificacion {
 
     private static Jornada jornada(Integer id, ComandoJornada comando) {
         return new Jornada(id, comando.tipo(), new Periodo(comando.inicio(), comando.fin()), comando.descripcion());
-    }
-
-    private static Map<String, Object> mapa(PlanLogistico plan) {
-        Map<String, Object> mapa = new LinkedHashMap<>();
-        mapa.put("evento", plan.getIdEvento());
-        mapa.put("detallesTransporte", plan.getDetallesTransporte());
-        mapa.put("jornadas", plan.getJornadas().stream()
-                .map(jornada -> jornada.tipo() + " " + jornada.periodo().inicio() + " - " + jornada.periodo().fin())
-                .toList());
-        return mapa;
     }
 
     private LocalDateTime ahora() {
