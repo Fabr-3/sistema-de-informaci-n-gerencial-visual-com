@@ -133,6 +133,29 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
     ],
   },
   {
+    titulo: 'Subcontratación y consumibles',
+    elementos: [
+      {
+        etiqueta: 'Subcontrataciones',
+        icono: 'handshake',
+        ruta: rutaAbsoluta(Rutas.SUBCONTRATACION, Rutas.SUBCONTRATACIONES),
+        permisos: [Permisos.PROVEEDORES_VER, Permisos.PROVEEDORES_GESTIONAR],
+      },
+      {
+        etiqueta: 'Consumibles',
+        icono: 'inventory',
+        ruta: rutaAbsoluta(Rutas.SUBCONTRATACION, Rutas.CONSUMIBLES),
+        permisos: [Permisos.PROVEEDORES_VER, Permisos.PROVEEDORES_GESTIONAR, Permisos.CONSUMIBLES_REGISTRAR],
+      },
+      {
+        etiqueta: 'Consumos',
+        icono: 'shopping_cart_checkout',
+        ruta: rutaAbsoluta(Rutas.SUBCONTRATACION, Rutas.CONSUMOS),
+        permisos: [Permisos.PROVEEDORES_VER, Permisos.PROVEEDORES_GESTIONAR, Permisos.CONSUMIBLES_REGISTRAR],
+      },
+    ],
+  },
+  {
     titulo: 'Activos e inventario',
     elementos: [
       { etiqueta: 'Activos', icono: 'videocam', ruta: rutaAbsoluta(Rutas.ACTIVOS), permiso: Permisos.ACTIVOS_VER },

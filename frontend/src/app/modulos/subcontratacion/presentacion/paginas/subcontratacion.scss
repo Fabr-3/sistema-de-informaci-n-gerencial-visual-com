@@ -1,0 +1,13 @@
+// Estilos comunes de las paginas de subcontratacion y consumibles.
+.fila-anulada td {
+  color: var(--vc-texto-secundario);
+}
+
+.fila-anulada .numero {
+  text-decoration: line-through;
+}
+
+.filtros p {
+  align-self: center;
+  margin: 0 0 8px;
+}

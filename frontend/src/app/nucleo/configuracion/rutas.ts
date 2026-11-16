@@ -30,6 +30,10 @@ export const Rutas = {
   KPIS: 'kpis',
   ALERTAS: 'alertas',
   REPORTES: 'reportes',
+  SUBCONTRATACION: 'subcontratacion',
+  SUBCONTRATACIONES: 'subcontrataciones',
+  CONSUMIBLES: 'consumibles',
+  CONSUMOS: 'consumos',
 } as const;
 
 /** Parametro de consulta con la URL a la que se vuelve tras iniciar sesion. */

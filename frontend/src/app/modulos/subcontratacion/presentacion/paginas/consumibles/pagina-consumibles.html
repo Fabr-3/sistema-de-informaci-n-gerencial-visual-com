@@ -1,0 +1,94 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Consumibles</h1>
+      <p>Materiales que se gastan en los eventos. Su compra se registra como egreso general; el consumo suma al costo del proyecto.</p>
+    </div>
+    @if (puedeGestionar) {
+      <button mat-flat-button (click)="editar()"><mat-icon>add</mat-icon>Nuevo consumible</button>
+    }
+  </header>
+
+  <section class="panel">
+    <div class="filtros">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Buscar</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [formControl]="busqueda" placeholder="Nombre del consumible" />
+      </mat-form-field>
+      <mat-slide-toggle [formControl]="soloStockBajo">Solo stock bajo</mat-slide-toggle>
+    </div>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.contenido ?? []">
+        <ng-container matColumnDef="nombre">
+          <th mat-header-cell *matHeaderCellDef>Consumible</th>
+          <td mat-cell *matCellDef="let fila"><strong>{{ fila.nombre }}</strong></td>
+        </ng-container>
+        <ng-container matColumnDef="stock">
+          <th mat-header-cell *matHeaderCellDef class="numero">Stock</th>
+          <td mat-cell *matCellDef="let fila" class="numero">
+            {{ fila.stockActual | number: '1.0-2' }} {{ fila.unidadMedida }}
+            @if (fila.stockBajo) {
+              <span class="estado estado--alerta"><mat-icon>warning</mat-icon>Stock bajo</span>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="minimo">
+          <th mat-header-cell *matHeaderCellDef class="numero">Mínimo</th>
+          <td mat-cell *matCellDef="let fila" class="numero texto-secundario">
+            {{ fila.stockMinimo === null ? '—' : (fila.stockMinimo | number: '1.0-2') }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="costo">
+          <th mat-header-cell *matHeaderCellDef class="numero">Costo unitario</th>
+          <td mat-cell *matCellDef="let fila" class="numero">{{ fila.costoUnitario | currency: 'BOB' : 'Bs ' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let fila">
+            <span class="estado" [class.estado--activo]="fila.activo" [class.estado--neutro]="!fila.activo">
+              {{ fila.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+          <td mat-cell *matCellDef="let fila" class="celda-acciones">
+            @if (puedeGestionar || puedeVerMovimientos) {
+              <button mat-icon-button [matMenuTriggerFor]="menu" [attr.aria-label]="'Acciones de ' + fila.nombre">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu" xPosition="before">
+                @if (puedeGestionar) {
+                  <button mat-menu-item (click)="moverStock(fila, 'INGRESO')"><mat-icon>add_box</mat-icon><span>Ingreso de stock</span></button>
+                  <button mat-menu-item (click)="moverStock(fila, 'AJUSTE')"><mat-icon>tune</mat-icon><span>Ajuste de stock</span></button>
+                  <button mat-menu-item (click)="editar(fila)"><mat-icon>edit</mat-icon><span>Editar</span></button>
+                }
+                <button mat-menu-item (click)="verMovimientos(fila)"><mat-icon>history</mat-icon><span>Movimientos</span></button>
+              </mat-menu>
+            }
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas.length">
+            {{ cargando() ? 'Cargando consumibles…' : 'No se encontraron consumibles.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator
+      [length]="resultado()?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación de consumibles"
+    />
+  </section>
+</div>

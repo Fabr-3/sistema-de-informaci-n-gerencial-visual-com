@@ -61,6 +61,11 @@ export const routes: Routes = [
         loadChildren: () => import('./modulos/gerencial/presentacion/rutas-gerencial').then((m) => m.RUTAS_GERENCIAL),
       },
       {
+        path: Rutas.SUBCONTRATACION,
+        loadChildren: () =>
+          import('./modulos/subcontratacion/presentacion/rutas-subcontratacion').then((m) => m.RUTAS_SUBCONTRATACION),
+      },
+      {
         path: Rutas.ACTIVOS,
         loadChildren: () => import('./modulos/activos/presentacion/rutas-activos').then((m) => m.RUTAS_ACTIVOS),
       },

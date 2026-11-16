@@ -1,0 +1,99 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Subcontrataciones</h1>
+      <p>Servicios contratados a proveedores para los proyectos. Cada una registra su egreso en Finanzas.</p>
+    </div>
+    @if (puedeGestionar) {
+      <button mat-flat-button (click)="registrar()"><mat-icon>handshake</mat-icon>Nueva subcontratación</button>
+    }
+  </header>
+
+  <section class="panel">
+    <form class="filtros" [formGroup]="periodo">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Desde</mat-label>
+        <input matInput type="date" formControlName="desde" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Hasta</mat-label>
+        <input matInput type="date" formControlName="hasta" />
+      </mat-form-field>
+      @if (resultado(); as pagina) {
+        <p class="texto-secundario">Vigentes en esta página: {{ totalVigente(pagina.contenido) | currency: 'BOB' : 'Bs ' }}</p>
+      }
+    </form>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.contenido ?? []">
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let fila">{{ fila.fecha | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="proveedor">
+          <th mat-header-cell *matHeaderCellDef>Proveedor</th>
+          <td mat-cell *matCellDef="let fila">
+            <strong>{{ fila.proveedor.nombre }}</strong>
+            @if (fila.servicio) {
+              <div class="texto-secundario detalle">{{ fila.servicio.nombre }}</div>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="proyecto">
+          <th mat-header-cell *matHeaderCellDef>Proyecto</th>
+          <td mat-cell *matCellDef="let fila">
+            {{ fila.proyecto.nombre }}
+            <div class="texto-secundario detalle">{{ fila.evento?.nombre ?? 'Todo el proyecto' }}</div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="descripcion">
+          <th mat-header-cell *matHeaderCellDef>Descripción</th>
+          <td mat-cell *matCellDef="let fila" class="texto-secundario">
+            {{ fila.descripcion }}
+            @if (fila.motivoAnulacion) {
+              <div class="detalle">Anulada: {{ fila.motivoAnulacion }}</div>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="costo">
+          <th mat-header-cell *matHeaderCellDef class="numero">Costo</th>
+          <td mat-cell *matCellDef="let fila" class="numero">{{ fila.costo | currency: 'BOB' : 'Bs ' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let fila">
+            <span class="estado estado--{{ tipoVisual(fila.estado) }}">{{ fila.estado | etiqueta: estados }}</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+          <td mat-cell *matCellDef="let fila" class="celda-acciones">
+            @if (puedeGestionar && fila.estado === 'REGISTRADA') {
+              <button mat-icon-button matTooltip="Anular" (click)="anular(fila)" aria-label="Anular subcontratación">
+                <mat-icon>block</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas" [class.fila-anulada]="fila.estado === 'ANULADA'"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas.length">
+            {{ cargando() ? 'Cargando subcontrataciones…' : 'No hay subcontrataciones en el periodo.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator
+      [length]="resultado()?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación de subcontrataciones"
+    />
+  </section>
+</div>

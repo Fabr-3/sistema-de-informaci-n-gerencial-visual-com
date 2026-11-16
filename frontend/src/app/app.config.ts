@@ -21,6 +21,7 @@ import { proveerComercial } from './modulos/comercial/infraestructura/proveedore
 import { proveerFinanzas } from './modulos/finanzas/infraestructura/proveedores-finanzas';
 import { proveerGerencial } from './modulos/gerencial/infraestructura/proveedores-gerencial';
 import { proveerLogistica } from './modulos/logistica/infraestructura/proveedores-logistica';
+import { proveerSubcontratacion } from './modulos/subcontratacion/infraestructura/proveedores-subcontratacion';
 import { EstrategiaTitulo } from './nucleo/configuracion/estrategia-titulo';
 
 const LOCALE = 'es-BO';
@@ -40,6 +41,7 @@ export const appConfig: ApplicationConfig = {
     proveerLogistica(),
     proveerFinanzas(),
     proveerGerencial(),
+    proveerSubcontratacion(),
     { provide: LOCALE_ID, useValue: LOCALE },
     { provide: MAT_DATE_LOCALE, useValue: LOCALE },
     { provide: TitleStrategy, useClass: EstrategiaTitulo },
