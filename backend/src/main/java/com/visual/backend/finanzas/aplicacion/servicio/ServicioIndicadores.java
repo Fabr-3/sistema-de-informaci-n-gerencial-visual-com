@@ -61,7 +61,7 @@ public class ServicioIndicadores {
         LocalDate hastaAnterior = desde.minusDays(1);
         LocalDate desdeAnterior = hastaAnterior.minusDays(dias - 1);
 
-        List<ResultadoProyecto> proyectos = resultados.buscarProyectos(new Filtros.ResultadosProyectos(null, null),
+        List<ResultadoProyecto> proyectos = resultados.buscarProyectos(Filtros.ResultadosProyectos.todos(),
                 TODOS_LOS_PROYECTOS).contenido();
         List<ResultadoProyecto> porCobrar = cuentasPorCobrar(proyectos);
         return new IndicadoresFinancieros(resumen(desde, hasta), resumen(desdeAnterior, hastaAnterior),

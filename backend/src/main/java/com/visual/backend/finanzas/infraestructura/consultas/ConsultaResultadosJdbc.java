@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -18,6 +19,7 @@ import com.visual.backend.finanzas.dominio.modelo.DetalleResultadoProyecto;
 import com.visual.backend.finanzas.dominio.modelo.Filtros;
 import com.visual.backend.finanzas.dominio.modelo.Margen;
 import com.visual.backend.finanzas.dominio.modelo.Naturaleza;
+import com.visual.backend.finanzas.dominio.modelo.OrdenResultados;
 import com.visual.backend.finanzas.dominio.modelo.ResultadoEvento;
 import com.visual.backend.finanzas.dominio.modelo.ResultadoProyecto;
 import com.visual.backend.finanzas.dominio.modelo.TotalPorTipo;
@@ -58,10 +60,13 @@ public class ConsultaResultadosJdbc implements ConsultaResultados {
                    or lower(cl.razon_social) like :patron escape '\\')
               and (cast(:estado as text) is null or p.estado = :estado)
               and (cast(:idProyecto as integer) is null or p.id_proyecto = :idProyecto)
+              and (cast(:idCliente as integer) is null or cl.id_cliente = :idCliente)
+              and (cast(:desde as date) is null or p.fecha_fin >= :desde)
+              and (cast(:hasta as date) is null or p.fecha_inicio <= :hasta)
             """;
     /** Importe contratado de la cotizacion y sumas de los movimientos de cada proyecto. */
     private static final String PROYECTOS = """
-            select p.id_proyecto, p.nombre_proyecto, cl.razon_social, p.estado,
+            select p.id_proyecto, p.nombre_proyecto, cl.razon_social, p.estado, p.fecha_inicio,
                    coalesce(vi.importe_total, 0) as contratado,
                    coalesce(sm.ingresos, 0) as ingresos,
                    coalesce(sm.costos, 0) + coalesce(sc.costo, 0) as costos
@@ -75,10 +80,16 @@ public class ConsultaResultadosJdbc implements ConsultaResultados {
                        group by m.id_proyecto) sm on sm.id_proyecto = p.id_proyecto
             left join (select id_proyecto, sum(costo) as costo from (""" + CONSUMOS + """
                        ) c group by id_proyecto) sc on sc.id_proyecto = p.id_proyecto
-            """ + CONDICIONES_PROYECTOS + """
-            order by p.fecha_inicio desc nulls last, p.id_proyecto desc
-            limit :tamano offset :desplazamiento
-            """;
+            """ + CONDICIONES_PROYECTOS;
+    /** Orden en lista blanca: nunca se concatena texto recibido del usuario. */
+    private static final Map<OrdenResultados, String> ORDENES = Map.of(
+            OrdenResultados.FECHA_DESC, "fecha_inicio desc nulls last, id_proyecto desc",
+            OrdenResultados.MARGEN_DESC, "ingresos - costos desc, id_proyecto desc",
+            OrdenResultados.MARGEN_ASC, "ingresos - costos asc, id_proyecto desc",
+            OrdenResultados.MARGEN_PORCENTAJE_DESC,
+            "case when ingresos > 0 then (ingresos - costos) / ingresos end desc nulls last, id_proyecto desc");
+    private static final String PAGINA_PROYECTOS = "select * from (" + PROYECTOS + ") r order by %s"
+            + " limit :tamano offset :desplazamiento";
     private static final String CONTAR_PROYECTOS = "select count(*) " + DESDE_PROYECTOS + CONDICIONES_PROYECTOS;
     private static final String EVENTOS = """
             select x.id_evento, x.nombre_evento, x.fecha_inicio, x.ingresos,
@@ -128,9 +139,13 @@ public class ConsultaResultadosJdbc implements ConsultaResultados {
     @Override
     public Pagina<ResultadoProyecto> buscarProyectos(Filtros.ResultadosProyectos filtro, SolicitudPagina solicitud) {
         MapSqlParameterSource parametros = parametrosProyectos(filtro.texto(), filtro.estado(), null)
+                .addValue("idCliente", filtro.idCliente())
+                .addValue("desde", filtro.desde())
+                .addValue("hasta", filtro.hasta())
                 .addValue("tamano", solicitud.tamano())
                 .addValue("desplazamiento", (long) solicitud.pagina() * solicitud.tamano());
-        List<ResultadoProyecto> contenido = jdbc.query(PROYECTOS, parametros, (fila, n) -> proyecto(fila));
+        List<ResultadoProyecto> contenido = jdbc.query(PAGINA_PROYECTOS.formatted(ORDENES.get(filtro.orden())),
+                parametros, (fila, n) -> proyecto(fila));
         Long total = jdbc.queryForObject(CONTAR_PROYECTOS, parametros, Long.class);
         long totalElementos = total == null ? 0 : total;
         int totalPaginas = (int) Math.ceil((double) totalElementos / solicitud.tamano());
@@ -139,8 +154,7 @@ public class ConsultaResultadosJdbc implements ConsultaResultados {
 
     @Override
     public Optional<DetalleResultadoProyecto> detalleProyecto(Integer idProyecto) {
-        MapSqlParameterSource parametros = parametrosProyectos(null, null, idProyecto)
-                .addValue("tamano", 1).addValue("desplazamiento", 0);
+        MapSqlParameterSource parametros = parametrosProyectos(null, null, idProyecto);
         List<ResultadoProyecto> proyectos = jdbc.query(PROYECTOS, parametros, (fila, n) -> proyecto(fila));
         if (proyectos.isEmpty()) {
             return Optional.empty();
@@ -163,6 +177,9 @@ public class ConsultaResultadosJdbc implements ConsultaResultados {
                 .addValue("patron", patron)
                 .addValue("estado", estado == null || estado.isBlank() ? null : estado)
                 .addValue("idProyecto", idProyecto)
+                .addValue("idCliente", null)
+                .addValue("desde", null)
+                .addValue("hasta", null)
                 .addValue("etiquetaConsumibles", ETIQUETA_CONSUMIBLES);
     }
 
