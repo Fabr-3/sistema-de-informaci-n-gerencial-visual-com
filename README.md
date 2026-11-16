@@ -10,7 +10,7 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 | Logística (personal técnico, jornadas de montaje y desmontaje, asignación de personal y reserva de equipos) | ✅ Implementado |
 | Financiero (ingresos y egresos, ventas, proveedores, márgenes por proyecto y evento, indicadores del gerente) | ✅ Implementado |
 | Información gerencial (KPIs, alertas de estado de activos y reportes operativos en PDF) | ✅ Implementado |
-| Subcontratación y consumibles | Pendiente |
+| Subcontratación y consumibles (subcontrataciones con su egreso, catálogo y stock de consumibles, consumos por proyecto y evento) | ✅ Implementado |
 
 ## Tecnologías
 
@@ -30,6 +30,7 @@ backend/src/main/java/com/visual/backend/
 ├── logistica/                  Personal técnico, planes logísticos por evento, asignaciones de personal y reserva de equipos
 ├── finanzas/                   Proveedores, ingresos y egresos, ventas, resultados por proyecto e indicadores
 ├── gerencial/                  KPIs del gerente, alertas de estado de activos y reportes operativos en PDF
+├── subcontratacion/            Subcontrataciones de servicios, consumibles con su stock y consumos por proyecto
 ├── accesos/
 │   ├── dominio/                Modelos y reglas de negocio (sin Spring ni JPA) + puertos (interfaces)
 │   ├── aplicacion/             Casos de uso (servicios) y DTO de entrada y salida
@@ -107,6 +108,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V11`: información gerencial. Acción de auditoría `REPORTE_GENERADO`; los KPIs y alertas se calculan sobre las tablas existentes y el permiso `REPORTES_VER` existe desde `V3`.
   - `V12`: reserva de activos por evento. `reservas_activo` recibe su propia clave (`id_reserva`), periodo (`fecha_salida`, `fecha_retorno`), estado (`ACTIVA`, `LIBERADA`) con fecha y motivo de liberación y columnas de modificación; índice único parcial por plan y activo entre las activas y restricción `EXCLUDE` que impide reservas activas superpuestas del mismo activo.
   - `V13`: historial de los módulos LED (`historial_modulos_led`: alta, cambio de estado, reemplazo y reasignación, con pantallas de origen y destino, estados, módulo relacionado y motivo) y carga del alta de los módulos existentes en su pantalla actual.
+  - `V14`: subcontratación y consumibles. Tablas `subcontrataciones` (con su egreso `id_movimiento`; triggers que exigen que el evento sea del proyecto y el servicio del proveedor), `consumibles`, `movimientos_consumible` y `consumos_proyecto` (con el costo unitario copiado). El tipo *Subcontratación de servicios* pasa a ser de sistema (`codigo_sistema = 'SUBCONTRATACION'`).
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -187,11 +189,11 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 ## Reglas del módulo financiero
 
 - **Movimientos:** cada ingreso o egreso tiene tipo, concepto, monto en Bs, fecha (no futura) y, opcionalmente, número de factura (la facturación es externa). Se imputan a un proyecto y a uno de sus eventos, o quedan como movimiento general de la empresa. No se editan ni se eliminan: un error se corrige anulando con motivo y registrando de nuevo.
-- **Tipos:** cobros de servicios, alquiler y venta de equipos y otros ingresos; compras, alquiler de equipos a terceros, subcontrataciones, transporte y viáticos, gastos generales y otros egresos. Las compras, los subalquileres y las subcontrataciones exigen proveedor; los ingresos no llevan proveedor.
+- **Tipos:** cobros de servicios, alquiler y venta de equipos y otros ingresos; compras, alquiler de equipos a terceros, subcontrataciones, transporte y viáticos, gastos generales y otros egresos. Las compras, los subalquileres y las subcontrataciones exigen proveedor; los ingresos no llevan proveedor. Las subcontrataciones se registran desde su módulo (su tipo es de sistema y no se elige a mano); su egreso no se anula desde Finanzas (422), sino anulando la subcontratación. Los egresos de subcontratación registrados antes de `V14` siguen contando y, si no están vinculados a una subcontratación, se anulan desde aquí.
 - **Ventas de equipos:** indican las unidades y las cantidades de lote vendidas. En la misma operación las unidades pasan a *Vendido* (ya no se editan, no registran uso ni reciben módulos LED) y los lotes registran una salida `VENTA` en su bodega; si algo no está disponible, no se registra nada. Anular la venta devuelve todo al inventario.
 - **Costos de mantenimiento:** al finalizar un mantenimiento con costo, en la misma operación se registra un egreso general *Mantenimiento de equipos* con la fecha de finalización. Ese tipo no se elige al registrar movimientos a mano, para no duplicar costos; si el costo era erróneo, el egreso se anula como cualquier otro.
 - **Proveedores:** registro básico con NIT opcional y único, contacto y servicios. Uno con movimientos no se elimina; al eliminarlo se libera su NIT.
-- **Resultados:** margen = ingresos − costos directos (egresos imputados al proyecto, sin sueldos), con su porcentaje sobre los ingresos. Lo por cobrar es el importe de la cotización aceptada menos lo cobrado. El desglose por evento agrupa aparte lo imputado sin evento. Los movimientos anulados nunca se cuentan.
+- **Resultados:** margen = ingresos − costos directos (egresos imputados al proyecto, sin sueldos, más el costo de los consumibles usados), con su porcentaje sobre los ingresos. El detalle por tipo muestra los consumibles en una línea aparte. Los totales generales de la empresa (indicadores) no suman los consumos, porque la compra de consumibles ya figura como egreso general. Lo por cobrar es el importe de la cotización aceptada menos lo cobrado. El desglose por evento agrupa aparte lo imputado sin evento. Los movimientos anulados nunca se cuentan.
 - **Indicadores del gerente** (por defecto, el mes en curso, frente al periodo anterior de igual duración): ingresos, costos directos, margen bruto, gastos generales (egresos sin proyecto) y resultado neto; evolución de los últimos 12 meses; proyectos de mayor margen y con margen bajo (menos del 20 %) o negativo; cuentas por cobrar; y movimientos de los últimos 30 días desde Bs 5.000 (configurable en `app.finanzas`).
 - **Permisos:**
   - `FINANZAS_VER` (gerente): consultar movimientos, resultados e indicadores.
@@ -204,11 +206,22 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 - **KPIs:**
   - *Ganancias* (utilidad neta) = ingresos − costos directos − gastos generales. La utilidad bruta descuenta solo los costos directos.
   - *Margen de utilidad bruta* = utilidad bruta / ingresos; *margen de beneficio neto* = ganancia / ingresos. Sin ingresos no se calculan. Su variación se expresa en puntos porcentuales.
-  - *Rentabilidad recurrente anual (basada en proyectos):* en los 12 meses que terminan en la fecha final, margen de los proyectos de clientes recurrentes (con 2 o más proyectos no cancelados contratados) sobre sus ingresos. También se informa qué parte del margen anual de todos los proyectos aportan.
+  - *Rentabilidad recurrente anual (basada en proyectos):* en los 12 meses que terminan en la fecha final (costos directos con consumibles), margen de los proyectos de clientes recurrentes (con 2 o más proyectos no cancelados contratados) sobre sus ingresos. También se informa qué parte del margen anual de todos los proyectos aportan.
   - *Tasa de utilización de recursos:* días con uso registrado de los equipos por unidad que siguen en el inventario, sobre los días disponibles desde su adquisición (por categoría y total); y días con asignaciones del personal técnico activo en eventos no cancelados, sobre los días del periodo. Bajo 20 % se marca para revisión.
 - **Alertas de estado de activos** (situación actual): mantenimiento preventivo vencido (crítica) o próximo según horas de uso; mantenimiento en proceso desde hace 7 días o más; módulos LED defectuosos; 3 o más correctivos en los últimos 12 meses (fallas recurrentes); y equipos disponibles sin uso en los últimos 90 días (informativa). Los umbrales se configuran en `app.gerencial`.
 - **Reportes operativos en PDF:** resumen gerencial, eventos del periodo, estado de activos e inventario (situación actual), mantenimientos de equipos con su costo y utilización del personal técnico. Cada emisión queda en la auditoría.
 - **Permisos:** `REPORTES_VER` (administrador y gerente) para el tablero, las alertas y los reportes.
+
+## Reglas del módulo de subcontratación y consumibles
+
+- **Subcontrataciones:** servicio contratado a un proveedor vigente para un proyecto en planificación o en ejecución y, opcionalmente, uno de sus eventos (no cancelado). Se puede indicar uno de los servicios del proveedor. Al registrarla se crea en la misma operación el egreso *Subcontratación de servicios* imputado al proyecto, al evento y al proveedor, y quedan vinculados. No se edita: anularla, con motivo, anula también su egreso.
+- **Consumibles:** catálogo con nombre único, unidad de medida, costo unitario vigente y stock mínimo opcional. El stock nunca queda negativo y cada cambio queda como movimiento: ingreso (compra o reposición; puede actualizar el costo vigente), ajuste por conteo (con motivo y signo), consumo y anulación de consumo. Con el stock en el mínimo o por debajo se advierte *Stock bajo*.
+- **Consumos:** descuentan el stock en el momento; si la cantidad supera el stock, se rechaza (422) indicando lo disponible y no se registra nada. Copian el costo unitario vigente, de modo que un cambio posterior del costo no altera el margen ya calculado. Anular un consumo devuelve el stock. No generan movimientos financieros: su costo se suma a los costos directos del proyecto y de su evento en los resultados.
+- **Técnicos:** quien solo tiene `CONSUMIBLES_REGISTRAR` registra, ve y anula consumos únicamente de los eventos donde tiene una asignación (que terminó hace 90 días o menos, o futura); en cualquier otro evento recibe 403.
+- **Permisos:**
+  - `PROVEEDORES_VER` (gerente): consultar subcontrataciones, consumibles y consumos.
+  - `PROVEEDORES_GESTIONAR` (administrador): registrar y anular subcontrataciones, y administrar el catálogo y el stock de consumibles.
+  - `CONSUMIBLES_REGISTRAR` (técnico y administrador): registrar y anular consumos.
 
 ## Respaldos
 
@@ -228,6 +241,7 @@ Los scripts de `database/datos_prueba/` cargan datos similares a la operación r
 - `04_finanzas.sql`: seis proveedores; cobros y costos de los proyectos (por evento cuando corresponde); alquileres de equipos y gastos generales de cada mes de 2026; compras de equipos; una venta de cables DMX con su salida de inventario; y un cobro anulado. La feria FEXPOCRUZ queda con margen bajo y el festival con saldo por cobrar. También registra como egresos los costos de los mantenimientos finalizados.
 - `05_gerencial.sql`: dos correctivos más de ROEBM-0003 (fallas recurrentes) con sus egresos y un mantenimiento en proceso desde fines de octubre en ABPL-0021 (prolongado), para ver todos los tipos de alerta.
 - `06_reservas.sql`: reservas de pantallas, procesadores, sonido e iluminación para los eventos próximos de `03_logistica.sql`. Las pantallas Roe del Carnaval están reservadas el sábado y el domingo (reservas futuras que no se superponen), y ABPL-0021 quedó reservada para el palco antes de entrar en mantenimiento.
+- `07_subcontratacion.sql`: vincula las dos subcontrataciones de `04_finanzas.sql` con su egreso y agrega otras cuatro (una anulada, con su egreso anulado); cinco consumibles con su compra inicial (la cinta gaffer queda bajo el mínimo), consumos en los eventos pasados y un ajuste por conteo.
 
 ```bash
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/01_accesos_activos.sql
@@ -236,6 +250,7 @@ psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/03
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/04_finanzas.sql
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/05_gerencial.sql
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/06_reservas.sql
+psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/07_subcontratacion.sql
 ```
 
 Todos los usuarios de prueba tienen la contraseña `VisualCom2026`:
