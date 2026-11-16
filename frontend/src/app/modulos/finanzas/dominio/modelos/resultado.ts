@@ -40,9 +40,28 @@ export interface DetalleResultadoProyecto {
   readonly porTipo: readonly TotalPorTipo[];
 }
 
+export const ORDENES_RESULTADOS = {
+  FECHA_DESC: 'Más recientes',
+  MARGEN_DESC: 'Mayor margen',
+  MARGEN_ASC: 'Menor margen',
+  MARGEN_PORCENTAJE_DESC: 'Mayor margen porcentual',
+} as const;
+
+export type OrdenResultados = keyof typeof ORDENES_RESULTADOS;
+
+/** desde y hasta (AAAA-MM-DD, incluidos) toman los proyectos cuyo periodo se superpone con el rango. */
 export interface FiltroResultados {
   readonly texto?: string;
   readonly estado?: EstadoProyecto;
+  readonly desde?: string;
+  readonly hasta?: string;
+  readonly idCliente?: number;
+  readonly orden?: OrdenResultados;
+}
+
+/** El rango solo es valido si la fecha inicial no es posterior a la final (o falta alguna). */
+export function rangoValido(desde?: string, hasta?: string): boolean {
+  return !desde || !hasta || desde <= hasta;
 }
 
 /** Por debajo de este porcentaje el margen se muestra como alerta. */

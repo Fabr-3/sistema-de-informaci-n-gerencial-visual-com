@@ -22,6 +22,34 @@
           }
         </mat-select>
       </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Cliente</mat-label>
+        <input matInput [formControl]="cliente" [matAutocomplete]="autocompletarCliente" placeholder="Nombre o documento" />
+        <mat-autocomplete #autocompletarCliente="matAutocomplete" [displayWith]="mostrarCliente" (optionSelected)="elegirCliente($event)">
+          @for (opcion of clientesSugeridos(); track opcion.id) {
+            <mat-option [value]="opcion">{{ opcion.razonSocial }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Desde</mat-label>
+        <input matInput type="date" [formControl]="desde" (change)="aplicarPeriodo()" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Hasta</mat-label>
+        <input matInput type="date" [formControl]="hasta" (change)="aplicarPeriodo()" />
+        @if (periodoInvalido()) {
+          <mat-hint class="error-grupo">La fecha inicial es posterior a la final</mat-hint>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Ordenar por</mat-label>
+        <mat-select [value]="criterios().filtro.orden ?? 'FECHA_DESC'" (selectionChange)="filtrar({ orden: $event.value })">
+          @for (orden of ordenes | keyvalue: ordenOriginal; track orden.key) {
+            <mat-option [value]="orden.key">{{ orden.value }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
     </div>
 
     <div class="tabla-contenedor">
