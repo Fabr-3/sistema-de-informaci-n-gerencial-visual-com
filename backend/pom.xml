@@ -29,6 +29,7 @@
     <properties>
         <java.version>21</java.version>
         <openpdf.version>3.0.5</openpdf.version>
+        <archunit.version>1.5.1</archunit.version>
     </properties>
     <dependencies>
         <dependency>
@@ -105,6 +106,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit</artifactId>
+            <version>${archunit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
