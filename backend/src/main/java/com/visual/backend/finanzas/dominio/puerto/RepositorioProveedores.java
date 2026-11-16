@@ -2,8 +2,8 @@ package com.visual.backend.finanzas.dominio.puerto;
 
 import java.util.Optional;
 
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import com.visual.backend.finanzas.dominio.modelo.Filtros;
 import com.visual.backend.finanzas.dominio.modelo.Proveedor;

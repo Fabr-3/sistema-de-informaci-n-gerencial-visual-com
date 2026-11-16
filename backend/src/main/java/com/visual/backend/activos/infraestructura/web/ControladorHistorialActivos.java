@@ -26,8 +26,8 @@ import com.visual.backend.activos.aplicacion.servicio.ServicioUsoActivos;
 import com.visual.backend.activos.dominio.modelo.Mantenimiento;
 import com.visual.backend.activos.dominio.modelo.ModuloLed;
 import com.visual.backend.activos.dominio.modelo.RegistroUso;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 import jakarta.validation.Valid;
 

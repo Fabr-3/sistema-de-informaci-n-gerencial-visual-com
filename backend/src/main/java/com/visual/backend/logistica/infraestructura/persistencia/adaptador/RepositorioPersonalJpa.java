@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import com.visual.backend.accesos.infraestructura.persistencia.jpa.UsuarioJpaRepositorio;
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.TipoDocumentoJpaRepositorio;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 import com.visual.backend.logistica.dominio.modelo.DocumentoPersonal;
 import com.visual.backend.logistica.dominio.modelo.Filtros;

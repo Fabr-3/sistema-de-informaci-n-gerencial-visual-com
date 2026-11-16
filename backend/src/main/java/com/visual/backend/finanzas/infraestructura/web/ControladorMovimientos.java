@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.finanzas.aplicacion.dto.ComandoAnulacion;
 import com.visual.backend.finanzas.aplicacion.dto.ComandoMovimiento;
 import com.visual.backend.finanzas.aplicacion.dto.ListadoMovimientos;

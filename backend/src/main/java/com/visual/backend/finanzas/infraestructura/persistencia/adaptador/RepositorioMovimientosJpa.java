@@ -12,8 +12,8 @@ import com.visual.backend.activos.infraestructura.persistencia.entidad.ActivoEnt
 import com.visual.backend.activos.infraestructura.persistencia.entidad.ExistenciaLoteEntidad;
 import com.visual.backend.comercial.infraestructura.persistencia.entidad.EventoEntidad;
 import com.visual.backend.comercial.infraestructura.persistencia.entidad.ProyectoEntidad;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 import com.visual.backend.finanzas.dominio.modelo.EstadoMovimiento;
 import com.visual.backend.finanzas.dominio.modelo.Filtros;

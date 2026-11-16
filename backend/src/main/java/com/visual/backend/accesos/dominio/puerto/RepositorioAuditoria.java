@@ -2,8 +2,8 @@ package com.visual.backend.accesos.dominio.puerto;
 
 import com.visual.backend.accesos.dominio.modelo.FiltroAuditoria;
 import com.visual.backend.accesos.dominio.modelo.RegistroAuditoria;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 /** Persistencia de auditoria: solo insercion y consulta (registros inmutables). */
 public interface RepositorioAuditoria {

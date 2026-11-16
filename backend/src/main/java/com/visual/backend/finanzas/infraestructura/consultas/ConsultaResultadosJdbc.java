@@ -11,8 +11,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 import com.visual.backend.finanzas.dominio.modelo.DetalleResultadoProyecto;
 import com.visual.backend.finanzas.dominio.modelo.Filtros;

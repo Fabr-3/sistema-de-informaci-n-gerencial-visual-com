@@ -22,8 +22,8 @@ import com.visual.backend.accesos.aplicacion.dto.VistaUsuario;
 import com.visual.backend.accesos.aplicacion.servicio.ServicioUsuarios;
 import com.visual.backend.accesos.dominio.modelo.FiltroUsuarios;
 import com.visual.backend.accesos.dominio.modelo.Permisos;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 import jakarta.validation.Valid;
 

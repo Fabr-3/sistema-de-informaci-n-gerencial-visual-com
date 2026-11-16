@@ -16,8 +16,8 @@ import com.visual.backend.activos.dominio.modelo.Activo;
 import com.visual.backend.activos.dominio.modelo.RegistroUso;
 import com.visual.backend.activos.dominio.puerto.RepositorioActivos;
 import com.visual.backend.activos.dominio.puerto.RepositorioRegistrosUso;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 

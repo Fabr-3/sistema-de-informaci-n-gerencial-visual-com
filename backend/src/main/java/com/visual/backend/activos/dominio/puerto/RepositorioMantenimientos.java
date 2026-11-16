@@ -3,8 +3,8 @@ package com.visual.backend.activos.dominio.puerto;
 import java.util.Optional;
 
 import com.visual.backend.activos.dominio.modelo.Mantenimiento;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 public interface RepositorioMantenimientos {
 

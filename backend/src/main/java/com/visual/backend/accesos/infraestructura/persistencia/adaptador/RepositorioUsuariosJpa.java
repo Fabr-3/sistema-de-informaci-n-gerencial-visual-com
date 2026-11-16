@@ -16,8 +16,8 @@ import com.visual.backend.accesos.dominio.puerto.RepositorioUsuarios;
 import com.visual.backend.accesos.infraestructura.persistencia.entidad.UsuarioEntidad;
 import com.visual.backend.accesos.infraestructura.persistencia.jpa.RolJpaRepositorio;
 import com.visual.backend.accesos.infraestructura.persistencia.jpa.UsuarioJpaRepositorio;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 
 import jakarta.persistence.criteria.Predicate;

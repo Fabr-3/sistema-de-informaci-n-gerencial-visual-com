@@ -10,8 +10,8 @@ import com.visual.backend.activos.dominio.puerto.RepositorioMantenimientos;
 import com.visual.backend.activos.infraestructura.persistencia.entidad.MantenimientoEntidad;
 import com.visual.backend.activos.infraestructura.persistencia.jpa.MantenimientoJpaRepositorio;
 import com.visual.backend.activos.infraestructura.persistencia.jpa.TipoMantenimientoJpaRepositorio;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 
 @Repository

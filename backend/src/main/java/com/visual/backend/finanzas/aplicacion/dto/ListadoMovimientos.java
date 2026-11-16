@@ -2,7 +2,7 @@ package com.visual.backend.finanzas.aplicacion.dto;
 
 import java.math.BigDecimal;
 
-import com.visual.backend.compartido.aplicacion.Pagina;
+import com.visual.backend.compartido.dominio.Pagina;
 import com.visual.backend.finanzas.dominio.modelo.MovimientoFinanciero;
 import com.visual.backend.finanzas.dominio.modelo.TotalesMovimientos;
 

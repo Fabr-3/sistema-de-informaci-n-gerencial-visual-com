@@ -28,8 +28,8 @@ import com.visual.backend.comercial.dominio.puerto.RepositorioCatalogosComercial
 import com.visual.backend.comercial.dominio.puerto.RepositorioClientes;
 import com.visual.backend.comercial.dominio.puerto.RepositorioCotizaciones;
 import com.visual.backend.comercial.dominio.puerto.RepositorioProyectos;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 

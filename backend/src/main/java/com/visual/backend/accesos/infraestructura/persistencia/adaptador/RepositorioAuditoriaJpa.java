@@ -13,8 +13,8 @@ import com.visual.backend.accesos.dominio.modelo.RegistroAuditoria;
 import com.visual.backend.accesos.dominio.puerto.RepositorioAuditoria;
 import com.visual.backend.accesos.infraestructura.persistencia.entidad.AuditoriaEntidad;
 import com.visual.backend.accesos.infraestructura.persistencia.jpa.AuditoriaJpaRepositorio;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 
 import jakarta.persistence.criteria.Predicate;

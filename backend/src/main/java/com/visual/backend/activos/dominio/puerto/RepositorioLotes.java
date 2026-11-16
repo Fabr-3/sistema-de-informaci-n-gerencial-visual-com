@@ -6,8 +6,8 @@ import java.util.Optional;
 import com.visual.backend.activos.dominio.modelo.ExistenciaLote;
 import com.visual.backend.activos.dominio.modelo.FiltroExistencias;
 import com.visual.backend.activos.dominio.modelo.MovimientoLote;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 /** Existencias y movimientos de los activos controlados por lote. */
 public interface RepositorioLotes {

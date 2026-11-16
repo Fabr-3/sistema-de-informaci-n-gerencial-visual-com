@@ -14,8 +14,8 @@ import com.visual.backend.accesos.dominio.modelo.AccionAuditoria;
 import com.visual.backend.accesos.dominio.modelo.FiltroAuditoria;
 import com.visual.backend.accesos.dominio.modelo.Permisos;
 import com.visual.backend.accesos.dominio.modelo.RegistroAuditoria;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 @RestController
 @RequestMapping("/api/auditoria")

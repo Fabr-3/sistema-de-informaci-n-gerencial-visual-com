@@ -10,8 +10,8 @@ import com.visual.backend.activos.dominio.modelo.RegistroUso;
 import com.visual.backend.activos.dominio.puerto.RepositorioRegistrosUso;
 import com.visual.backend.activos.infraestructura.persistencia.entidad.RegistroUsoEntidad;
 import com.visual.backend.activos.infraestructura.persistencia.jpa.RegistroUsoJpaRepositorio;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 
 @Repository

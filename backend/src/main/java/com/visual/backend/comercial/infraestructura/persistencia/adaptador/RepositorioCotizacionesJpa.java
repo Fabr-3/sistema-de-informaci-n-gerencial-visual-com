@@ -19,8 +19,8 @@ import com.visual.backend.comercial.infraestructura.persistencia.entidad.LineaCo
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.ClienteJpaRepositorio;
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.CotizacionJpaRepositorio;
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.ServicioJpaRepositorio;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 import com.visual.backend.compartido.infraestructura.persistencia.GeneradorCorrelativos;
 

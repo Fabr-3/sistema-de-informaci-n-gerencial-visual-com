@@ -27,8 +27,8 @@ import com.visual.backend.activos.infraestructura.persistencia.jpa.ModeloActivoJ
 import com.visual.backend.activos.infraestructura.persistencia.jpa.ModuloLedJpaRepositorio;
 import com.visual.backend.activos.infraestructura.persistencia.jpa.RegistroUsoJpaRepositorio;
 import com.visual.backend.activos.infraestructura.persistencia.jpa.UsoActivoJpaRepositorio;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 import com.visual.backend.compartido.infraestructura.persistencia.GeneradorCorrelativos;
 

@@ -6,8 +6,8 @@ import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepc
 
 import com.visual.backend.comercial.dominio.modelo.Cliente;
 import com.visual.backend.comercial.dominio.modelo.Filtros;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 /** Persistencia de clientes. Las consultas excluyen los eliminados. */
 public interface RepositorioClientes {

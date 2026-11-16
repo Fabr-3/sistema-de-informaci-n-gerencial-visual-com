@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import com.visual.backend.accesos.dominio.modelo.FiltroUsuarios;
 import com.visual.backend.accesos.dominio.modelo.Usuario;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 /** Persistencia de usuarios. Las consultas excluyen los usuarios eliminados. */
 public interface RepositorioUsuarios {

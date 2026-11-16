@@ -20,8 +20,8 @@ import com.visual.backend.comercial.aplicacion.dto.VistaCotizacion;
 import com.visual.backend.comercial.aplicacion.servicio.ServicioCotizaciones;
 import com.visual.backend.comercial.dominio.modelo.EstadoCotizacion;
 import com.visual.backend.comercial.dominio.modelo.Filtros;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 import jakarta.validation.Valid;
 

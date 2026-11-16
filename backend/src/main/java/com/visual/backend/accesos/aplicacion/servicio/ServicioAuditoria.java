@@ -13,8 +13,8 @@ import com.visual.backend.accesos.dominio.modelo.RegistroAuditoria;
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud;
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud.UsuarioActual;
 import com.visual.backend.accesos.dominio.puerto.RepositorioAuditoria;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 /**
  * Registro y consulta de auditoria. Los registros se escriben dentro de la

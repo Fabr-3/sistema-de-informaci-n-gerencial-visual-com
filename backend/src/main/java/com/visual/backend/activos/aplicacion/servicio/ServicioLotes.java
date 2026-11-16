@@ -24,8 +24,8 @@ import com.visual.backend.activos.dominio.modelo.TipoMovimientoLote;
 import com.visual.backend.activos.dominio.puerto.RepositorioCatalogosActivos;
 import com.visual.backend.activos.dominio.puerto.RepositorioLotes;
 import com.visual.backend.activos.dominio.puerto.RepositorioModelos;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 

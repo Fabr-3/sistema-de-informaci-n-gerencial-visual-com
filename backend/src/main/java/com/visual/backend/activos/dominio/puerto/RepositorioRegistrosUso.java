@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.visual.backend.activos.dominio.modelo.RegistroUso;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 public interface RepositorioRegistrosUso {
 

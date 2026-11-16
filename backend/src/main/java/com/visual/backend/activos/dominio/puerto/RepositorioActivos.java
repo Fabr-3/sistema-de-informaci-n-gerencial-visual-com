@@ -7,8 +7,8 @@ import java.util.Optional;
 import com.visual.backend.activos.dominio.modelo.Activo;
 import com.visual.backend.activos.dominio.modelo.FiltroActivos;
 import com.visual.backend.activos.dominio.modelo.UsoActivo;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 
 /** Persistencia de activos por unidad. Las consultas excluyen los eliminados. */

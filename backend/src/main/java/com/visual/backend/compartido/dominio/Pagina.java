@@ -1,4 +1,4 @@
-package com.visual.backend.compartido.aplicacion;
+package com.visual.backend.compartido.dominio;
 
 import java.util.List;
 import java.util.function.Function;

@@ -21,8 +21,8 @@ import com.visual.backend.activos.dominio.modelo.TipoMantenimiento;
 import com.visual.backend.activos.dominio.puerto.RepositorioActivos;
 import com.visual.backend.activos.dominio.puerto.RepositorioCatalogosActivos;
 import com.visual.backend.activos.dominio.puerto.RepositorioMantenimientos;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 
 /**

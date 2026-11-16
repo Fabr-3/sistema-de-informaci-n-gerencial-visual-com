@@ -1,4 +1,4 @@
-package com.visual.backend.compartido.aplicacion;
+package com.visual.backend.compartido.dominio;
 
 /**
  * Parametros de paginacion. El tamano se acota para evitar consultas

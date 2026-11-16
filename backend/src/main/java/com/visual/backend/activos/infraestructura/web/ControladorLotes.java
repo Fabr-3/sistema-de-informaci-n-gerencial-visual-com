@@ -19,8 +19,8 @@ import com.visual.backend.activos.aplicacion.dto.VistaExistencia;
 import com.visual.backend.activos.aplicacion.servicio.ServicioLotes;
 import com.visual.backend.activos.dominio.modelo.FiltroExistencias;
 import com.visual.backend.activos.dominio.modelo.MovimientoLote;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 import jakarta.validation.Valid;
 

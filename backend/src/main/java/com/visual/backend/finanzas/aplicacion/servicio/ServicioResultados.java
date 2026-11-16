@@ -3,8 +3,8 @@ package com.visual.backend.finanzas.aplicacion.servicio;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.finanzas.dominio.modelo.DetalleResultadoProyecto;
 import com.visual.backend.finanzas.dominio.modelo.Filtros;
 import com.visual.backend.finanzas.dominio.modelo.ResultadoProyecto;

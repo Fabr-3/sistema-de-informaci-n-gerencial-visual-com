@@ -14,8 +14,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 import com.visual.backend.finanzas.aplicacion.servicio.ParametrosFinanzas;
 import com.visual.backend.finanzas.aplicacion.servicio.ServicioIndicadores;

@@ -24,8 +24,8 @@ import com.visual.backend.comercial.infraestructura.persistencia.jpa.ClienteJpaR
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.TipoClienteJpaRepositorio;
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.TipoContactoJpaRepositorio;
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.TipoDocumentoJpaRepositorio;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
 
 import jakarta.persistence.criteria.Predicate;

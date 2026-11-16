@@ -17,8 +17,8 @@ import com.visual.backend.comercial.aplicacion.dto.ComandoCliente;
 import com.visual.backend.comercial.aplicacion.dto.VistaCliente;
 import com.visual.backend.comercial.aplicacion.servicio.ServicioClientes;
 import com.visual.backend.comercial.dominio.modelo.Filtros;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 import jakarta.validation.Valid;
 

@@ -20,8 +20,8 @@ import com.visual.backend.comercial.dominio.puerto.RepositorioContratos;
 import com.visual.backend.comercial.dominio.puerto.RepositorioCotizaciones;
 import com.visual.backend.comercial.dominio.puerto.RepositorioEventos;
 import com.visual.backend.comercial.dominio.puerto.RepositorioProyectos;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 
 /** Proyectos generados por cotizaciones aceptadas: datos, periodo y estado. */

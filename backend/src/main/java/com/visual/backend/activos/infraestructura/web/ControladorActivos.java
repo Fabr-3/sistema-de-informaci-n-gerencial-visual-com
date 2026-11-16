@@ -22,8 +22,8 @@ import com.visual.backend.activos.aplicacion.dto.VistaActivo;
 import com.visual.backend.activos.aplicacion.servicio.ServicioActivos;
 import com.visual.backend.activos.dominio.modelo.EstadoOperativo;
 import com.visual.backend.activos.dominio.modelo.FiltroActivos;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 
 import jakarta.validation.Valid;
 

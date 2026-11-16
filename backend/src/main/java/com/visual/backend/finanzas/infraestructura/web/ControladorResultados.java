@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.visual.backend.comercial.dominio.modelo.EstadoProyecto;
-import com.visual.backend.compartido.aplicacion.Pagina;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.Pagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.finanzas.aplicacion.servicio.ServicioResultados;
 import com.visual.backend.finanzas.dominio.modelo.DetalleResultadoProyecto;
 import com.visual.backend.finanzas.dominio.modelo.Filtros;

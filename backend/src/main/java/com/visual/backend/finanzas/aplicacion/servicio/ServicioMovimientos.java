@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.visual.backend.accesos.aplicacion.servicio.ServicioAuditoria;
 import com.visual.backend.accesos.dominio.modelo.AccionAuditoria;
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud;
-import com.visual.backend.compartido.aplicacion.SolicitudPagina;
+import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 import com.visual.backend.finanzas.aplicacion.dto.ComandoMovimiento;
