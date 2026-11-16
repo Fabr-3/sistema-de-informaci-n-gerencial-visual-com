@@ -46,6 +46,14 @@ frontend/src/app/
     └── presentacion/           Páginas, diálogos, guardias, directivas y rutas (carga diferida)
 ```
 
+**Regla de dependencia** (verificada por `ArquitecturaTest` con ArchUnit):
+
+- El `dominio` no depende de `aplicacion`, `infraestructura`, Spring ni JPA. Los tipos genéricos que comparten los módulos (`Pagina`, `SolicitudPagina`, `ElementoCatalogo` y las excepciones de negocio) están en `compartido.dominio`.
+- La `aplicacion` no depende de la `infraestructura`.
+- `compartido` no depende de ningún módulo.
+- Un módulo consulta o modifica otro a través de puertos de su propio dominio, implementados por adaptadores en su infraestructura, o con eventos de aplicación (por ejemplo, `MantenimientoFinalizado`).
+- **Acoplamiento aceptado:** como todos los módulos comparten la base de datos, la persistencia de `finanzas` usa entidades JPA de `comercial` (proyectos, eventos, tipos de documento) y de `activos` (unidades, modelos y existencias de lote). La de `logistica` usa las de `comercial` (proyectos, eventos, lugares y tipos de documento). Además, `activos`, `comercial`, `finanzas` y `logistica` usan la entidad de usuario de `accesos` en sus columnas de auditoría. Los módulos nuevos no repiten este acoplamiento: leen otros módulos con consultas propias.
+
 Para agregar un módulo nuevo:
 
 1. Crear sus carpetas siguiendo la misma estructura.
