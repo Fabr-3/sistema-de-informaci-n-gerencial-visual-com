@@ -90,6 +90,34 @@ public class MovimientoFinanciero {
                 .build();
     }
 
+    /** Egreso imputado al proyecto por una subcontratacion registrada en su modulo. */
+    public static MovimientoFinanciero subcontratacion(TipoMovimiento tipo, String concepto, BigDecimal monto,
+                                                       LocalDate fecha, Referencia proyecto, Referencia evento,
+                                                       Referencia proveedor, Integer actor, LocalDateTime ahora) {
+        if (!TipoMovimiento.CODIGO_SUBCONTRATACION.equals(tipo.codigoSistema())) {
+            throw new ReglaNegocioExcepcion("El tipo " + tipo.nombre() + " no corresponde a subcontrataciones");
+        }
+        if (monto == null || monto.signum() <= 0) {
+            throw new ReglaNegocioExcepcion("El costo de la subcontratación debe ser mayor a cero");
+        }
+        if (proyecto == null || proveedor == null) {
+            throw new ReglaNegocioExcepcion("La subcontratación exige proyecto y proveedor");
+        }
+        return MovimientoFinanciero.builder()
+                .tipo(tipo)
+                .concepto(concepto.trim())
+                .monto(monto.setScale(DECIMALES, RoundingMode.HALF_UP))
+                .fecha(fecha)
+                .proyecto(proyecto)
+                .evento(evento)
+                .proveedor(proveedor)
+                .estado(EstadoMovimiento.REGISTRADO)
+                .items(List.of())
+                .creadoPor(actor)
+                .fechaCreacion(ahora)
+                .build();
+    }
+
     public void anular(String motivo, Integer actor, LocalDateTime ahora) {
         if (estado == EstadoMovimiento.ANULADO) {
             throw new ReglaNegocioExcepcion("El movimiento ya está anulado");

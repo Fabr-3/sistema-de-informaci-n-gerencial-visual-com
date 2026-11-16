@@ -26,6 +26,7 @@ import com.visual.backend.finanzas.dominio.modelo.MovimientoFinanciero;
 import com.visual.backend.finanzas.dominio.modelo.Referencia;
 import com.visual.backend.finanzas.dominio.modelo.TipoMovimiento;
 import com.visual.backend.finanzas.dominio.puerto.ConsultaComercialFinanzas;
+import com.visual.backend.finanzas.dominio.puerto.ConsultaOrigenMovimiento;
 import com.visual.backend.finanzas.dominio.puerto.InventarioVentas;
 import com.visual.backend.finanzas.dominio.puerto.RepositorioMovimientos;
 import com.visual.backend.finanzas.dominio.puerto.RepositorioProveedores;
@@ -45,19 +46,21 @@ public class ServicioMovimientos {
     private final RepositorioProveedores proveedores;
     private final ConsultaComercialFinanzas comercial;
     private final InventarioVentas inventario;
+    private final ConsultaOrigenMovimiento origenes;
     private final ServicioAuditoria auditoria;
     private final ContextoSolicitud contexto;
     private final Clock reloj;
 
     public ServicioMovimientos(RepositorioMovimientos repositorio, RepositorioTiposMovimiento tipos,
                                RepositorioProveedores proveedores, ConsultaComercialFinanzas comercial,
-                               InventarioVentas inventario, ServicioAuditoria auditoria, ContextoSolicitud contexto,
-                               Clock reloj) {
+                               InventarioVentas inventario, ConsultaOrigenMovimiento origenes,
+                               ServicioAuditoria auditoria, ContextoSolicitud contexto, Clock reloj) {
         this.repositorio = repositorio;
         this.tipos = tipos;
         this.proveedores = proveedores;
         this.comercial = comercial;
         this.inventario = inventario;
+        this.origenes = origenes;
         this.auditoria = auditoria;
         this.contexto = contexto;
         this.reloj = reloj;
@@ -108,9 +111,39 @@ public class ServicioMovimientos {
         return guardado;
     }
 
+    /** Egreso automatico de una subcontratacion, imputado a su proyecto y evento y con su proveedor. */
+    @Transactional
+    public MovimientoFinanciero registrarSubcontratacion(String concepto, BigDecimal costo, LocalDate fecha,
+                                                         Integer idProyecto, Integer idEvento, Integer idProveedor) {
+        TipoMovimiento tipo = tipos.buscarPorCodigoSistema(TipoMovimiento.CODIGO_SUBCONTRATACION)
+                .orElseThrow(() -> new ReglaNegocioExcepcion(
+                        "No está configurado el tipo de movimiento para las subcontrataciones"));
+        Referencia proyecto = proyecto(idProyecto);
+        MovimientoFinanciero guardado = repositorio.guardar(MovimientoFinanciero.subcontratacion(tipo, concepto,
+                costo, fecha, proyecto, evento(idEvento, proyecto), proveedor(idProveedor),
+                contexto.idUsuarioActual(), LocalDateTime.now(reloj)));
+        auditoria.registrarOperacion(AccionAuditoria.CREAR, ENTIDAD, guardado.getId(), null, mapa(guardado),
+                "Subcontratación de servicios");
+        return guardado;
+    }
+
     /** La anulacion de una venta devuelve al inventario lo vendido. */
     @Transactional
     public MovimientoFinanciero anular(Integer id, String motivo) {
+        if (origenes.esDeSubcontratacion(id)) {
+            throw new ReglaNegocioExcepcion("El egreso pertenece a una subcontratación: anúlela desde "
+                    + "Subcontratación y consumibles");
+        }
+        return anularMovimiento(id, motivo);
+    }
+
+    /** Anula el egreso de una subcontratacion al anularse esta en su modulo. */
+    @Transactional
+    public MovimientoFinanciero anularSubcontratacion(Integer id, String motivo) {
+        return anularMovimiento(id, motivo);
+    }
+
+    private MovimientoFinanciero anularMovimiento(Integer id, String motivo) {
         MovimientoFinanciero movimiento = repositorio.obtener(id);
         Map<String, Object> anterior = mapa(movimiento);
         movimiento.anular(motivo, contexto.idUsuarioActual(), LocalDateTime.now(reloj));

@@ -56,6 +56,10 @@ public class RepositorioProveedoresJpa implements RepositorioProveedores {
         return proveedores.tieneMovimientos(idProveedor);
     }
 
+    /**
+     * La lista de servicios solo se reemplaza si cambio: al reemplazarla se
+     * pierde el vinculo de las subcontrataciones con el servicio elegido.
+     */
     @Override
     public Proveedor guardar(Proveedor proveedor) {
         ProveedorEntidad entidad = proveedor.getId() == null ? new ProveedorEntidad()
@@ -68,8 +72,10 @@ public class RepositorioProveedoresJpa implements RepositorioProveedores {
         entidad.setModificadoPor(proveedor.getModificadoPor());
         entidad.setFechaModificacion(proveedor.getFechaModificacion());
         entidad.setFechaEliminacion(proveedor.getFechaEliminacion());
-        entidad.getServicios().clear();
-        entidad.getServicios().addAll(proveedor.getServicios());
+        if (!entidad.getServicios().equals(proveedor.getServicios())) {
+            entidad.getServicios().clear();
+            entidad.getServicios().addAll(proveedor.getServicios());
+        }
         sincronizarNit(entidad, proveedor);
         return MapeadorFinanzas.aDominio(proveedores.saveAndFlush(entidad));
     }

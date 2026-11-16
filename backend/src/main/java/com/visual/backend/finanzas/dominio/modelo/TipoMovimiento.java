@@ -10,6 +10,8 @@ public record TipoMovimiento(Integer id, String nombre, Naturaleza naturaleza, b
 
     /** Egreso que se registra al finalizar un mantenimiento con costo. */
     public static final String CODIGO_MANTENIMIENTO = "MANTENIMIENTO";
+    /** Egreso que se registra con cada subcontratacion de servicios. */
+    public static final String CODIGO_SUBCONTRATACION = "SUBCONTRATACION";
 
     public boolean esAutomatico() {
         return codigoSistema != null;

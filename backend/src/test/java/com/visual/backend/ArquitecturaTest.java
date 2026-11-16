@@ -19,7 +19,7 @@ class ArquitecturaTest {
 
     private static final String RAIZ = "com.visual.backend";
     private static final List<String> MODULOS = List.of(
-            "accesos", "activos", "comercial", "finanzas", "gerencial", "logistica", "respaldos");
+            "accesos", "activos", "comercial", "finanzas", "gerencial", "logistica", "respaldos", "subcontratacion");
 
     /*
      * Acoplamiento aceptado por compartir la base de datos: estos modulos usan

@@ -83,7 +83,7 @@ class FlujoMovimientosIntegracionTest {
         sinProyecto.put("idEvento", proyectoYEvento[1]);
         ejecutar(post(RUTA), sinProyecto).andExpect(status().isUnprocessableContent());
 
-        Map<String, Object> subcontrato = movimiento("Subcontratación de servicios", "Generador eléctrico", "800");
+        Map<String, Object> subcontrato = movimiento("Alquiler de equipos a terceros", "Generador eléctrico", "800");
         subcontrato.put("idProyecto", idProyecto);
         ejecutar(post(RUTA), subcontrato).andExpect(status().isUnprocessableContent());
         subcontrato.put("idProveedor", crear("/api/finanzas/proveedores", Map.of("razonSocial",
