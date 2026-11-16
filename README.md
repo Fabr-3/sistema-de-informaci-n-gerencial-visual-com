@@ -9,7 +9,7 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 | Comercial y planificación de proyectos (clientes, cotizaciones, proyectos, eventos, contratos y cronograma) | ✅ Implementado |
 | Logística (personal técnico, jornadas de montaje y desmontaje, asignación de personal y reserva de equipos) | ✅ Implementado |
 | Financiero (ingresos y egresos, ventas, proveedores, márgenes por proyecto y evento, indicadores del gerente) | ✅ Implementado |
-| Información gerencial (KPIs, alertas de estado de activos y reportes operativos en PDF) | ✅ Implementado |
+| Información gerencial (KPIs, alertas con seguimiento de atención y reportes operativos en PDF) | ✅ Implementado |
 | Subcontratación y consumibles (subcontrataciones con su egreso, catálogo y stock de consumibles, consumos por proyecto y evento) | ✅ Implementado |
 
 ## Tecnologías
@@ -109,6 +109,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V12`: reserva de activos por evento. `reservas_activo` recibe su propia clave (`id_reserva`), periodo (`fecha_salida`, `fecha_retorno`), estado (`ACTIVA`, `LIBERADA`) con fecha y motivo de liberación y columnas de modificación; índice único parcial por plan y activo entre las activas y restricción `EXCLUDE` que impide reservas activas superpuestas del mismo activo.
   - `V13`: historial de los módulos LED (`historial_modulos_led`: alta, cambio de estado, reemplazo y reasignación, con pantallas de origen y destino, estados, módulo relacionado y motivo) y carga del alta de los módulos existentes en su pantalla actual.
   - `V14`: subcontratación y consumibles. Tablas `subcontrataciones` (con su egreso `id_movimiento`; triggers que exigen que el evento sea del proyecto y el servicio del proveedor), `consumibles`, `movimientos_consumible` y `consumos_proyecto` (con el costo unitario copiado). El tipo *Subcontratación de servicios* pasa a ser de sistema (`codigo_sistema = 'SUBCONTRATACION'`).
+  - `V15`: alertas persistentes (`alertas`: tipo, severidad, activo y evento opcionales, `clave` de la situación, detalle, estado `PENDIENTE`, `ATENDIDA` o `RESUELTA` y datos de la atención); índice único parcial por tipo y clave entre las no resueltas.
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -208,7 +209,8 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - *Margen de utilidad bruta* = utilidad bruta / ingresos; *margen de beneficio neto* = ganancia / ingresos. Sin ingresos no se calculan. Su variación se expresa en puntos porcentuales.
   - *Rentabilidad recurrente anual (basada en proyectos):* en los 12 meses que terminan en la fecha final (costos directos con consumibles), margen de los proyectos de clientes recurrentes (con 2 o más proyectos no cancelados contratados) sobre sus ingresos. También se informa qué parte del margen anual de todos los proyectos aportan.
   - *Tasa de utilización de recursos:* días con uso registrado de los equipos por unidad que siguen en el inventario, sobre los días disponibles desde su adquisición (por categoría y total); y días con asignaciones del personal técnico activo en eventos no cancelados, sobre los días del periodo. Bajo 20 % se marca para revisión.
-- **Alertas de estado de activos** (situación actual): mantenimiento preventivo vencido (crítica) o próximo según horas de uso; mantenimiento en proceso desde hace 7 días o más; módulos LED defectuosos; 3 o más correctivos en los últimos 12 meses (fallas recurrentes); y equipos disponibles sin uso en los últimos 90 días (informativa). Los umbrales se configuran en `app.gerencial`.
+- **Alertas** (se calculan sobre la situación actual): equipo reservado para un evento próximo que está en mantenimiento (reserva en riesgo, crítica); mantenimiento preventivo vencido (crítica) o próximo según horas de uso; mantenimiento en proceso desde hace 7 días o más; módulos LED defectuosos; 3 o más correctivos en los últimos 12 meses (fallas recurrentes); equipos disponibles sin uso en los últimos 90 días (informativa); y consumibles activos con el stock en su mínimo o por debajo. Los umbrales se configuran en `app.gerencial`.
+- **Seguimiento de alertas:** cada vez que se consultan, y cada 30 minutos (`app.gerencial.cron-sincronizacion-alertas`), las alertas calculadas se sincronizan con las registradas: una situación nueva se registra como *Pendiente*, una que ya no se presenta pasa a *Resuelta* y una *Atendida* no se reabre mientras la situación siga presente (su detalle se actualiza). La situación se identifica por su tipo y su clave (el activo, el mantenimiento, la reserva o el consumible). Solo una alerta pendiente se marca como atendida, con un comentario que queda en la auditoría; el listado filtra por estado (por defecto, pendientes), tipo y severidad. El tablero y los reportes cuentan solo las pendientes.
 - **Reportes operativos en PDF:** resumen gerencial, eventos del periodo, estado de activos e inventario (situación actual), mantenimientos de equipos con su costo y utilización del personal técnico. Cada emisión queda en la auditoría.
 - **Permisos:** `REPORTES_VER` (administrador y gerente) para el tablero, las alertas y los reportes.
 
