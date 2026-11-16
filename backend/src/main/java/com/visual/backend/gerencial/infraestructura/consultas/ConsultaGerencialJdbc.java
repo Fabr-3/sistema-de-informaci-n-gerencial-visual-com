@@ -24,15 +24,12 @@ import com.visual.backend.gerencial.dominio.puerto.ConsultaGerencial;
 public class ConsultaGerencialJdbc implements ConsultaGerencial {
 
     private static final String RESULTADOS_POR_CLIENTE = """
-            with por_proyecto as (
-                select p.id_proyecto, c.id_cliente,
-                       coalesce(sum(m.monto) filter (where t.naturaleza = 'INGRESO'), 0) as ingresos,
-                       coalesce(sum(m.monto) filter (where t.naturaleza = 'EGRESO'), 0) as costos
-                from movimientos_financieros m
-                join tipos_movimiento t on t.id_tipo_movimiento = m.id_tipo_movimiento
-                join proyectos p on p.id_proyecto = m.id_proyecto
+            with lineas as (""" + FragmentosSql.LINEAS_PROYECTO + """
+            ), por_proyecto as (
+                select p.id_proyecto, c.id_cliente, sum(l.ingreso) as ingresos, sum(l.costo) as costos
+                from lineas l
+                join proyectos p on p.id_proyecto = l.id_proyecto
                 join cotizaciones c on c.id_cotizacion = p.id_cotizacion
-                where m.estado = 'REGISTRADO' and m.fecha_movimiento between :desde and :hasta
                 group by p.id_proyecto, c.id_cliente
             ), contratados as (
                 select c.id_cliente, count(*) as proyectos

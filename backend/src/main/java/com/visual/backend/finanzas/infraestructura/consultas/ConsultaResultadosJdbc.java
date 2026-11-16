@@ -23,7 +23,11 @@ import com.visual.backend.finanzas.dominio.modelo.ResultadoProyecto;
 import com.visual.backend.finanzas.dominio.modelo.TotalPorTipo;
 import com.visual.backend.finanzas.dominio.puerto.ConsultaResultados;
 
-/** Agregados de solo lectura con SQL; los movimientos anulados nunca se cuentan. */
+/**
+ * Agregados de solo lectura con SQL; los movimientos anulados nunca se cuentan.
+ * Los costos directos suman los egresos imputados y los consumibles usados
+ * (consumos registrados, a su costo copiado), que no generan movimientos.
+ */
 @Repository
 public class ConsultaResultadosJdbc implements ConsultaResultados {
 
@@ -35,6 +39,13 @@ public class ConsultaResultadosJdbc implements ConsultaResultados {
     private static final String MOVIMIENTOS_REGISTRADOS = """
             left join movimientos_financieros m on m.%s and m.estado = 'REGISTRADO'
             left join tipos_movimiento t on t.id_tipo_movimiento = m.id_tipo_movimiento
+            """;
+    /** Costo de los consumos registrados de cada proyecto, evento o proyecto sin evento. */
+    private static final String CONSUMOS = """
+            select cp.id_proyecto, cp.id_evento, sum(cp.cantidad * cp.costo_unitario) as costo
+            from consumos_proyecto cp
+            where cp.estado = 'REGISTRADO'
+            group by cp.id_proyecto, cp.id_evento
             """;
     private static final String DESDE_PROYECTOS = """
             from proyectos p
@@ -52,7 +63,8 @@ public class ConsultaResultadosJdbc implements ConsultaResultados {
     private static final String PROYECTOS = """
             select p.id_proyecto, p.nombre_proyecto, cl.razon_social, p.estado,
                    coalesce(vi.importe_total, 0) as contratado,
-                   coalesce(sm.ingresos, 0) as ingresos, coalesce(sm.costos, 0) as costos
+                   coalesce(sm.ingresos, 0) as ingresos,
+                   coalesce(sm.costos, 0) + coalesce(sc.costo, 0) as costos
             """ + DESDE_PROYECTOS + """
             left join v_cotizacion_importe vi on vi.id_cotizacion = p.id_cotizacion
             left join (select m.id_proyecto,
@@ -61,32 +73,50 @@ public class ConsultaResultadosJdbc implements ConsultaResultados {
                        join tipos_movimiento t on t.id_tipo_movimiento = m.id_tipo_movimiento
                        where m.estado = 'REGISTRADO' and m.id_proyecto is not null
                        group by m.id_proyecto) sm on sm.id_proyecto = p.id_proyecto
+            left join (select id_proyecto, sum(costo) as costo from (""" + CONSUMOS + """
+                       ) c group by id_proyecto) sc on sc.id_proyecto = p.id_proyecto
             """ + CONDICIONES_PROYECTOS + """
             order by p.fecha_inicio desc nulls last, p.id_proyecto desc
             limit :tamano offset :desplazamiento
             """;
     private static final String CONTAR_PROYECTOS = "select count(*) " + DESDE_PROYECTOS + CONDICIONES_PROYECTOS;
     private static final String EVENTOS = """
-            select e.id_evento, e.nombre_evento, e.fecha_inicio, """ + SUMAS + """
-            from eventos e
+            select x.id_evento, x.nombre_evento, x.fecha_inicio, x.ingresos,
+                   x.costos + coalesce(c.costo, 0) as costos
+            from (select e.id_evento, e.nombre_evento, e.fecha_inicio, """ + SUMAS + """
+                  from eventos e
             """ + MOVIMIENTOS_REGISTRADOS.formatted("id_evento = e.id_evento") + """
-            where e.id_proyecto = :idProyecto and e.fecha_eliminacion is null
-            group by e.id_evento
-            order by e.fecha_inicio
+                  where e.id_proyecto = :idProyecto and e.fecha_eliminacion is null
+                  group by e.id_evento) x
+            left join (""" + CONSUMOS + """
+            ) c on c.id_evento = x.id_evento
+            order by x.fecha_inicio
             """;
-    private static final String SIN_EVENTO = "select " + SUMAS + """
-            from movimientos_financieros m
-            join tipos_movimiento t on t.id_tipo_movimiento = m.id_tipo_movimiento
-            where m.id_proyecto = :idProyecto and m.id_evento is null and m.estado = 'REGISTRADO'
+    private static final String SIN_EVENTO = """
+            select x.ingresos, x.costos + coalesce((select sum(c.costo) from (""" + CONSUMOS + """
+                   ) c where c.id_proyecto = :idProyecto and c.id_evento is null), 0) as costos
+            from (select
+            """ + SUMAS + """
+                  from movimientos_financieros m
+                  join tipos_movimiento t on t.id_tipo_movimiento = m.id_tipo_movimiento
+                  where m.id_proyecto = :idProyecto and m.id_evento is null and m.estado = 'REGISTRADO') x
             """;
+    /** Totales por tipo de movimiento, mas una linea aparte con los consumibles usados. */
     private static final String POR_TIPO = """
-            select t.nombre, t.naturaleza, sum(m.monto) as monto
-            from movimientos_financieros m
-            join tipos_movimiento t on t.id_tipo_movimiento = m.id_tipo_movimiento
-            where m.id_proyecto = :idProyecto and m.estado = 'REGISTRADO'
-            group by t.nombre, t.naturaleza
-            order by t.naturaleza desc, monto desc
+            select nombre, naturaleza, monto from (
+                select t.nombre, t.naturaleza, sum(m.monto) as monto
+                from movimientos_financieros m
+                join tipos_movimiento t on t.id_tipo_movimiento = m.id_tipo_movimiento
+                where m.id_proyecto = :idProyecto and m.estado = 'REGISTRADO'
+                group by t.nombre, t.naturaleza
+                union all
+                select cast(:etiquetaConsumibles as varchar), 'EGRESO', sum(c.costo)
+                from (""" + CONSUMOS + """
+                ) c where c.id_proyecto = :idProyecto
+                having sum(c.costo) > 0) lineas
+            order by naturaleza desc, monto desc
             """;
+    static final String ETIQUETA_CONSUMIBLES = "Consumibles";
     private static final String ETIQUETA_SIN_EVENTO = "Sin evento (todo el proyecto)";
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -132,7 +162,8 @@ public class ConsultaResultadosJdbc implements ConsultaResultados {
         return new MapSqlParameterSource()
                 .addValue("patron", patron)
                 .addValue("estado", estado == null || estado.isBlank() ? null : estado)
-                .addValue("idProyecto", idProyecto);
+                .addValue("idProyecto", idProyecto)
+                .addValue("etiquetaConsumibles", ETIQUETA_CONSUMIBLES);
     }
 
     private static ResultadoProyecto proyecto(ResultSet fila) throws SQLException {
