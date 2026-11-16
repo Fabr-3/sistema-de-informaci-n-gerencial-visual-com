@@ -271,8 +271,14 @@ cd backend && ./mvnw test        # unitarias e integración (usa la base proyect
 cd frontend && pnpm test         # Vitest
 ```
 
+`ArquitecturaTest` (ArchUnit) verifica la regla de dependencia entre capas y módulos.
+
 La base de pruebas debe existir antes de correrlas:
 
 ```bash
 createdb -h localhost -U postgres proyecto_visual_com_test
 ```
+
+## Desvíos respecto a los diagramas
+
+`docs/desvios-diagramas.md` resume en qué difiere la implementación de los diagramas del documento del proyecto (casos de uso, secuencia, base de datos y paquetes) y por qué, para poder actualizarlos.
