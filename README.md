@@ -151,7 +151,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 
 ## Reglas del módulo comercial y de planificación
 
-- **Clientes:** en las cotizaciones el cliente se busca por nombre o número de documento. Cada cliente tiene al menos un documento (CI o NIT) que no se repite entre clientes, y puede tener varios contactos. Un cliente con cotizaciones no se elimina.
+- **Clientes:** en las cotizaciones el cliente se busca por nombre o número de documento. Cada cliente tiene al menos un documento (CI o NIT) que no se repite entre clientes, y puede tener varios contactos. Un cliente con cotizaciones no se elimina. Su **resumen comercial** muestra las cotizaciones y proyectos por estado, el importe cotizado (todas las cotizaciones) y el contratado (las aceptadas), con la conversión entre ambos, y las cinco cotizaciones y proyectos más recientes con enlace a cada uno.
 - **Cotizaciones:**
   - Se numeran por año (`COT-2026-0001`) y su importe es la suma de sus líneas (cantidad × precio unitario − descuento). Solo admiten servicios activos.
   - Solo se editan en *Borrador*. Al resolverse, sus líneas quedan bloqueadas también en la base de datos.
