@@ -18,7 +18,7 @@ export const RUTAS_GERENCIAL: Routes = [
       },
       {
         path: Rutas.ALERTAS,
-        title: 'Alertas de activos',
+        title: 'Alertas',
         loadComponent: () => import('./paginas/alertas/pagina-alertas').then((m) => m.PaginaAlertas),
       },
       {

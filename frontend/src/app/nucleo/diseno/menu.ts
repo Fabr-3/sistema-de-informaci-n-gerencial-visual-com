@@ -32,7 +32,7 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
         permiso: Permisos.REPORTES_VER,
       },
       {
-        etiqueta: 'Alertas de activos',
+        etiqueta: 'Alertas',
         icono: 'notification_important',
         ruta: rutaAbsoluta(Rutas.GERENCIAL, Rutas.ALERTAS),
         permiso: Permisos.REPORTES_VER,

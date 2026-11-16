@@ -1,14 +1,23 @@
-import { AlertaActivo, contarPorSeveridad, filtrarAlertas, tipoVisualSeveridad } from './alertas';
+import { Alerta, contarPorSeveridad, filtrarAlertas, tipoVisualSeveridad } from './alertas';
 
 describe('alertas de activos', () => {
-  const alerta = (codigo: string, severidad: AlertaActivo['severidad'], tipo: AlertaActivo['tipo']): AlertaActivo => ({
+  const alerta = (codigo: string, severidad: Alerta['severidad'], tipo: Alerta['tipo']): Alerta => ({
+    id: 1,
     tipo,
     severidad,
     idActivo: 1,
+    idEvento: null,
+    clave: '1',
     codigo,
     modelo: 'Robe MegaPointe',
     categoria: 'Iluminación',
     detalle: '',
+    fechaGeneracion: '2026-11-16T10:00:00',
+    estado: 'PENDIENTE',
+    nombreAtendio: null,
+    fechaAtencion: null,
+    comentarioAtencion: null,
+    fechaResolucion: null,
   });
   const alertas = [
     alerta('RBMP-0005', 'CRITICA', 'MANTENIMIENTO_VENCIDO'),

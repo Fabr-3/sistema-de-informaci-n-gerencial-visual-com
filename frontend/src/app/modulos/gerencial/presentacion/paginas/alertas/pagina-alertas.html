@@ -1,16 +1,25 @@
 <div class="pagina">
   <header class="pagina__encabezado">
     <div>
-      <h1>Alertas de activos</h1>
+      <h1>Alertas</h1>
       <p>
-        Mantenimientos vencidos, próximos o prolongados, módulos LED defectuosos, fallas recurrentes y equipos sin uso.
-        Se actualizan con el estado actual del inventario.
+        Equipos reservados que están en mantenimiento, mantenimientos vencidos, próximos o prolongados, módulos LED
+        defectuosos, fallas recurrentes, equipos sin uso y consumibles con stock bajo. Se actualizan con la situación
+        actual cada vez que se consultan.
       </p>
     </div>
   </header>
 
   <section class="panel">
     <div class="filtros">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Estado</mat-label>
+        <mat-select [ngModel]="estado()" (ngModelChange)="estado.set($event)">
+          @for (opcion of estados | keyvalue: ordenOriginal; track opcion.key) {
+            <mat-option [value]="opcion.key">{{ opcion.value }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Severidad</mat-label>
         <mat-select [ngModel]="severidad()" (ngModelChange)="severidad.set($event)">
@@ -32,7 +41,7 @@
     </div>
 
     <div class="tabla-contenedor">
-      @if (alertas() === undefined) {
+      @if (cargando()) {
         <mat-progress-bar mode="indeterminate" />
       }
       <table mat-table [dataSource]="filtradas()">
@@ -48,23 +57,54 @@
         <ng-container matColumnDef="activo">
           <th mat-header-cell *matHeaderCellDef>Activo</th>
           <td mat-cell *matCellDef="let alerta">
-            <a [routerLink]="rutaActivo(alerta)"><strong>{{ alerta.codigo }}</strong></a>
-            <div class="texto-secundario">{{ alerta.modelo }} · {{ alerta.categoria }}</div>
+            @if (alerta.idActivo) {
+              <a [routerLink]="rutaActivo(alerta)"><strong>{{ alerta.codigo }}</strong></a>
+              <div class="texto-secundario">{{ alerta.modelo }} · {{ alerta.categoria }}</div>
+            } @else {
+              <span class="texto-secundario">Consumible</span>
+            }
           </td>
         </ng-container>
         <ng-container matColumnDef="tipo">
           <th mat-header-cell *matHeaderCellDef>Alerta</th>
-          <td mat-cell *matCellDef="let alerta">{{ alerta.tipo | etiqueta: tipos }}</td>
+          <td mat-cell *matCellDef="let alerta">
+            {{ alerta.tipo | etiqueta: tipos }}
+            <div class="texto-secundario">Desde el {{ alerta.fechaGeneracion | date: 'dd/MM/yyyy HH:mm' }}</div>
+          </td>
         </ng-container>
         <ng-container matColumnDef="detalle">
           <th mat-header-cell *matHeaderCellDef>Detalle</th>
           <td mat-cell *matCellDef="let alerta" class="texto-secundario">{{ alerta.detalle }}</td>
         </ng-container>
+        <ng-container matColumnDef="atencion">
+          <th mat-header-cell *matHeaderCellDef>Atención</th>
+          <td mat-cell *matCellDef="let alerta">
+            @if (alerta.fechaAtencion) {
+              {{ alerta.nombreAtendio ?? '—' }}
+              <div class="texto-secundario">{{ alerta.fechaAtencion | date: 'dd/MM/yyyy HH:mm' }}</div>
+              <div class="texto-secundario">{{ alerta.comentarioAtencion }}</div>
+            } @else if (alerta.fechaResolucion) {
+              <span class="texto-secundario">Resuelta el {{ alerta.fechaResolucion | date: 'dd/MM/yyyy HH:mm' }}</span>
+            } @else {
+              <span class="texto-secundario">—</span>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+          <td mat-cell *matCellDef="let alerta" class="celda-acciones">
+            @if (alerta.estado === 'PENDIENTE') {
+              <button mat-icon-button matTooltip="Marcar como atendida" (click)="atender(alerta)" aria-label="Marcar como atendida">
+                <mat-icon>task_alt</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
         <tr mat-header-row *matHeaderRowDef="columnas"></tr>
         <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
       </table>
-      @if (alertas() && !filtradas().length) {
-        <p class="vacio">{{ alertas()!.length ? 'Ninguna alerta coincide con los filtros.' : 'No hay alertas: todos los activos están en orden.' }}</p>
+      @if (!cargando() && alertas() && !filtradas().length) {
+        <p class="vacio">{{ alertas()!.length ? 'Ninguna alerta coincide con los filtros.' : 'No hay alertas en este estado.' }}</p>
       }
       @if (alertas() === null) {
         <p class="vacio">No se pudieron cargar las alertas.</p>

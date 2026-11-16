@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { AlertaActivo } from '../dominio/modelos/alertas';
+import { Alerta, EstadoAlerta } from '../dominio/modelos/alertas';
 import { KpisGerenciales } from '../dominio/modelos/kpis';
 import { TipoReporte } from '../dominio/modelos/reportes';
 import { RepositorioGerencial } from '../dominio/repositorios/repositorio-gerencial';
@@ -15,8 +15,12 @@ export class GestionGerencial {
     return this.repositorio.kpis(desde, hasta);
   }
 
-  alertasActivos(): Observable<AlertaActivo[]> {
-    return this.repositorio.alertasActivos();
+  alertas(estado: EstadoAlerta): Observable<Alerta[]> {
+    return this.repositorio.alertas(estado);
+  }
+
+  atenderAlerta(id: number, comentario: string): Observable<Alerta> {
+    return this.repositorio.atenderAlerta(id, comentario.trim());
   }
 
   reporte(tipo: TipoReporte, desde: string, hasta: string): Observable<Blob> {

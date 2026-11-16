@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { parametrosConsulta } from '../../../../compartido/utilidades/parametros-http';
 import { URL_API } from '../../../../nucleo/configuracion/api';
-import { AlertaActivo } from '../../dominio/modelos/alertas';
+import { Alerta, EstadoAlerta } from '../../dominio/modelos/alertas';
 import { KpisGerenciales } from '../../dominio/modelos/kpis';
 import { TipoReporte } from '../../dominio/modelos/reportes';
 import { RepositorioGerencial } from '../../dominio/repositorios/repositorio-gerencial';
@@ -18,8 +18,12 @@ export class RepositorioGerencialHttp extends RepositorioGerencial {
     return this.http.get<KpisGerenciales>(`${this.url}/kpis`, { params: parametrosConsulta({ desde, hasta }) });
   }
 
-  alertasActivos(): Observable<AlertaActivo[]> {
-    return this.http.get<AlertaActivo[]>(`${this.url}/alertas-activos`);
+  alertas(estado: EstadoAlerta): Observable<Alerta[]> {
+    return this.http.get<Alerta[]>(`${this.url}/alertas`, { params: { estado } });
+  }
+
+  atenderAlerta(id: number, comentario: string): Observable<Alerta> {
+    return this.http.post<Alerta>(`${this.url}/alertas/${id}/atencion`, { comentario });
   }
 
   reporte(tipo: TipoReporte, desde: string, hasta: string): Observable<Blob> {
