@@ -8,7 +8,7 @@ import java.util.Map;
 import com.visual.backend.comercial.dominio.modelo.Cliente;
 import com.visual.backend.comercial.dominio.modelo.ContactoCliente;
 import com.visual.backend.comercial.dominio.modelo.DocumentoCliente;
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 
 public record VistaCliente(Integer id, ElementoCatalogo tipo, String razonSocial, String direccion,
                            List<DocumentoCliente> documentos, List<ContactoCliente> contactos,

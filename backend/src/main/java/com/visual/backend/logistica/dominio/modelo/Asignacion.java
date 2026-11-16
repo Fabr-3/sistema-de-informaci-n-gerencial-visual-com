@@ -2,7 +2,7 @@ package com.visual.backend.logistica.dominio.modelo;
 
 import java.time.LocalDateTime;
 
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 
 import lombok.AccessLevel;

@@ -6,7 +6,6 @@ import com.visual.backend.comercial.dominio.modelo.ContactoCliente;
 import com.visual.backend.comercial.dominio.modelo.Contrato;
 import com.visual.backend.comercial.dominio.modelo.Cotizacion;
 import com.visual.backend.comercial.dominio.modelo.DocumentoCliente;
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
 import com.visual.backend.comercial.dominio.modelo.Evento;
 import com.visual.backend.comercial.dominio.modelo.EventoCalendario;
 import com.visual.backend.comercial.dominio.modelo.LineaCotizacion;
@@ -24,6 +23,7 @@ import com.visual.backend.comercial.infraestructura.persistencia.entidad.LineaCo
 import com.visual.backend.comercial.infraestructura.persistencia.entidad.LugarEntidad;
 import com.visual.backend.comercial.infraestructura.persistencia.entidad.ProyectoEntidad;
 import com.visual.backend.comercial.infraestructura.persistencia.entidad.ServicioEntidad;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 
 /** Conversion de entidades JPA a modelos de dominio del modulo comercial. */
 final class MapeadorComercial {

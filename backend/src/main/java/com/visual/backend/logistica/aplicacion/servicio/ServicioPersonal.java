@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.visual.backend.accesos.aplicacion.servicio.ServicioAuditoria;
 import com.visual.backend.accesos.dominio.modelo.AccionAuditoria;
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud;
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.compartido.dominio.Pagina;
 import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.dominio.excepcion.DatoDuplicadoExcepcion;

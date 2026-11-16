@@ -15,7 +15,6 @@ import com.visual.backend.comercial.dominio.modelo.Cotizacion;
 import com.visual.backend.comercial.dominio.modelo.DatosCotizacion;
 import com.visual.backend.comercial.dominio.modelo.DatosEvento;
 import com.visual.backend.comercial.dominio.modelo.DocumentoCliente;
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
 import com.visual.backend.comercial.dominio.modelo.EstadoCotizacion;
 import com.visual.backend.comercial.dominio.modelo.EstadoEvento;
 import com.visual.backend.comercial.dominio.modelo.EstadoProyecto;
@@ -24,6 +23,7 @@ import com.visual.backend.comercial.dominio.modelo.LineaCotizacion;
 import com.visual.backend.comercial.dominio.modelo.Lugar;
 import com.visual.backend.comercial.dominio.modelo.Proyecto;
 import com.visual.backend.comercial.dominio.modelo.ResumenCliente;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 
 class ReglasComercialesTest {

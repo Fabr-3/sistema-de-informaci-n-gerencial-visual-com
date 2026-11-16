@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 
 /**

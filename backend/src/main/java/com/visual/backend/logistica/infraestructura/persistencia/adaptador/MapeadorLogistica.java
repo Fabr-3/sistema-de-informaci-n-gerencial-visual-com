@@ -3,12 +3,13 @@ package com.visual.backend.logistica.infraestructura.persistencia.adaptador;
 import java.util.Comparator;
 
 import com.visual.backend.accesos.infraestructura.persistencia.entidad.UsuarioEntidad;
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
 import com.visual.backend.comercial.infraestructura.persistencia.entidad.EventoEntidad;
 import com.visual.backend.comercial.infraestructura.persistencia.entidad.LugarEntidad;
 import com.visual.backend.comercial.infraestructura.persistencia.entidad.ProyectoEntidad;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.logistica.dominio.modelo.Asignacion;
 import com.visual.backend.logistica.dominio.modelo.DocumentoPersonal;
+import com.visual.backend.logistica.dominio.modelo.EstadoEventoLogistico;
 import com.visual.backend.logistica.dominio.modelo.EventoLogistico;
 import com.visual.backend.logistica.dominio.modelo.Jornada;
 import com.visual.backend.logistica.dominio.modelo.Periodo;
@@ -32,7 +33,7 @@ final class MapeadorLogistica {
         ProyectoEntidad proyecto = entidad.getProyecto();
         LugarEntidad lugar = entidad.getLugar();
         return new EventoLogistico(entidad.getId(), entidad.getNombre(), entidad.getFechaInicio(),
-                entidad.getFechaFin(), entidad.getEstado(), proyecto.getId(), proyecto.getNombre(),
+                entidad.getFechaFin(), EstadoEventoLogistico.valueOf(entidad.getEstado().name()), proyecto.getId(), proyecto.getNombre(),
                 proyecto.getCotizacion().getCliente().getRazonSocial(), lugar.getNombre(), lugar.getDireccion(),
                 lugar.getCiudad());
     }

@@ -12,10 +12,10 @@ import com.visual.backend.accesos.dominio.modelo.AccionAuditoria;
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud;
 import com.visual.backend.comercial.aplicacion.dto.ComandoLugar;
 import com.visual.backend.comercial.aplicacion.dto.ComandoServicio;
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
 import com.visual.backend.comercial.dominio.modelo.Lugar;
 import com.visual.backend.comercial.dominio.modelo.Servicio;
 import com.visual.backend.comercial.dominio.puerto.RepositorioCatalogosComerciales;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.compartido.dominio.excepcion.DatoDuplicadoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 

@@ -1,5 +1,7 @@
 package com.visual.backend.comercial.dominio.modelo;
 
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
+
 /** Medio de contacto del cliente; la referencia indica el area o persona (Gerencia, Compras). */
 public record ContactoCliente(Integer id, ElementoCatalogo tipo, String valor, String referencia) {
 

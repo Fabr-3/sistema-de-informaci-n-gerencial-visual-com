@@ -3,7 +3,7 @@ package com.visual.backend.logistica.dominio.puerto;
 import java.util.List;
 import java.util.Optional;
 
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.logistica.dominio.modelo.UsuarioVinculado;
 
 /** Catalogos de logistica y cuentas de usuario que se pueden vincular al personal. */

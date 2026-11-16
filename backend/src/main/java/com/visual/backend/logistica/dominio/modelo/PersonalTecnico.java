@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 
 import lombok.AccessLevel;

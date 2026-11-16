@@ -2,12 +2,11 @@ package com.visual.backend.logistica.dominio.modelo;
 
 import java.time.LocalDateTime;
 
-import com.visual.backend.comercial.dominio.modelo.EstadoEvento;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 
 /** Datos del evento comercial que necesita la planificacion logistica. */
 public record EventoLogistico(Integer id, String nombre, LocalDateTime fechaInicio, LocalDateTime fechaFin,
-                              EstadoEvento estado, Integer idProyecto, String proyecto, String cliente,
+                              EstadoEventoLogistico estado, Integer idProyecto, String proyecto, String cliente,
                               String lugar, String direccion, String ciudad) {
 
     public Periodo periodo() {
@@ -16,7 +15,7 @@ public record EventoLogistico(Integer id, String nombre, LocalDateTime fechaInic
 
     /** Solo la logistica de un evento programado se puede modificar. */
     public boolean editable() {
-        return estado == EstadoEvento.PROGRAMADO;
+        return estado == EstadoEventoLogistico.PROGRAMADO;
     }
 
     public void exigirEditable() {

@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
 import com.visual.backend.comercial.dominio.modelo.Lugar;
 import com.visual.backend.comercial.dominio.modelo.Servicio;
 import com.visual.backend.comercial.dominio.puerto.RepositorioCatalogosComerciales;
@@ -19,6 +18,7 @@ import com.visual.backend.comercial.infraestructura.persistencia.jpa.ServicioJpa
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.TipoClienteJpaRepositorio;
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.TipoContactoJpaRepositorio;
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.TipoDocumentoJpaRepositorio;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 
 @Repository
 public class RepositorioCatalogosComercialesJpa implements RepositorioCatalogosComerciales {

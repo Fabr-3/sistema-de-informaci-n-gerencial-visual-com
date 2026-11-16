@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
 import com.visual.backend.comercial.dominio.modelo.Lugar;
 import com.visual.backend.comercial.dominio.modelo.Servicio;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 
 /** Catalogos del modulo: tipos de cliente/documento/contacto, servicios y lugares. */
 public interface RepositorioCatalogosComerciales {

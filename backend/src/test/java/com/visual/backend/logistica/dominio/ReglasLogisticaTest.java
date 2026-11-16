@@ -8,12 +8,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
-import com.visual.backend.comercial.dominio.modelo.EstadoEvento;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 import com.visual.backend.logistica.dominio.modelo.Asignacion;
 import com.visual.backend.logistica.dominio.modelo.DatosPersonal;
 import com.visual.backend.logistica.dominio.modelo.DocumentoPersonal;
+import com.visual.backend.logistica.dominio.modelo.EstadoEventoLogistico;
 import com.visual.backend.logistica.dominio.modelo.EventoLogistico;
 import com.visual.backend.logistica.dominio.modelo.Jornada;
 import com.visual.backend.logistica.dominio.modelo.Periodo;
@@ -31,7 +31,7 @@ class ReglasLogisticaTest {
     private static final ElementoCatalogo TECNICO_SONIDO = new ElementoCatalogo(2, "Técnico de sonido");
     private static final Integer ACTOR = 1;
 
-    private static EventoLogistico evento(EstadoEvento estado) {
+    private static EventoLogistico evento(EstadoEventoLogistico estado) {
         return new EventoLogistico(10, "Concierto aniversario", INICIO_EVENTO, FIN_EVENTO, estado, 3,
                 "Concierto aniversario 25 años", "Cervecería del Altiplano S.R.L.", "Teatro al Aire Libre",
                 "Av. del Ejército s/n", "La Paz");
@@ -48,7 +48,7 @@ class ReglasLogisticaTest {
 
     @Test
     void elMontajeTerminaAntesDelEventoYElDesmontajeEmpiezaDespues() {
-        EventoLogistico evento = evento(EstadoEvento.PROGRAMADO);
+        EventoLogistico evento = evento(EstadoEventoLogistico.PROGRAMADO);
         PlanLogistico plan = PlanLogistico.nuevo(evento, ACTOR, AHORA);
 
         assertThatThrownBy(() -> plan.agregarJornada(evento, jornada(TipoJornada.MONTAJE,
@@ -64,7 +64,7 @@ class ReglasLogisticaTest {
 
     @Test
     void variasJornadasAmplianLaVentanaPeroNoPuedenCruzarse() {
-        EventoLogistico evento = evento(EstadoEvento.PROGRAMADO);
+        EventoLogistico evento = evento(EstadoEventoLogistico.PROGRAMADO);
         PlanLogistico plan = PlanLogistico.nuevo(evento, ACTOR, AHORA);
         LocalDateTime primerMontaje = INICIO_EVENTO.minusDays(2).withHour(8);
         plan.agregarJornada(evento, jornada(TipoJornada.MONTAJE, INICIO_EVENTO.minusDays(1).withHour(8),
@@ -84,7 +84,7 @@ class ReglasLogisticaTest {
 
     @Test
     void laAsignacionDebeQuedarDentroDelPlanYSoloParaPersonalActivo() {
-        EventoLogistico evento = evento(EstadoEvento.PROGRAMADO);
+        EventoLogistico evento = evento(EstadoEventoLogistico.PROGRAMADO);
         PlanLogistico plan = PlanLogistico.nuevo(evento, ACTOR, AHORA);
         plan.agregarJornada(evento, jornada(TipoJornada.MONTAJE, INICIO_EVENTO.minusHours(10),
                 INICIO_EVENTO.minusHours(2)), ACTOR, AHORA);
@@ -104,22 +104,22 @@ class ReglasLogisticaTest {
 
     @Test
     void laLogisticaDeUnEventoEjecutadoOCanceladoNoSeModifica() {
-        EventoLogistico ejecutado = evento(EstadoEvento.EJECUTADO);
+        EventoLogistico ejecutado = evento(EstadoEventoLogistico.EJECUTADO);
 
         assertThatThrownBy(() -> PlanLogistico.nuevo(ejecutado, ACTOR, AHORA))
                 .isInstanceOf(ReglaNegocioExcepcion.class).hasMessageContaining("ejecutado");
-        assertThatThrownBy(() -> PlanLogistico.nuevo(evento(EstadoEvento.CANCELADO), ACTOR, AHORA))
+        assertThatThrownBy(() -> PlanLogistico.nuevo(evento(EstadoEventoLogistico.CANCELADO), ACTOR, AHORA))
                 .isInstanceOf(ReglaNegocioExcepcion.class).hasMessageContaining("cancelado");
     }
 
     @Test
     void siElEventoCambiaDeHorarioLasJornadasDesfasadasSeAvisan() {
-        EventoLogistico original = evento(EstadoEvento.PROGRAMADO);
+        EventoLogistico original = evento(EstadoEventoLogistico.PROGRAMADO);
         PlanLogistico plan = PlanLogistico.nuevo(original, ACTOR, AHORA);
         plan.agregarJornada(original, jornada(TipoJornada.MONTAJE, INICIO_EVENTO.minusHours(6),
                 INICIO_EVENTO.minusHours(1)), ACTOR, AHORA);
         EventoLogistico adelantado = new EventoLogistico(10, "Concierto aniversario", INICIO_EVENTO.minusHours(3),
-                FIN_EVENTO, EstadoEvento.PROGRAMADO, 3, "Concierto", "Cervecería", "Teatro", null, "La Paz");
+                FIN_EVENTO, EstadoEventoLogistico.PROGRAMADO, 3, "Concierto", "Cervecería", "Teatro", null, "La Paz");
 
         assertThat(plan.avisos(original)).isEmpty();
         assertThat(plan.avisos(adelantado)).singleElement().asString().contains("montaje");

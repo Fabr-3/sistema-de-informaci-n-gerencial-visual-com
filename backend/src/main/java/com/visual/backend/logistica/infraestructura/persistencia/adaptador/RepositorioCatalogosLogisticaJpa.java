@@ -7,8 +7,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import com.visual.backend.accesos.dominio.modelo.CodigoRol;
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
 import com.visual.backend.comercial.infraestructura.persistencia.jpa.TipoDocumentoJpaRepositorio;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.logistica.dominio.modelo.UsuarioVinculado;
 import com.visual.backend.logistica.dominio.puerto.RepositorioCatalogosLogistica;
 import com.visual.backend.logistica.infraestructura.persistencia.jpa.EspecialidadJpaRepositorio;

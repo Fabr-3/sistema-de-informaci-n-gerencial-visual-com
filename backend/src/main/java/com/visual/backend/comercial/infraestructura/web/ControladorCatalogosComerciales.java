@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.visual.backend.comercial.aplicacion.dto.ComandoLugar;
 import com.visual.backend.comercial.aplicacion.dto.ComandoServicio;
 import com.visual.backend.comercial.aplicacion.servicio.ServicioCatalogosComerciales;
-import com.visual.backend.comercial.dominio.modelo.ElementoCatalogo;
 import com.visual.backend.comercial.dominio.modelo.Lugar;
 import com.visual.backend.comercial.dominio.modelo.Servicio;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 
 import jakarta.validation.Valid;
 
