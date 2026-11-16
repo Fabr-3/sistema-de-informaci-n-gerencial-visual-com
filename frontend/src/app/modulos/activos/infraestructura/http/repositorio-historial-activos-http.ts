@@ -13,6 +13,7 @@ import {
   ModuloLed,
   NuevoRegistroUso,
   RegistroUso,
+  ReservaVigente,
 } from '../../dominio/modelos/historial';
 import { RepositorioHistorialActivos } from '../../dominio/repositorios/repositorio-historial-activos';
 
@@ -50,6 +51,10 @@ export class RepositorioHistorialActivosHttp extends RepositorioHistorialActivos
       `${this.url}/${idActivo}/mantenimientos/${idMantenimiento}/finalizacion`,
       fin,
     );
+  }
+
+  listarReservas(idActivo: number): Observable<ReservaVigente[]> {
+    return this.http.get<ReservaVigente[]>(`${this.url}/${idActivo}/reservas`);
   }
 
   listarModulos(idActivo: number): Observable<ModuloLed[]> {

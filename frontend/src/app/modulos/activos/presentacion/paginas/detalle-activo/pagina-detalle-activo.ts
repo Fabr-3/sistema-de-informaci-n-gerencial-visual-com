@@ -38,6 +38,7 @@ import {
 import { DatosDialogoActivo, DialogoActivo } from '../activos/dialogo-activo/dialogo-activo';
 import { SeccionMantenimientos } from './secciones/seccion-mantenimientos';
 import { SeccionModulos } from './secciones/seccion-modulos';
+import { SeccionReservas } from './secciones/seccion-reservas';
 import { SeccionUsos } from './secciones/seccion-usos';
 
 const LONGITUD_MOTIVO_BAJA = 500;
@@ -58,6 +59,7 @@ const LONGITUD_MOTIVO_BAJA = 500;
     MatTabsModule,
     SeccionMantenimientos,
     SeccionModulos,
+    SeccionReservas,
     SeccionUsos,
     SiPermiso,
   ],

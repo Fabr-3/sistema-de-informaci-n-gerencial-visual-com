@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { formatearTamano } from './archivos';
-import { MENSAJE_ERROR_GENERICO, MENSAJE_SIN_CONEXION, mensajeDeError } from './errores-http';
+import { MENSAJE_ERROR_GENERICO, MENSAJE_SIN_CONEXION, conflictosDeError, mensajeDeError } from './errores-http';
 import { aIsoLocal, desdeIsoLocal, finDelDia } from './fechas';
 import { parametrosConsulta } from './parametros-http';
 
@@ -23,6 +23,20 @@ describe('mensajeDeError', () => {
     expect(mensajeDeError(new HttpErrorResponse({ status: 0 }))).toBe(MENSAJE_SIN_CONEXION);
     expect(mensajeDeError(new HttpErrorResponse({ status: 500, error: '<html>' }))).toBe(MENSAJE_ERROR_GENERICO);
     expect(mensajeDeError(new Error('x'))).toBe(MENSAJE_ERROR_GENERICO);
+  });
+});
+
+describe('conflictosDeError', () => {
+  it('devuelve el detalle de los conflictos de una respuesta 409', () => {
+    const conflicto = { codigoActivo: 'ABPL-0001', evento: 'Gala' };
+    const error = new HttpErrorResponse({ status: 409, error: { detail: 'Ocupado', conflictos: [conflicto] } });
+    expect(conflictosDeError(error)).toEqual([conflicto]);
+  });
+
+  it('no inventa conflictos para otros errores', () => {
+    expect(conflictosDeError(new HttpErrorResponse({ status: 409, error: { detail: 'Duplicado' } }))).toEqual([]);
+    expect(conflictosDeError(new HttpErrorResponse({ status: 422, error: { conflictos: [{}] } }))).toEqual([]);
+    expect(conflictosDeError(new Error('x'))).toEqual([]);
   });
 });
 

@@ -99,6 +99,9 @@
         <mat-tab label="Módulos LED">
           <app-seccion-modulos [activo]="activo" />
         </mat-tab>
+        <mat-tab label="Próximas reservas">
+          <app-seccion-reservas [activo]="activo" />
+        </mat-tab>
       </mat-tab-group>
     </section>
   } @else if (noEncontrado()) {

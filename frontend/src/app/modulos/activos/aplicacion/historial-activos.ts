@@ -10,6 +10,7 @@ import {
   ModuloLed,
   NuevoRegistroUso,
   RegistroUso,
+  ReservaVigente,
 } from '../dominio/modelos/historial';
 import { RepositorioHistorialActivos } from '../dominio/repositorios/repositorio-historial-activos';
 
@@ -52,5 +53,10 @@ export class HistorialActivos {
 
   cambiarEstadoModulo(idActivo: number, idModulo: number, estado: EstadoModuloLed): Observable<ModuloLed> {
     return this.repositorio.cambiarEstadoModulo(idActivo, idModulo, estado);
+  }
+
+  /** Proximas reservas del equipo para eventos (solo lectura). */
+  listarReservas(idActivo: number): Observable<ReservaVigente[]> {
+    return this.repositorio.listarReservas(idActivo);
   }
 }

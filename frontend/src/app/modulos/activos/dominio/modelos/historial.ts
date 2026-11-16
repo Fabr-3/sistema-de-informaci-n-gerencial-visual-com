@@ -78,6 +78,15 @@ export function tipoVisualModulo(estado: EstadoModuloLed): TipoEstadoVisual {
   return TIPO_VISUAL_MODULO[estado];
 }
 
+/** Reserva del equipo para un evento que aun no termina (la registra logistica). */
+export interface ReservaVigente {
+  readonly idReserva: number;
+  readonly idEvento: number;
+  readonly evento: string;
+  readonly salida: string;
+  readonly retorno: string;
+}
+
 /** Horas entre dos fechas ISO locales, con dos decimales. */
 export function horasEntre(inicio: string, fin: string): number {
   const milisegundos = new Date(fin).getTime() - new Date(inicio).getTime();

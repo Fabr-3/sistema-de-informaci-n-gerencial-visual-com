@@ -9,6 +9,7 @@ import {
   ModuloLed,
   NuevoRegistroUso,
   RegistroUso,
+  ReservaVigente,
 } from '../modelos/historial';
 
 /** Historial de un activo: usos, mantenimientos y modulos LED. */
@@ -21,5 +22,6 @@ export abstract class RepositorioHistorialActivos {
   abstract finalizarMantenimiento(idActivo: number, idMantenimiento: number, fin: FinMantenimiento): Observable<Mantenimiento>;
   abstract listarModulos(idActivo: number): Observable<ModuloLed[]>;
   abstract agregarModulo(idActivo: number, codigo: string): Observable<ModuloLed>;
+  abstract listarReservas(idActivo: number): Observable<ReservaVigente[]>;
   abstract cambiarEstadoModulo(idActivo: number, idModulo: number, estado: EstadoModuloLed): Observable<ModuloLed>;
 }

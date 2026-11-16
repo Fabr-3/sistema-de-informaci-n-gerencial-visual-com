@@ -3,10 +3,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 export const MENSAJE_SIN_CONEXION = 'No se pudo conectar con el servidor';
 export const MENSAJE_ERROR_GENERICO = 'Ocurrió un error inesperado. Intente nuevamente';
 
+const ESTADO_CONFLICTO = 409;
+
 /** Cuerpo de error RFC 9457 que devuelve la API. */
 interface DetalleProblema {
   readonly detail?: string;
   readonly errores?: Record<string, string>;
+  readonly conflictos?: readonly unknown[];
 }
 
 /**
@@ -26,4 +29,13 @@ export function mensajeDeError(error: unknown): string {
   }
   const primerErrorCampo = problema.errores ? Object.entries(problema.errores)[0] : undefined;
   return primerErrorCampo ? `${problema.detail}: ${primerErrorCampo[0]} ${primerErrorCampo[1]}` : problema.detail;
+}
+
+/** Detalle de cada conflicto de una respuesta 409 (p. ej. reservas que ocupan un equipo); vacio si no hay. */
+export function conflictosDeError<T>(error: unknown): readonly T[] {
+  if (!(error instanceof HttpErrorResponse) || error.status !== ESTADO_CONFLICTO) {
+    return [];
+  }
+  const conflictos = (error.error as DetalleProblema | null)?.conflictos;
+  return Array.isArray(conflictos) ? (conflictos as readonly T[]) : [];
 }
