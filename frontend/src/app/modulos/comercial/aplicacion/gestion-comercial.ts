@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 
 import { Pagina, SolicitudPagina } from '../../../compartido/modelos/pagina';
 import { DatosLugar, DatosServicio, ElementoCatalogo, Lugar, Servicio } from '../dominio/modelos/catalogos';
-import { Cliente, DatosCliente, FiltroClientes } from '../dominio/modelos/cliente';
+import { Cliente, DatosCliente, FiltroClientes, ResumenComercialCliente } from '../dominio/modelos/cliente';
 import { RepositorioCatalogosComerciales } from '../dominio/repositorios/repositorio-catalogos-comerciales';
 import { RepositorioClientes } from '../dominio/repositorios/repositorio-clientes';
 
@@ -20,6 +20,10 @@ export class GestionComercial {
 
   obtenerCliente(id: number): Observable<Cliente> {
     return this.clientes.obtener(id);
+  }
+
+  resumenCliente(id: number): Observable<ResumenComercialCliente> {
+    return this.clientes.resumen(id);
   }
 
   /** Recorta los textos y descarta contactos vacios antes de guardar. */

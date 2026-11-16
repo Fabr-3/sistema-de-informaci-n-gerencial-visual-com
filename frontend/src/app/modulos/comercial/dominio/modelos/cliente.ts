@@ -48,3 +48,29 @@ export function documentoPrincipal(cliente: Cliente): string {
     cliente.documentos.find((candidato) => candidato.tipo.nombre === 'NIT') ?? cliente.documentos[0];
   return documento ? `${documento.tipo.nombre} ${documento.numero}` : '—';
 }
+
+/** Cotizacion (por su numero) o proyecto (por su nombre) reciente del cliente. */
+export interface RecienteCliente {
+  readonly id: number;
+  readonly referencia: string;
+  readonly estado: string;
+  readonly fecha: string | null;
+}
+
+/** Historia comercial del cliente: contratado = cotizaciones aceptadas. */
+export interface ResumenComercialCliente {
+  readonly idCliente: number;
+  readonly cotizacionesPorEstado: Readonly<Record<string, number>>;
+  readonly importeCotizado: number;
+  readonly importeContratado: number;
+  readonly proyectosPorEstado: Readonly<Record<string, number>>;
+  readonly ultimasCotizaciones: readonly RecienteCliente[];
+  readonly ultimosProyectos: readonly RecienteCliente[];
+}
+
+/** Porcentaje de lo cotizado que se llego a contratar; nulo si no hubo cotizaciones. */
+export function tasaConversion(resumen: ResumenComercialCliente): number | null {
+  return resumen.importeCotizado > 0
+    ? Math.round((resumen.importeContratado / resumen.importeCotizado) * 1000) / 10
+    : null;
+}

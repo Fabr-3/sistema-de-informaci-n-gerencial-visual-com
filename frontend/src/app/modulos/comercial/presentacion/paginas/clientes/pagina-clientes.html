@@ -70,15 +70,18 @@
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #menu="matMenu" xPosition="before">
-              <button mat-menu-item (click)="editar(cliente)"><mat-icon>edit</mat-icon><span>Editar</span></button>
-              <button mat-menu-item (click)="eliminar(cliente)"><mat-icon>delete</mat-icon><span>Eliminar</span></button>
+              <button mat-menu-item (click)="verResumen(cliente)"><mat-icon>insights</mat-icon><span>Resumen comercial</span></button>
+              @if (puedeGestionar) {
+                <button mat-menu-item (click)="editar(cliente)"><mat-icon>edit</mat-icon><span>Editar</span></button>
+                <button mat-menu-item (click)="eliminar(cliente)"><mat-icon>delete</mat-icon><span>Eliminar</span></button>
+              }
             </mat-menu>
           </td>
         </ng-container>
-        <tr mat-header-row *matHeaderRowDef="columnas()"></tr>
-        <tr mat-row *matRowDef="let fila; columns: columnas()"></tr>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
         <tr class="mat-row" *matNoDataRow>
-          <td class="vacio" [attr.colspan]="columnas().length">
+          <td class="vacio" [attr.colspan]="columnas.length">
             {{ cargando() ? 'Cargando clientes…' : 'No se encontraron clientes con los filtros aplicados.' }}
           </td>
         </tr>

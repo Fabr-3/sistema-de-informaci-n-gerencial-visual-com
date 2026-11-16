@@ -31,6 +31,7 @@ import { GestionComercial } from '../../../aplicacion/gestion-comercial';
 import { ElementoCatalogo } from '../../../dominio/modelos/catalogos';
 import { Cliente, FiltroClientes, documentoPrincipal } from '../../../dominio/modelos/cliente';
 import { DatosDialogoCliente, DialogoCliente } from './dialogo-cliente';
+import { DialogoResumenCliente } from './dialogo-resumen-cliente';
 
 const RETARDO_BUSQUEDA_MS = 300;
 const COLUMNAS_BASE = ['razonSocial', 'tipo', 'documento', 'contacto'];
@@ -79,9 +80,8 @@ export class PaginaClientes {
     solicitud: { pagina: 0, tamano: TAMANO_PAGINA_POR_DEFECTO },
   });
   private readonly version = signal(0);
-  protected readonly columnas = computed(() =>
-    this.sesion.tienePermiso(Permisos.COMERCIAL_GESTIONAR) ? [...COLUMNAS_BASE, 'acciones'] : COLUMNAS_BASE,
-  );
+  protected readonly puedeGestionar = this.sesion.tienePermiso(Permisos.COMERCIAL_GESTIONAR);
+  protected readonly columnas = [...COLUMNAS_BASE, 'acciones'];
 
   constructor() {
     forkJoin({
@@ -131,6 +131,10 @@ export class PaginaClientes {
 
   protected cambiarPagina(evento: PageEvent): void {
     this.criterios.update(({ filtro }) => ({ filtro, solicitud: { pagina: evento.pageIndex, tamano: evento.pageSize } }));
+  }
+
+  protected verResumen(cliente: Cliente): void {
+    this.dialogos.open(DialogoResumenCliente, { data: cliente, width: '640px' });
   }
 
   protected editar(cliente?: Cliente): void {

@@ -1,5 +1,5 @@
 import { etiquetaLugar } from './catalogos';
-import { Cliente, documentoPrincipal } from './cliente';
+import { Cliente, ResumenComercialCliente, documentoPrincipal, tasaConversion } from './cliente';
 import { subtotalLinea, tipoVisualCotizacion, totalCotizacion } from './cotizacion';
 import {
   TAMANO_MAXIMO_FIRMADO,
@@ -53,5 +53,23 @@ describe('reglas comerciales', () => {
     expect(problemaArchivoFirmado(archivo('application/pdf', TAMANO_MAXIMO_FIRMADO))).toBeNull();
     expect(problemaArchivoFirmado(archivo('image/jpeg', 1024))).toContain('PDF');
     expect(problemaArchivoFirmado(archivo('application/pdf', TAMANO_MAXIMO_FIRMADO + 1))).toContain('10 MB');
+  });
+});
+
+describe('resumen comercial del cliente', () => {
+  const resumen = (cotizado: number, contratado: number): ResumenComercialCliente => ({
+    idCliente: 1,
+    cotizacionesPorEstado: {},
+    importeCotizado: cotizado,
+    importeContratado: contratado,
+    proyectosPorEstado: {},
+    ultimasCotizaciones: [],
+    ultimosProyectos: [],
+  });
+
+  it('calcula la conversion de lo cotizado en contratado', () => {
+    expect(tasaConversion(resumen(8000, 4000))).toBe(50);
+    expect(tasaConversion(resumen(3000, 1000))).toBe(33.3);
+    expect(tasaConversion(resumen(0, 0))).toBeNull();
   });
 });

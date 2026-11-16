@@ -6,7 +6,7 @@ import { Pagina, SolicitudPagina } from '../../../../compartido/modelos/pagina';
 import { guardarRecurso } from '../../../../compartido/utilidades/guardar-recurso';
 import { parametrosConsulta } from '../../../../compartido/utilidades/parametros-http';
 import { URL_API } from '../../../../nucleo/configuracion/api';
-import { Cliente, DatosCliente, FiltroClientes } from '../../dominio/modelos/cliente';
+import { Cliente, DatosCliente, FiltroClientes, ResumenComercialCliente } from '../../dominio/modelos/cliente';
 import { RepositorioClientes } from '../../dominio/repositorios/repositorio-clientes';
 
 @Injectable()
@@ -28,5 +28,9 @@ export class RepositorioClientesHttp extends RepositorioClientes {
 
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
+  }
+
+  resumen(id: number): Observable<ResumenComercialCliente> {
+    return this.http.get<ResumenComercialCliente>(`${this.url}/${id}/resumen`);
   }
 }
