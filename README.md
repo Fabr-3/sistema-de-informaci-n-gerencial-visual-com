@@ -7,7 +7,7 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 | Administración de accesos (usuarios, roles, permisos, auditoría y respaldos) | ✅ Implementado |
 | Gestión de activos e inventario (activos, lotes, uso, mantenimiento, módulos LED) | ✅ Implementado |
 | Comercial y planificación de proyectos (clientes, cotizaciones, proyectos, eventos, contratos y cronograma) | ✅ Implementado |
-| Logística (personal técnico, jornadas de montaje y desmontaje, asignación de personal) | ✅ Implementado |
+| Logística (personal técnico, jornadas de montaje y desmontaje, asignación de personal y reserva de equipos) | ✅ Implementado |
 | Financiero (ingresos y egresos, ventas, proveedores, márgenes por proyecto y evento, indicadores del gerente) | ✅ Implementado |
 | Información gerencial (KPIs, alertas de estado de activos y reportes operativos en PDF) | ✅ Implementado |
 | Subcontratación y consumibles | Pendiente |
@@ -27,7 +27,7 @@ backend/src/main/java/com/visual/backend/
 ├── compartido/                 Núcleo común: excepciones de negocio, paginación, manejo global de errores, correlativos y estilo PDF
 ├── activos/                    Activos por unidad y por lote, historial de uso, mantenimiento y módulos LED
 ├── comercial/                  Clientes, cotizaciones, proyectos, eventos, contratos y documentos PDF
-├── logistica/                  Personal técnico, planes logísticos por evento y asignaciones de personal
+├── logistica/                  Personal técnico, planes logísticos por evento, asignaciones de personal y reserva de equipos
 ├── finanzas/                   Proveedores, ingresos y egresos, ventas, resultados por proyecto e indicadores
 ├── gerencial/                  KPIs del gerente, alertas de estado de activos y reportes operativos en PDF
 ├── accesos/
@@ -105,6 +105,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V9`: finanzas. Tipos de movimiento (indican si exigen proveedor o descuentan inventario); proyecto y evento opcionales en los movimientos, con trigger que exige que el evento sea del proyecto; número de factura; detalle de ventas (`ventas_detalle`); estado `VENDIDO` de los activos y movimientos de lote `VENTA` y `ANULACION_VENTA`.
   - `V10`: costo de los mantenimientos en finanzas. Tipo de movimiento de sistema *Mantenimiento de equipos* (`codigo_sistema`), vínculo `id_mantenimiento` de los movimientos y registro de los costos de los mantenimientos ya finalizados.
   - `V11`: información gerencial. Acción de auditoría `REPORTE_GENERADO`; los KPIs y alertas se calculan sobre las tablas existentes y el permiso `REPORTES_VER` existe desde `V3`.
+  - `V12`: reserva de activos por evento. `reservas_activo` recibe su propia clave (`id_reserva`), periodo (`fecha_salida`, `fecha_retorno`), estado (`ACTIVA`, `LIBERADA`) con fecha y motivo de liberación y columnas de modificación; índice único parcial por plan y activo entre las activas y restricción `EXCLUDE` que impide reservas activas superpuestas del mismo activo.
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -133,7 +134,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - Finalizar un mantenimiento de un tipo que reinicia horas (Preventivo) pone el contador en cero.
 - **Historial de uso:** solo registra periodos pasados. Un activo no puede tener dos usos superpuestos, y un registro erróneo se anula sin borrarse.
 - **Ciclo de mantenimiento:** iniciar un mantenimiento deja el activo *En mantenimiento*. Al finalizarlo vuelve a *Disponible*, salvo que se indique *No reparable*, en cuyo caso se da de baja.
-- **Baja de activos:** solo se da de baja un activo *Disponible*. Un activo con historial no se elimina: se da de baja.
+- **Baja de activos:** solo se da de baja un activo *Disponible* y sin reservas activas para eventos que aún no terminan (tampoco se vende): primero hay que liberarlas en el plan del evento. Un activo con historial no se elimina: se da de baja. La ficha del activo muestra sus próximas reservas.
 - **Módulos LED:** se rastrean uno por uno con código único y estado *Activo*, *Defectuoso* o *Retirado*.
 - **Existencias por lote:** nunca quedan negativas y cada cambio queda como movimiento. Los traslados registran la salida y la entrada en una sola transacción. Una bodega inactiva solo admite salidas.
 - **Permisos:**
@@ -167,9 +168,16 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 - **Asignación de personal:** cada asignación tiene persona, rol y horario. Una persona no se repite en el mismo horario de un mismo evento, pero sí puede estar en varios eventos a la vez: el sistema muestra el cruce como alerta (en la lista de eventos, en el plan, al elegir a la persona y en «Mis asignaciones») y no lo bloquea. Los eventos cancelados no generan cruces.
 - **Personal técnico:** documento de identidad único, especialidades y, opcionalmente, una cuenta de técnico o sub-contratado (una cuenta por persona). No se elimina: se desactiva, y solo si no tiene asignaciones pendientes. Al personal inactivo no se le asigna trabajo.
 - **Mis asignaciones:** el técnico o sub-contratado con cuenta vinculada ve sus asignaciones desde hoy, con el lugar, el transporte y los cruces.
+- **Reserva de equipos:**
+  - Solo se reservan equipos por unidad que siguen en el inventario y no están en mantenimiento, para eventos *Programados* de proyectos en planificación o en ejecución. Los lotes (cables y accesorios) quedan fuera de las reservas.
+  - El periodo va desde el montaje más temprano hasta el desmontaje más tardío del plan; sin montaje o sin desmontaje se usa el inicio o el fin del evento.
+  - Se reservan todos los equipos pedidos o ninguno: si alguno ya está reservado para otro evento en un periodo que se superpone, la API responde 409 con cada conflicto (equipo, evento que lo ocupa y periodo). La base de datos también lo impide.
+  - Reservar no cambia el estado operativo del equipo: puede tener varias reservas futuras que no se superpongan, y su disponibilidad se deduce de las reservas activas.
+  - Al agregar, modificar o quitar una jornada, o al cambiar el horario del evento, se recalcula el periodo de sus reservas; si eso provoca un conflicto, el cambio se rechaza con 409 y no se guarda nada. Cancelar el evento libera sus reservas con el motivo «Evento cancelado».
+  - Una reserva se libera con motivo y queda en el historial. En el reporte de estado de activos, «En uso» cuenta los equipos con una reserva activa en curso.
 - **Permisos:**
-  - `LOGISTICA_VER` (gerente): consultar planes y personal.
-  - `LOGISTICA_GESTIONAR` (administrador y gerente): planificar jornadas, transporte y asignaciones, y registrar personal.
+  - `LOGISTICA_VER` (gerente): consultar planes, personal y equipos reservados.
+  - `LOGISTICA_GESTIONAR` (administrador y gerente): planificar jornadas, transporte y asignaciones, reservar y liberar equipos, y registrar personal.
   - `ASIGNACIONES_VER_PROPIAS` (técnico y sub-contratado): consultar sus propias asignaciones.
 
 ## Reglas del módulo financiero
@@ -215,6 +223,7 @@ Los scripts de `database/datos_prueba/` cargan datos similares a la operación r
 - `03_logistica.sql`: nueve personas del personal técnico (cinco vinculadas a las cuentas de prueba), planes logísticos de eventos pasados y próximos con sus jornadas y asignaciones. Incluye un cruce a propósito: Daniela Gutiérrez está el 11/12 en dos eventos a la vez.
 - `04_finanzas.sql`: seis proveedores; cobros y costos de los proyectos (por evento cuando corresponde); alquileres de equipos y gastos generales de cada mes de 2026; compras de equipos; una venta de cables DMX con su salida de inventario; y un cobro anulado. La feria FEXPOCRUZ queda con margen bajo y el festival con saldo por cobrar. También registra como egresos los costos de los mantenimientos finalizados.
 - `05_gerencial.sql`: dos correctivos más de ROEBM-0003 (fallas recurrentes) con sus egresos y un mantenimiento en proceso desde fines de octubre en ABPL-0021 (prolongado), para ver todos los tipos de alerta.
+- `06_reservas.sql`: reservas de pantallas, procesadores, sonido e iluminación para los eventos próximos de `03_logistica.sql`. Las pantallas Roe del Carnaval están reservadas el sábado y el domingo (reservas futuras que no se superponen), y ABPL-0021 quedó reservada para el palco antes de entrar en mantenimiento.
 
 ```bash
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/01_accesos_activos.sql
@@ -222,6 +231,7 @@ psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/02
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/03_logistica.sql
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/04_finanzas.sql
 psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/05_gerencial.sql
+psql -h localhost -U postgres -d proyecto-visual-com -f database/datos_prueba/06_reservas.sql
 ```
 
 Todos los usuarios de prueba tienen la contraseña `VisualCom2026`:
