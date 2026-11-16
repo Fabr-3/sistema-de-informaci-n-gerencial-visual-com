@@ -20,7 +20,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.visual.backend.accesos.dominio.excepcion.AutenticacionExcepcion;
+import com.visual.backend.compartido.dominio.excepcion.AutenticacionFallidaExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.DatoDuplicadoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
@@ -51,8 +51,8 @@ public class ManejadorGlobalExcepciones extends ResponseEntityExceptionHandler {
         return problema(HttpStatus.UNPROCESSABLE_CONTENT, excepcion.getMessage());
     }
 
-    @ExceptionHandler(AutenticacionExcepcion.class)
-    public ProblemDetail autenticacion(AutenticacionExcepcion excepcion) {
+    @ExceptionHandler(AutenticacionFallidaExcepcion.class)
+    public ProblemDetail autenticacion(AutenticacionFallidaExcepcion excepcion) {
         return problema(HttpStatus.UNAUTHORIZED, excepcion.getMessage());
     }
 
