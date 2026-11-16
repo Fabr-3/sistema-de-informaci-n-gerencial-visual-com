@@ -5,7 +5,7 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 | Módulo | Estado |
 |---|---|
 | Administración de accesos (usuarios, roles, permisos, auditoría y respaldos) | ✅ Implementado |
-| Gestión de activos e inventario (activos, lotes, uso, mantenimiento, módulos LED) | ✅ Implementado |
+| Gestión de activos e inventario (activos, lotes, uso, mantenimiento, módulos LED con reemplazo, reasignación e historial) | ✅ Implementado |
 | Comercial y planificación de proyectos (clientes, cotizaciones, proyectos, eventos, contratos y cronograma) | ✅ Implementado |
 | Logística (personal técnico, jornadas de montaje y desmontaje, asignación de personal y reserva de equipos) | ✅ Implementado |
 | Financiero (ingresos y egresos, ventas, proveedores, márgenes por proyecto y evento, indicadores del gerente) | ✅ Implementado |
@@ -106,6 +106,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V10`: costo de los mantenimientos en finanzas. Tipo de movimiento de sistema *Mantenimiento de equipos* (`codigo_sistema`), vínculo `id_mantenimiento` de los movimientos y registro de los costos de los mantenimientos ya finalizados.
   - `V11`: información gerencial. Acción de auditoría `REPORTE_GENERADO`; los KPIs y alertas se calculan sobre las tablas existentes y el permiso `REPORTES_VER` existe desde `V3`.
   - `V12`: reserva de activos por evento. `reservas_activo` recibe su propia clave (`id_reserva`), periodo (`fecha_salida`, `fecha_retorno`), estado (`ACTIVA`, `LIBERADA`) con fecha y motivo de liberación y columnas de modificación; índice único parcial por plan y activo entre las activas y restricción `EXCLUDE` que impide reservas activas superpuestas del mismo activo.
+  - `V13`: historial de los módulos LED (`historial_modulos_led`: alta, cambio de estado, reemplazo y reasignación, con pantallas de origen y destino, estados, módulo relacionado y motivo) y carga del alta de los módulos existentes en su pantalla actual.
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -136,10 +137,13 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 - **Ciclo de mantenimiento:** iniciar un mantenimiento deja el activo *En mantenimiento*. Al finalizarlo vuelve a *Disponible*, salvo que se indique *No reparable*, en cuyo caso se da de baja.
 - **Baja de activos:** solo se da de baja un activo *Disponible* y sin reservas activas para eventos que aún no terminan (tampoco se vende): primero hay que liberarlas en el plan del evento. Un activo con historial no se elimina: se da de baja. La ficha del activo muestra sus próximas reservas.
 - **Módulos LED:** se rastrean uno por uno con código único y estado *Activo*, *Defectuoso* o *Retirado*.
+  - **Reemplazo:** un módulo activo o defectuoso pasa a *Retirado* y en la misma operación se registra el nuevo, activo, en la misma pantalla. El código nuevo no puede estar registrado (409).
+  - **Reasignación:** solo un módulo activo pasa a otra pantalla que siga en el inventario (ni de baja ni vendida).
+  - **Historial:** cada alta, cambio de estado, reemplazo (en ambos módulos, enlazados entre sí) y reasignación queda registrado con fecha, motivo y usuario. Los módulos anteriores a `V13` empiezan su historial con el alta en su pantalla actual.
 - **Existencias por lote:** nunca quedan negativas y cada cambio queda como movimiento. Los traslados registran la salida y la entrada en una sola transacción. Una bodega inactiva solo admite salidas.
 - **Permisos:**
   - `ACTIVOS_VER`: consultar.
-  - `ACTIVOS_GESTIONAR`: registrar activos, catálogos y movimientos de lote.
+  - `ACTIVOS_GESTIONAR`: registrar activos, catálogos y movimientos de lote, y reemplazar o reasignar módulos LED.
   - `MANTENIMIENTOS_REGISTRAR` (técnicos): registrar uso y mantenimientos.
 
 ## Reglas del módulo comercial y de planificación
