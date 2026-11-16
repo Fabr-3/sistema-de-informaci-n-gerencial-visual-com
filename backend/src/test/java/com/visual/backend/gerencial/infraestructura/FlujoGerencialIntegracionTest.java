@@ -114,7 +114,7 @@ class FlujoGerencialIntegracionTest {
         nuevaSolicitud();
 
         JsonNode alerta = null;
-        for (JsonNode candidata : leer(get("/api/gerencial/alertas-activos"))) {
+        for (JsonNode candidata : leer(get("/api/gerencial/alertas"))) {
             if (candidata.get("idActivo").asInt() == idActivo) {
                 alerta = candidata;
             }

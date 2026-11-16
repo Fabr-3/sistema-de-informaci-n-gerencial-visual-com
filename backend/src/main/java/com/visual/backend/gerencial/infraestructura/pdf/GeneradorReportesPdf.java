@@ -46,7 +46,7 @@ import com.visual.backend.gerencial.dominio.modelo.ResultadoCliente;
 import com.visual.backend.gerencial.dominio.modelo.ResumenAlertas;
 import com.visual.backend.gerencial.dominio.modelo.Severidad;
 import com.visual.backend.gerencial.dominio.modelo.TasaUtilizacion;
-import com.visual.backend.gerencial.dominio.modelo.TipoAlertaActivo;
+import com.visual.backend.gerencial.dominio.modelo.TipoAlerta;
 import com.visual.backend.gerencial.dominio.modelo.TipoReporte;
 import com.visual.backend.gerencial.dominio.modelo.UtilizacionCategoria;
 import com.visual.backend.gerencial.dominio.modelo.UtilizacionPersonal;
@@ -82,13 +82,15 @@ public class GeneradorReportesPdf implements GeneradorReportes {
     private static final String EN_PROCESO = "EN_PROCESO";
     private static final Map<Severidad, String> SEVERIDADES = Map.of(
             Severidad.CRITICA, "Crítica", Severidad.ADVERTENCIA, "Advertencia", Severidad.INFORMATIVA, "Informativa");
-    private static final Map<TipoAlertaActivo, String> TIPOS_ALERTA = Map.of(
-            TipoAlertaActivo.MANTENIMIENTO_VENCIDO, "Mantenimiento vencido",
-            TipoAlertaActivo.MANTENIMIENTO_PROXIMO, "Mantenimiento próximo",
-            TipoAlertaActivo.MANTENIMIENTO_PROLONGADO, "Mantenimiento prolongado",
-            TipoAlertaActivo.MODULOS_DEFECTUOSOS, "Módulos LED defectuosos",
-            TipoAlertaActivo.FALLAS_RECURRENTES, "Fallas recurrentes",
-            TipoAlertaActivo.SIN_USO, "Sin uso");
+    private static final Map<TipoAlerta, String> TIPOS_ALERTA = Map.of(
+            TipoAlerta.MANTENIMIENTO_VENCIDO, "Mantenimiento vencido",
+            TipoAlerta.MANTENIMIENTO_PROXIMO, "Mantenimiento próximo",
+            TipoAlerta.MANTENIMIENTO_PROLONGADO, "Mantenimiento prolongado",
+            TipoAlerta.MODULOS_DEFECTUOSOS, "Módulos LED defectuosos",
+            TipoAlerta.FALLAS_RECURRENTES, "Fallas recurrentes",
+            TipoAlerta.SIN_USO, "Sin uso",
+            TipoAlerta.RESERVA_EN_RIESGO, "Reserva en riesgo",
+            TipoAlerta.STOCK_BAJO, "Stock bajo de consumible");
 
     private final PropiedadesEmpresa empresa;
 
@@ -182,9 +184,9 @@ public class GeneradorReportesPdf implements GeneradorReportes {
                         tablaLotes.addCell(cifra(String.valueOf(lote.cantidad())));
                     }
                     agregarOVacio(documento, tablaLotes, lotes, "No hay existencias por lote.");
-                    seccion(documento, "Alertas de estado", cantidad(alertas.size(), "alerta vigente",
-                            "alertas vigentes"));
-                    agregarOVacio(documento, alertas(alertas), alertas, "No hay alertas vigentes.");
+                    seccion(documento, "Alertas de estado", cantidad(alertas.size(), "alerta pendiente",
+                            "alertas pendientes"));
+                    agregarOVacio(documento, alertas(alertas), alertas, "No hay alertas pendientes.");
                 });
     }
 
@@ -307,8 +309,9 @@ public class GeneradorReportesPdf implements GeneradorReportes {
         PdfPTable tabla = tabla(ANCHOS_ALERTAS, "Severidad", "Activo", "Alerta", "Detalle");
         for (AlertaActivo alerta : alertas) {
             tabla.addCell(texto(SEVERIDADES.get(alerta.severidad())));
-            tabla.addCell(texto(alerta.codigo()));
-            tabla.addCell(texto(TIPOS_ALERTA.get(alerta.tipo()) + "\n" + alerta.modelo()));
+            tabla.addCell(texto(alerta.codigo() == null ? SIN_DATO : alerta.codigo()));
+            tabla.addCell(texto(alerta.modelo() == null ? TIPOS_ALERTA.get(alerta.tipo())
+                    : TIPOS_ALERTA.get(alerta.tipo()) + "\n" + alerta.modelo()));
             tabla.addCell(texto(alerta.detalle()));
         }
         return tabla;

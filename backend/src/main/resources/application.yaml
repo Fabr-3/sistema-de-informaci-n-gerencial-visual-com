@@ -68,6 +68,8 @@ app:
     dias-sin-uso: 90
     # Mantenimientos correctivos en el ultimo año que indican fallas recurrentes
     correctivos-fallas-recurrentes: 3
+    # Sincronizacion periodica de las alertas registradas (ademas de al consultarlas)
+    cron-sincronizacion-alertas: "0 */30 * * * *"
     # Proyectos contratados desde los que un cliente se considera recurrente
     proyectos-cliente-recurrente: 2
   activos:

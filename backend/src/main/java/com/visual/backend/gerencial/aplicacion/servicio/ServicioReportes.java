@@ -48,10 +48,10 @@ public class ServicioReportes {
         LocalDateTime ahora = LocalDateTime.now(reloj);
         byte[] contenido = switch (tipo) {
             case RESUMEN_GERENCIAL -> generador.resumenGerencial(kpis.calcular(periodo.desde(), periodo.hasta()),
-                    alertas.listar(), ahora);
+                    alertas.pendientes(), ahora);
             case EVENTOS -> generador.eventos(periodo, consulta.eventos(periodo), ahora);
             case ESTADO_ACTIVOS -> generador.estadoActivos(consulta.inventario(), consulta.lotes(),
-                    alertas.listar(), ahora);
+                    alertas.pendientes(), ahora);
             case MANTENIMIENTOS -> generador.mantenimientos(periodo, consulta.mantenimientos(periodo), ahora);
             case PERSONAL -> generador.personal(periodo, kpis.utilizacion(periodo), ahora);
         };

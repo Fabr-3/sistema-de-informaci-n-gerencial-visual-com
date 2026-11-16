@@ -2,7 +2,7 @@ package com.visual.backend.gerencial.dominio.modelo;
 
 import java.util.List;
 
-/** Cantidad de alertas por severidad. */
+/** Cantidad de alertas pendientes por severidad. */
 public record ResumenAlertas(long criticas, long advertencias, long informativas) {
 
     public static ResumenAlertas de(List<AlertaActivo> alertas) {

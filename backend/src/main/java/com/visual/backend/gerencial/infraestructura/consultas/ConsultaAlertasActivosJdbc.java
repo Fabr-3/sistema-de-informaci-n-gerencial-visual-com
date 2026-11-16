@@ -8,6 +8,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -22,14 +23,16 @@ import com.visual.backend.gerencial.dominio.modelo.AlertaActivo;
 import com.visual.backend.gerencial.dominio.puerto.ConsultaAlertasActivos;
 
 /**
- * Situaciones de alerta de los activos vigentes. El mantenimiento preventivo
- * se toma del modulo de activos, que ya calcula las horas y su umbral.
+ * Situaciones de alerta de los activos vigentes, de sus reservas y de los
+ * consumibles. El mantenimiento preventivo se toma del modulo de activos,
+ * que ya calcula las horas y su umbral.
  */
 @Repository
 public class ConsultaAlertasActivosJdbc implements ConsultaAlertasActivos {
 
     private static final String DESDE_ACTIVOS = " from activos a " + ACTIVO_CON_MODELO;
-    private static final String PROLONGADOS = "select " + COLUMNAS_ACTIVO + ", m.fecha_inicio::date as inicio"
+    private static final String PROLONGADOS = "select " + COLUMNAS_ACTIVO
+            + ", m.id_mantenimiento, m.fecha_inicio::date as inicio"
             + DESDE_ACTIVOS + """
             join mantenimientos m on m.id_activo = a.id_activo
             where a.fecha_eliminacion is null and m.estado = 'EN_PROCESO' and m.fecha_eliminacion is null
@@ -59,6 +62,22 @@ public class ConsultaAlertasActivosJdbc implements ConsultaAlertasActivos {
             having max(r.fecha_fin) is null or max(r.fecha_fin) < :desde
             """;
 
+    private static final String RESERVAS_EN_RIESGO = "select " + COLUMNAS_ACTIVO
+            + ", r.id_reserva, e.id_evento, e.nombre_evento, r.fecha_salida::date as salida" + DESDE_ACTIVOS + """
+            join reservas_activo r on r.id_activo = a.id_activo
+            join planes_logisticos p on p.id_plan = r.id_plan
+            join eventos e on e.id_evento = p.id_evento
+            where a.fecha_eliminacion is null and a.estado_operativo = 'EN_MANTENIMIENTO'
+              and r.estado = 'ACTIVA' and r.fecha_retorno > :ahora
+            order by r.fecha_salida
+            """;
+    private static final String STOCK_BAJO = """
+            select id_consumible, nombre, stock_actual, stock_minimo, unidad_medida
+            from consumibles
+            where activo and stock_minimo is not null and stock_actual <= stock_minimo
+            order by nombre
+            """;
+
     private final NamedParameterJdbcTemplate jdbc;
     private final ServicioActivos activos;
 
@@ -80,7 +99,8 @@ public class ConsultaAlertasActivosJdbc implements ConsultaAlertasActivos {
     @Override
     public List<AlertaActivo> mantenimientosProlongados(LocalDate iniciadosHasta, LocalDate hoy) {
         return jdbc.query(PROLONGADOS, new MapSqlParameterSource("limite", iniciadosHasta), (fila, n) ->
-                AlertaActivo.mantenimientoProlongado(afectado(fila), fila.getDate("inicio").toLocalDate(), hoy));
+                AlertaActivo.mantenimientoProlongado(afectado(fila), fila.getInt("id_mantenimiento"),
+                        fila.getDate("inicio").toLocalDate(), hoy));
     }
 
     @Override
@@ -103,6 +123,20 @@ public class ConsultaAlertasActivosJdbc implements ConsultaAlertasActivos {
             Date ultimoUso = fila.getDate("ultimo_uso");
             return AlertaActivo.sinUso(afectado(fila), ultimoUso == null ? null : ultimoUso.toLocalDate(), hoy);
         });
+    }
+
+    @Override
+    public List<AlertaActivo> reservasEnRiesgo(LocalDateTime ahora) {
+        return jdbc.query(RESERVAS_EN_RIESGO, new MapSqlParameterSource("ahora", ahora), (fila, n) ->
+                AlertaActivo.reservaEnRiesgo(afectado(fila), fila.getInt("id_reserva"), fila.getInt("id_evento"),
+                        fila.getString("nombre_evento"), fila.getDate("salida").toLocalDate()));
+    }
+
+    @Override
+    public List<AlertaActivo> stockBajo() {
+        return jdbc.query(STOCK_BAJO, new MapSqlParameterSource(), (fila, n) -> AlertaActivo.stockBajo(
+                fila.getInt("id_consumible"), fila.getString("nombre"), fila.getBigDecimal("stock_actual"),
+                fila.getBigDecimal("stock_minimo"), fila.getString("unidad_medida")));
     }
 
     private static ActivoAfectado afectado(VistaActivo activo) {

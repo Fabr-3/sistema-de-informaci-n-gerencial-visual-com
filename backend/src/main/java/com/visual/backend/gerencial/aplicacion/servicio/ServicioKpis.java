@@ -12,7 +12,6 @@ import com.visual.backend.gerencial.dominio.modelo.IndicadoresPeriodo;
 import com.visual.backend.gerencial.dominio.modelo.KpisGerenciales;
 import com.visual.backend.gerencial.dominio.modelo.Periodo;
 import com.visual.backend.gerencial.dominio.modelo.RentabilidadRecurrente;
-import com.visual.backend.gerencial.dominio.modelo.ResumenAlertas;
 import com.visual.backend.gerencial.dominio.modelo.UtilizacionRecursos;
 import com.visual.backend.gerencial.dominio.puerto.ConsultaGerencial;
 
@@ -40,11 +39,12 @@ public class ServicioKpis {
     }
 
     /** Sin fechas: el mes en curso hasta hoy. */
-    @Transactional(readOnly = true)
+    /** No es de solo lectura: el resumen sincroniza las alertas antes de contar las pendientes. */
+    @Transactional
     public KpisGerenciales calcular(LocalDate desde, LocalDate hasta) {
         Periodo periodo = periodo(desde, hasta);
         return new KpisGerenciales(indicadores(periodo), indicadores(periodo.anterior()),
-                rentabilidadRecurrente(periodo), utilizacion(periodo), ResumenAlertas.de(alertas.listar()));
+                rentabilidadRecurrente(periodo), utilizacion(periodo), alertas.resumenPendientes());
     }
 
     @Transactional(readOnly = true)

@@ -19,7 +19,7 @@ import com.visual.backend.gerencial.dominio.modelo.ResultadoCliente;
 import com.visual.backend.gerencial.dominio.modelo.ResumenAlertas;
 import com.visual.backend.gerencial.dominio.modelo.Severidad;
 import com.visual.backend.gerencial.dominio.modelo.TasaUtilizacion;
-import com.visual.backend.gerencial.dominio.modelo.TipoAlertaActivo;
+import com.visual.backend.gerencial.dominio.modelo.TipoAlerta;
 
 class ReglasGerencialTest {
 
@@ -94,10 +94,10 @@ class ReglasGerencialTest {
     void lasAlertasDescribenLaSituacionYSeOrdenanPorUrgencia() {
         AlertaActivo vencido = AlertaActivo.mantenimientoPreventivo(PANTALLA, true, new BigDecimal("125.25"), 120);
         AlertaActivo sinUso = AlertaActivo.sinUso(PANTALLA, null, HOY);
-        AlertaActivo prolongado = AlertaActivo.mantenimientoProlongado(PANTALLA, HOY.minusDays(9), HOY);
+        AlertaActivo prolongado = AlertaActivo.mantenimientoProlongado(PANTALLA, 31, HOY.minusDays(9), HOY);
         AlertaActivo defectuosos = AlertaActivo.modulosDefectuosos(PANTALLA, 2);
 
-        assertThat(vencido.tipo()).isEqualTo(TipoAlertaActivo.MANTENIMIENTO_VENCIDO);
+        assertThat(vencido.tipo()).isEqualTo(TipoAlerta.MANTENIMIENTO_VENCIDO);
         assertThat(vencido.severidad()).isEqualTo(Severidad.CRITICA);
         assertThat(vencido.detalle()).startsWith("125,3 h de uso");
         assertThat(prolongado.detalle()).isEqualTo("En mantenimiento desde el 01/11/2026 (9 días)");

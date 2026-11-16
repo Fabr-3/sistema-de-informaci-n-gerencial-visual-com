@@ -1,11 +1,12 @@
 package com.visual.backend.gerencial.dominio.puerto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.visual.backend.gerencial.dominio.modelo.AlertaActivo;
 
-/** Situaciones de los activos vigentes que generan alertas. */
+/** Situaciones de los activos vigentes y de los consumibles que generan alertas. */
 public interface ConsultaAlertasActivos {
 
     /** Preventivos vencidos o proximos segun las horas de uso. */
@@ -21,4 +22,10 @@ public interface ConsultaAlertasActivos {
 
     /** Equipos disponibles, adquiridos antes de la fecha, sin uso desde ella. */
     List<AlertaActivo> sinUso(LocalDate desde, LocalDate hoy);
+
+    /** Reservas activas que aun no terminan de equipos que estan en mantenimiento. */
+    List<AlertaActivo> reservasEnRiesgo(LocalDateTime ahora);
+
+    /** Consumibles activos con el stock en su minimo o por debajo. */
+    List<AlertaActivo> stockBajo();
 }
