@@ -47,10 +47,11 @@ public class RepositorioModulosLedJpa implements RepositorioModulosLed {
             entidad.setFechaCreacion(modulo.getFechaCreacion());
         } else {
             entidad = modulos.getReferenceById(modulo.getId());
+            entidad.setIdActivoPadre(modulo.getIdActivoPadre());
             entidad.setModificadoPor(actor);
             entidad.setFechaModificacion(modulo.getFechaModificacion());
         }
         entidad.setEstado(modulo.getEstado());
-        return MapeadorActivos.aDominio(modulos.save(entidad));
+        return MapeadorActivos.aDominio(modulos.saveAndFlush(entidad));
     }
 }

@@ -29,7 +29,7 @@ public class ModuloLedEntidad {
     @Column(name = "id_modulo")
     private Integer id;
 
-    @Column(name = "id_activo_padre", nullable = false, updatable = false)
+    @Column(name = "id_activo_padre", nullable = false)
     private Integer idActivoPadre;
 
     @Column(name = "codigo_modulo", nullable = false, length = 50, updatable = false)

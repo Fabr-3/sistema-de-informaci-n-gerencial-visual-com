@@ -19,10 +19,13 @@ import com.visual.backend.activos.aplicacion.dto.ComandoEstadoModulo;
 import com.visual.backend.activos.aplicacion.dto.ComandoFinalizarMantenimiento;
 import com.visual.backend.activos.aplicacion.dto.ComandoIniciarMantenimiento;
 import com.visual.backend.activos.aplicacion.dto.ComandoModuloLed;
+import com.visual.backend.activos.aplicacion.dto.ComandoReasignacionModulo;
+import com.visual.backend.activos.aplicacion.dto.ComandoReemplazoModulo;
 import com.visual.backend.activos.aplicacion.dto.ComandoRegistroUso;
 import com.visual.backend.activos.aplicacion.servicio.ServicioMantenimientos;
 import com.visual.backend.activos.aplicacion.servicio.ServicioModulosLed;
 import com.visual.backend.activos.aplicacion.servicio.ServicioUsoActivos;
+import com.visual.backend.activos.dominio.modelo.EntradaHistorialModulo;
 import com.visual.backend.activos.dominio.modelo.Mantenimiento;
 import com.visual.backend.activos.dominio.modelo.ModuloLed;
 import com.visual.backend.activos.dominio.modelo.RegistroUso;
@@ -111,5 +114,27 @@ public class ControladorHistorialActivos {
     public ModuloLed cambiarEstadoModulo(@PathVariable Integer idActivo, @PathVariable Integer idModulo,
                                          @Valid @RequestBody ComandoEstadoModulo comando) {
         return modulos.cambiarEstado(idActivo, idModulo, comando.estado());
+    }
+
+    @PostMapping("/modulos/{idModulo}/reemplazo")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize(ReglasAccesoActivos.GESTIONAR)
+    public ModuloLed reemplazarModulo(@PathVariable Integer idActivo, @PathVariable Integer idModulo,
+                                      @Valid @RequestBody ComandoReemplazoModulo comando) {
+        return modulos.reemplazar(idActivo, idModulo, comando);
+    }
+
+    @PostMapping("/modulos/{idModulo}/reasignacion")
+    @PreAuthorize(ReglasAccesoActivos.GESTIONAR)
+    public ModuloLed reasignarModulo(@PathVariable Integer idActivo, @PathVariable Integer idModulo,
+                                     @Valid @RequestBody ComandoReasignacionModulo comando) {
+        return modulos.reasignar(idActivo, idModulo, comando);
+    }
+
+    @GetMapping("/modulos/{idModulo}/historial")
+    @PreAuthorize(ReglasAccesoActivos.VER)
+    public List<EntradaHistorialModulo> historialModulo(@PathVariable Integer idActivo,
+                                                        @PathVariable Integer idModulo) {
+        return modulos.historial(idActivo, idModulo);
     }
 }
