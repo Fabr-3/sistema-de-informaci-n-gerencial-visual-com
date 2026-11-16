@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.visual.backend.comercial.aplicacion.dto.ComandoCliente;
 import com.visual.backend.comercial.aplicacion.dto.VistaCliente;
 import com.visual.backend.comercial.aplicacion.servicio.ServicioClientes;
+import com.visual.backend.comercial.aplicacion.servicio.ServicioResumenCliente;
 import com.visual.backend.comercial.dominio.modelo.Filtros;
+import com.visual.backend.comercial.dominio.modelo.ResumenComercialCliente;
 import com.visual.backend.compartido.dominio.Pagina;
 import com.visual.backend.compartido.dominio.SolicitudPagina;
 
@@ -27,9 +29,11 @@ import jakarta.validation.Valid;
 public class ControladorClientes {
 
     private final ServicioClientes servicio;
+    private final ServicioResumenCliente resumenes;
 
-    public ControladorClientes(ServicioClientes servicio) {
+    public ControladorClientes(ServicioClientes servicio, ServicioResumenCliente resumenes) {
         this.servicio = servicio;
+        this.resumenes = resumenes;
     }
 
     @GetMapping
@@ -45,6 +49,13 @@ public class ControladorClientes {
     @PreAuthorize(ReglasAccesoComercial.VER)
     public VistaCliente obtener(@PathVariable Integer id) {
         return servicio.obtener(id);
+    }
+
+    /** Cotizaciones y proyectos del cliente por estado, importes y los mas recientes. */
+    @GetMapping("/{id}/resumen")
+    @PreAuthorize(ReglasAccesoComercial.VER)
+    public ResumenComercialCliente resumen(@PathVariable Integer id) {
+        return resumenes.resumen(id);
     }
 
     @PostMapping
