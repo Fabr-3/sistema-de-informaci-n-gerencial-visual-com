@@ -1,9 +1,10 @@
 # Perfil de desarrollo local. NO usar estos valores en produccion.
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/proyecto-visual-com
-    username: postgres
-    password: postgres
+    # DB_PUERTO=5433 usa la base del contenedor Docker (docker-compose.yml)
+    url: jdbc:postgresql://localhost:${DB_PUERTO:5432}/proyecto-visual-com
+    username: ${DB_USUARIO:postgres}
+    password: ${DB_CONTRASENA:postgres}
 
 app:
   seguridad:

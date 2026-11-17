@@ -1,9 +1,9 @@
 # Perfil de pruebas: base de datos aislada de la de desarrollo.
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/proyecto_visual_com_test
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://localhost:${DB_PUERTO:5432}/proyecto_visual_com_test
+    username: ${DB_USUARIO:postgres}
+    password: ${DB_CONTRASENA:postgres}
 
 app:
   seguridad:

@@ -63,7 +63,7 @@ Para agregar un módulo nuevo:
 
 ## Puesta en marcha (desarrollo)
 
-Requisitos: Java 21, Node 22+ con pnpm y PostgreSQL con la base `proyecto-visual-com` creada.
+Requisitos: Java 21, Node 22+ con pnpm y PostgreSQL 18 con la base `proyecto-visual-com` creada, instalado en el equipo o en Docker (ver [Base de datos con Docker](#base-de-datos-con-docker)).
 
 ```bash
 # Backend: aplica las migraciones y crea el administrador inicial al arrancar
@@ -74,6 +74,31 @@ cd frontend && pnpm start                     # http://localhost:4200
 ```
 
 **Credenciales iniciales (solo desarrollo):** usuario `admin`, contraseña `admin123456`.
+
+### Base de datos con Docker
+
+`docker-compose.yml` levanta PostgreSQL 18.6, la misma versión mayor que usa `pg_dump` para los respaldos. Crea la base `proyecto-visual-com` y la base de pruebas `proyecto_visual_com_test`, y guarda los datos en el volumen `visual-com_datos-postgres`. Se publica en el puerto **5433** del equipo, solo en `127.0.0.1`, para convivir con un PostgreSQL local en el 5432.
+
+```bash
+docker compose up -d                          # crea y arranca el contenedor visual-com-postgres
+docker compose ps                             # estado (healthy cuando acepta conexiones)
+
+# Backend y pruebas contra la base del contenedor
+cd backend && DB_PUERTO=5433 ./mvnw spring-boot:run
+cd backend && DB_PUERTO=5433 ./mvnw test
+
+docker compose stop                           # detiene el contenedor sin borrar los datos
+docker compose down -v                        # elimina el contenedor y el volumen (se pierden los datos)
+```
+
+- **Credenciales (solo desarrollo):** `postgres` / `postgres`. Para cambiarlas, o para cambiar el nombre de la base o el puerto, copie `.env.example` como `.env`. El backend lee las mismas variables (`DB_PUERTO`, `DB_USUARIO`, `DB_CONTRASENA`); sin ellas usa el PostgreSQL local en el 5432.
+- **Volumen nuevo:** las migraciones se aplican al arrancar el backend. Los datos de prueba se cargan con los scripts de [Datos de prueba](#datos-de-prueba), agregando `-p 5433`.
+- **Copiar la base local al contenedor:**
+
+```bash
+pg_dump -h localhost -p 5432 -U postgres -Fc proyecto-visual-com > /tmp/visual-com.dump
+pg_restore -h localhost -p 5433 -U postgres -d proyecto-visual-com --clean --if-exists --no-owner /tmp/visual-com.dump
+```
 
 ### Configuración
 

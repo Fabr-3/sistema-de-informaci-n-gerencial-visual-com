@@ -1,0 +1,2 @@
+# Variables locales de docker compose (pueden contener credenciales)
+.env
