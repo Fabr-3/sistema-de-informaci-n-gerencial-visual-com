@@ -1,0 +1,94 @@
+<div class="filtros">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Buscar</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput [formControl]="busqueda" placeholder="Nombre, documento o servicio" />
+  </mat-form-field>
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Estado</mat-label>
+    <mat-select [formControl]="estado">
+      <mat-option value="todos">Todos</mat-option>
+      <mat-option value="activos">Activos</mat-option>
+      <mat-option value="anulados">Anulados</mat-option>
+    </mat-select>
+  </mat-form-field>
+  @if (puedeGestionar) {
+    <button mat-flat-button class="nuevo" (click)="editar()"><mat-icon>add_business</mat-icon>Nuevo proveedor</button>
+  }
+</div>
+
+<div class="tabla-contenedor">
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  <table mat-table [dataSource]="resultado()?.contenido ?? []">
+    <ng-container matColumnDef="razonSocial">
+      <th mat-header-cell *matHeaderCellDef>Proveedor</th>
+      <td mat-cell *matCellDef="let proveedor">
+        <strong>{{ proveedor.razonSocial }}</strong>
+        <div class="texto-secundario detalle">{{ proveedor.tipo.nombre }}</div>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="documento">
+      <th mat-header-cell *matHeaderCellDef>Documento</th>
+      <td mat-cell *matCellDef="let proveedor" class="codigo">{{ proveedor.documentoPrincipal ?? '—' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="contacto">
+      <th mat-header-cell *matHeaderCellDef>Contacto</th>
+      <td mat-cell *matCellDef="let proveedor">
+        {{ proveedor.telefono ?? '—' }}
+        @if (proveedor.email) {
+          <div class="texto-secundario detalle">{{ proveedor.email }}</div>
+        }
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="servicios">
+      <th mat-header-cell *matHeaderCellDef>Servicios</th>
+      <td mat-cell *matCellDef="let proveedor" class="texto-secundario">{{ proveedor.servicios.join(', ') || '—' }}</td>
+    </ng-container>
+    <ng-container matColumnDef="estado">
+      <th mat-header-cell *matHeaderCellDef>Estado</th>
+      <td mat-cell *matCellDef="let proveedor">
+        <span class="estado" [class.estado--activo]="proveedor.activo" [class.estado--neutro]="!proveedor.activo">
+          {{ proveedor.activo ? 'Activo' : 'Anulado' }}
+        </span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="acciones">
+      <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+      <td mat-cell *matCellDef="let proveedor" class="celda-acciones">
+        @if (puedeGestionar) {
+          <button mat-icon-button matTooltip="Editar" (click)="editar(proveedor)" [attr.aria-label]="'Editar ' + proveedor.razonSocial">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            [matTooltip]="proveedor.activo ? 'Anular' : 'Activar'"
+            (click)="cambiarEstado(proveedor)"
+            [attr.aria-label]="(proveedor.activo ? 'Anular ' : 'Activar ') + proveedor.razonSocial"
+          >
+            <mat-icon>{{ proveedor.activo ? 'block' : 'check_circle' }}</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Eliminar" (click)="eliminar(proveedor)" [attr.aria-label]="'Eliminar ' + proveedor.razonSocial">
+            <mat-icon>delete</mat-icon>
+          </button>
+        }
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+    <tr mat-row *matRowDef="let fila; columns: columnas" [class.fila-anulada]="!fila.activo"></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="vacio" [attr.colspan]="columnas.length">
+        {{ cargando() ? 'Cargando proveedores…' : 'No se encontraron proveedores.' }}
+      </td>
+    </tr>
+  </table>
+</div>
+<mat-paginator
+  [length]="resultado()?.totalElementos ?? 0"
+  [pageIndex]="criterios().solicitud.pagina"
+  [pageSize]="criterios().solicitud.tamano"
+  [pageSizeOptions]="tamanosPagina"
+  (page)="cambiarPagina($event)"
+  aria-label="Paginación de proveedores"
+/>

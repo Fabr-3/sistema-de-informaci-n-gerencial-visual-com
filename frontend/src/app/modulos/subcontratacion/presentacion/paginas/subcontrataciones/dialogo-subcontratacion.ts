@@ -111,7 +111,7 @@ export class DialogoSubcontratacion {
   });
   protected readonly proveedoresSugeridos = toSignal(
     busquedaRemota(this.formulario.controls.proveedor, (texto) =>
-      this.proveedores.listar({ texto }, { pagina: 0, tamano: SUGERENCIAS }).pipe(map((pagina) => [...pagina.contenido])),
+      this.proveedores.listar({ texto, activo: true }, { pagina: 0, tamano: SUGERENCIAS }).pipe(map((pagina) => [...pagina.contenido])),
     ),
     { initialValue: [] as Proveedor[] },
   );

@@ -6,7 +6,12 @@ import { Pagina, SolicitudPagina } from '../../../../compartido/modelos/pagina';
 import { guardarRecurso } from '../../../../compartido/utilidades/guardar-recurso';
 import { parametrosConsulta } from '../../../../compartido/utilidades/parametros-http';
 import { URL_API } from '../../../../nucleo/configuracion/api';
-import { DatosProveedor, FiltroProveedores, Proveedor } from '../../dominio/modelos/proveedor';
+import {
+  CatalogosProveedores,
+  DatosProveedor,
+  FiltroProveedores,
+  Proveedor,
+} from '../../dominio/modelos/proveedor';
 import { RepositorioProveedores } from '../../dominio/repositorios/repositorio-proveedores';
 
 @Injectable()
@@ -16,6 +21,14 @@ export class RepositorioProveedoresHttp extends RepositorioProveedores {
 
   listar(filtro: FiltroProveedores, solicitud: SolicitudPagina): Observable<Pagina<Proveedor>> {
     return this.http.get<Pagina<Proveedor>>(this.url, { params: parametrosConsulta({ ...filtro, ...solicitud }) });
+  }
+
+  catalogos(): Observable<CatalogosProveedores> {
+    return this.http.get<CatalogosProveedores>(`${this.url}/catalogos`);
+  }
+
+  cambiarEstado(id: number, activo: boolean): Observable<Proveedor> {
+    return this.http.patch<Proveedor>(`${this.url}/${id}/estado`, { activo });
   }
 
   guardar(id: number | null, datos: DatosProveedor): Observable<Proveedor> {

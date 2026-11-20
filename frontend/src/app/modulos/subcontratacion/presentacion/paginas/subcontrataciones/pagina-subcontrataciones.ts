@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { catchError, debounceTime, filter, of, switchMap, tap } from 'rxjs';
 
@@ -27,6 +28,7 @@ import { EtiquetaPipe } from '../../../../../compartido/pipes/etiqueta.pipe';
 import { ServicioNotificaciones } from '../../../../../nucleo/notificaciones/servicio-notificaciones';
 import { ServicioSesion } from '../../../../accesos/aplicacion/servicio-sesion';
 import { Permisos } from '../../../../accesos/dominio/modelos/permisos';
+import { ListaProveedores } from '../../../../finanzas/presentacion/componentes/lista-proveedores';
 import { GestionSubcontrataciones } from '../../../aplicacion/gestion-subcontratacion';
 import {
   ESTADOS_SUBCONTRATACION,
@@ -61,7 +63,9 @@ interface Criterios {
     MatPaginatorModule,
     MatProgressBarModule,
     MatTableModule,
+    MatTabsModule,
     MatTooltipModule,
+    ListaProveedores,
   ],
   templateUrl: './pagina-subcontrataciones.html',
   styleUrl: '../subcontratacion.scss',
@@ -77,7 +81,9 @@ export class PaginaSubcontrataciones {
   protected readonly estados = ESTADOS_SUBCONTRATACION;
   protected readonly tipoVisual = tipoVisualSubcontratacion;
   protected readonly totalVigente = totalVigente;
-  protected readonly puedeGestionar = inject(ServicioSesion).tienePermiso(Permisos.PROVEEDORES_GESTIONAR);
+  private readonly sesion = inject(ServicioSesion);
+  protected readonly puedeGestionar = this.sesion.tienePermiso(Permisos.PROVEEDORES_GESTIONAR);
+  protected readonly puedeVerProveedores = this.sesion.tieneAlgunPermiso(Permisos.PROVEEDORES_VER, Permisos.FINANZAS_VER);
   protected readonly periodo = inject(NonNullableFormBuilder).group({ desde: [''], hasta: [''] });
   protected readonly resultado = signal<Pagina<Subcontratacion> | null>(null);
   protected readonly cargando = signal(false);

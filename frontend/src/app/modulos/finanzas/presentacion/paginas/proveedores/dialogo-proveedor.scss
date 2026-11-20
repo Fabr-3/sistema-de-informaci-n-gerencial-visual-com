@@ -1,0 +1,34 @@
+.lista {
+  margin: 8px 0 16px;
+}
+
+.lista__titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  gap: 8px;
+  align-items: start;
+  margin-bottom: 8px;
+}
+
+.fila:has(.complemento) {
+  grid-template-columns: 1fr 1.3fr 0.9fr auto;
+}
+
+@media (max-width: 600px) {
+  .fila,
+  .fila:has(.complemento) {
+    grid-template-columns: 1fr auto;
+  }
+}
