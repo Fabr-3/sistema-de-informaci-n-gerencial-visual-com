@@ -87,6 +87,7 @@ public class RepositorioModelosJpa implements RepositorioModelos {
         entidad.setTipoControl(modelo.tipoControl());
         entidad.setHorasMantenimiento(modelo.horasMantenimiento());
         entidad.setPrefijoCodigo(modelo.prefijoCodigo());
+        entidad.setDescripcion(modelo.descripcion());
         entidad.getEspecificaciones().clear();
         modelo.especificaciones().forEach(especificacion -> entidad.getEspecificaciones()
                 .add(new EspecificacionEmbebida(especificacion.caracteristica(), especificacion.valor())));

@@ -57,6 +57,9 @@ public class ModeloActivoEntidad {
     @Column(name = "prefijo_codigo", length = 10)
     private String prefijoCodigo;
 
+    @Column(columnDefinition = "text")
+    private String descripcion;
+
     @ElementCollection
     @CollectionTable(name = "especificaciones_modelo", joinColumns = @JoinColumn(name = "id_modelo"))
     @OrderBy("caracteristica")

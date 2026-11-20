@@ -15,5 +15,6 @@ public record ComandoModelo(@NotNull Integer idFabricante, @NotNull Integer idCa
                             @NotBlank @Size(max = 100) String nombre, @NotNull TipoControl tipoControl,
                             @Positive Integer horasMantenimiento,
                             @Pattern(regexp = "^[A-Za-z0-9]{2,10}$") String prefijoCodigo,
-                            @Valid @Size(max = 30) List<ComandoEspecificacion> especificaciones) {
+                            @Valid @Size(max = 30) List<ComandoEspecificacion> especificaciones,
+                            @Size(max = 2000) String descripcion) {
 }

@@ -11,11 +11,14 @@ import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 /**
  * Modelo de equipo (fabricante + nombre). Determina la categoria, el tipo de
  * control, el intervalo de mantenimiento y el prefijo con el que se generan
- * los codigos de inventario de sus unidades (PREFIJO-0001).
+ * los codigos de inventario de sus unidades (PREFIJO-0001). La descripcion
+ * (opcional) explica que es el equipo y para que se usa.
  */
 public record ModeloActivo(Integer id, String nombre, Fabricante fabricante, Categoria categoria,
                            TipoControl tipoControl, Integer horasMantenimiento, String prefijoCodigo,
-                           List<Especificacion> especificaciones) {
+                           List<Especificacion> especificaciones, String descripcion) {
+
+    static final int LONGITUD_MAXIMA_DESCRIPCION = 2000;
 
     private static final Pattern FORMATO_PREFIJO = Pattern.compile("^[A-Z0-9]{2,10}$");
     private static final String FORMATO_CODIGO = "%s-%04d";
@@ -24,7 +27,19 @@ public record ModeloActivo(Integer id, String nombre, Fabricante fabricante, Cat
         nombre = nombre == null ? null : nombre.trim();
         prefijoCodigo = normalizarPrefijo(prefijoCodigo);
         especificaciones = especificaciones == null ? List.of() : List.copyOf(especificaciones);
+        descripcion = descripcion == null || descripcion.isBlank() ? null : descripcion.trim();
+        if (descripcion != null && descripcion.length() > LONGITUD_MAXIMA_DESCRIPCION) {
+            throw new ReglaNegocioExcepcion("La descripción no puede superar " + LONGITUD_MAXIMA_DESCRIPCION
+                    + " caracteres");
+        }
         validar(tipoControl, horasMantenimiento, prefijoCodigo, especificaciones);
+    }
+
+    public ModeloActivo(Integer id, String nombre, Fabricante fabricante, Categoria categoria,
+                        TipoControl tipoControl, Integer horasMantenimiento, String prefijoCodigo,
+                        List<Especificacion> especificaciones) {
+        this(id, nombre, fabricante, categoria, tipoControl, horasMantenimiento, prefijoCodigo, especificaciones,
+                null);
     }
 
     /**

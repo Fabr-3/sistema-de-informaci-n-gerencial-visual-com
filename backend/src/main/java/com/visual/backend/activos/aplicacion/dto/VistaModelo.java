@@ -14,11 +14,11 @@ import com.visual.backend.activos.dominio.modelo.TipoControl;
  */
 public record VistaModelo(Integer id, String nombre, Fabricante fabricante, Categoria categoria,
                           TipoControl tipoControl, Integer horasMantenimiento, String prefijoCodigo,
-                          List<Especificacion> especificaciones, long cantidadInventario) {
+                          List<Especificacion> especificaciones, String descripcion, long cantidadInventario) {
 
     public static VistaModelo de(ModeloActivo modelo, long cantidadInventario) {
         return new VistaModelo(modelo.id(), modelo.nombre(), modelo.fabricante(), modelo.categoria(),
                 modelo.tipoControl(), modelo.horasMantenimiento(), modelo.prefijoCodigo(),
-                modelo.especificaciones(), cantidadInventario);
+                modelo.especificaciones(), modelo.descripcion(), cantidadInventario);
     }
 }

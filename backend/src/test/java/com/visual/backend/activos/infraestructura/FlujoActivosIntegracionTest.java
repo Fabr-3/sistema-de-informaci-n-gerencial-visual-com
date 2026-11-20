@@ -129,6 +129,9 @@ class FlujoActivosIntegracionTest {
                 .containsExactly("PRB-0004", "PRB-0005");
         assertThat(leer(get("/api/activos/modelos/{id}", idModelo), tokenAdministrador)
                 .get("cantidadInventario").asInt()).isEqualTo(5);
+        assertThat(leer(get("/api/activos/modelos/{id}", idModelo), tokenAdministrador).get("descripcion").asString())
+                .isEqualTo("Equipo de prueba para eventos");
+        assertThat(primeras.get(0).get("descripcionModelo").asString()).isEqualTo("Equipo de prueba para eventos");
         assertThat(leer(get("/api/activos").param("idModelo", String.valueOf(idModelo)), tokenAdministrador)
                 .get("totalElementos").asInt()).isEqualTo(5);
 
@@ -184,6 +187,7 @@ class FlujoActivosIntegracionTest {
                 "idCategoria", idCategoria, "nombre", nombre, "tipoControl", tipoControl));
         modelo.put("horasMantenimiento", horasMantenimiento);
         modelo.put("prefijoCodigo", "UNIDAD".equals(tipoControl) ? PREFIJO_PRUEBA : null);
+        modelo.put("descripcion", "  Equipo de prueba para eventos  ");
         return crear("/api/activos/modelos", modelo);
     }
 

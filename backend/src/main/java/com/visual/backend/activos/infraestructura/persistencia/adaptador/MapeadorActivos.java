@@ -55,7 +55,7 @@ final class MapeadorActivos {
                 entidad.getEspecificaciones().stream()
                         .map(especificacion -> new Especificacion(especificacion.getCaracteristica(),
                                 especificacion.getValor()))
-                        .toList());
+                        .toList(), entidad.getDescripcion());
     }
 
     static Activo aDominio(ActivoEntidad entidad) {

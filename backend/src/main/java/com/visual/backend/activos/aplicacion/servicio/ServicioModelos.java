@@ -108,7 +108,7 @@ public class ServicioModelos {
                                 especificacion.valor().trim()))
                         .toList();
         ModeloActivo modelo = new ModeloActivo(id, comando.nombre(), fabricante, categoria, comando.tipoControl(),
-                comando.horasMantenimiento(), comando.prefijoCodigo(), especificaciones);
+                comando.horasMantenimiento(), comando.prefijoCodigo(), especificaciones, comando.descripcion());
         modelo.validarPrefijoDefinido();
         return modelo;
     }
@@ -133,6 +133,7 @@ public class ServicioModelos {
         mapa.put("tipoControl", modelo.tipoControl().name());
         mapa.put("horasMantenimiento", modelo.horasMantenimiento());
         mapa.put("prefijoCodigo", modelo.prefijoCodigo());
+        mapa.put("descripcion", modelo.descripcion());
         mapa.put("especificaciones", modelo.especificaciones().stream()
                 .map(especificacion -> especificacion.caracteristica() + ": " + especificacion.valor())
                 .toList());

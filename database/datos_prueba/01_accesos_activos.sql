@@ -260,4 +260,25 @@ WHERE e.id_existencia IN (SELECT id_existencia FROM movimientos_lote);
 DELETE FROM existencias_lote e
 WHERE NOT EXISTS (SELECT 1 FROM movimientos_lote m WHERE m.id_existencia = e.id_existencia);
 
+-- ---------------------------------------------------------------------
+-- Descripcion de los modelos (V21): que es cada equipo y para que se usa
+-- ---------------------------------------------------------------------
+UPDATE modelos_activo mo SET descripcion = d.descripcion
+FROM fabricantes f, (VALUES
+    ('NovaStar', 'VX1000 Pro', 'Procesador de video todo en uno para pantallas LED: recibe la señal (HDMI, DVI, SDI), la escala y la envía a los módulos. Controla hasta 6,5 millones de píxeles; se usa para escenarios y ferias.'),
+    ('ROE Visual', 'Black Marble BM4', 'Baldosa LED de piso de 4,8 mm de pitch, transitable y resistente a cargas. Se usa para pisos de escenario y pasarelas con contenido de video.'),
+    ('Absen', 'PL3.9 Pro V2', 'Gabinete de pantalla LED de 3,9 mm de pitch (500 x 500 mm) para interior y exterior. Se arma en muros de video colgados o apoyados; brillo alto para eventos al aire libre.'),
+    ('NovaStar', 'MCTRL4K', 'Controlador (tarjeta emisora) 4K para pantallas LED de gran tamaño. Distribuye la señal a los gabinetes por cables de red; no escala la imagen.'),
+    ('Chauvet Professional', 'Maverick MK3 Wash', 'Cabeza móvil wash LED: baña escenarios y públicos con color, zoom de 6° a 48°. Se controla por DMX desde la consola de iluminación.'),
+    ('Robe', 'MegaPointe', 'Cabeza móvil híbrida (haz, spot y wash) con gobos y prismas para efectos aéreos. Se controla por DMX; uso en conciertos y shows.'),
+    ('L-Acoustics', 'K2', 'Caja de line array de largo alcance para sonido de conciertos. Se cuelga en arreglos de 6 a 12 cajas con su bastidor y se alimenta con amplificadores LA12X.'),
+    ('Yamaha', 'CL5', 'Consola digital de mezcla de sonido de 72 canales mono y 8 estéreo. Opera la mezcla de frente (FOH) o monitores; se conecta a racks Rio por Dante.'),
+    ('Shure', 'ULXD24/SM58', 'Sistema de micrófono inalámbrico de mano (receptor y transmisor con cápsula SM58) para voz en conferencias y conciertos.'),
+    ('Global Truss', 'F34 3 m', 'Tramo de truss cuadrado de aluminio de 3 m para armar estructuras de escenario, parrillas de iluminación y soportes de pantallas.'),
+    ('Neutrik', 'Cable powerCON TRUE1 5 m', 'Cable de energía de 5 m con conectores powerCON TRUE1 para alimentar equipos de iluminación, video y sonido.'),
+    ('Neutrik', 'Cable etherCON Cat6 30 m', 'Cable de red Cat6 de 30 m con conectores etherCON reforzados para señal de video LED, Dante o control.'),
+    ('Klotz', 'Cable DMX 5 pines 10 m', 'Cable DMX de 10 m con conectores XLR de 5 pines para la señal de control de iluminación.')
+) AS d(fabricante, modelo, descripcion)
+WHERE f.id_fabricante = mo.id_fabricante AND f.nombre = d.fabricante AND mo.nombre = d.modelo;
+
 COMMIT;
