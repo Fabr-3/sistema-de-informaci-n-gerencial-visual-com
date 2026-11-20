@@ -139,6 +139,11 @@ class FlujoLogisticaIntegracionTest {
             assertThat(propia.get("evento").get("nombre").asString()).isEqualTo("Cena de gala");
             assertThat(propia.get("detallesTransporte").asString()).contains("Bodega 1");
         });
+        String cronograma = "/api/logistica/mis-asignaciones/cronograma";
+        assertThat(leer(get(cronograma).param("desde", hora(0)).param("hasta", hora(23)), tokenTecnico))
+                .singleElement().satisfies(propia -> assertThat(propia.get("evento").get("nombre").asString())
+                        .isEqualTo("Cena de gala"));
+        assertThat(leer(get(cronograma).param("desde", hora(0)).param("hasta", hora(12)), tokenTecnico)).isEmpty();
         mvc.perform(autorizado(get("/api/logistica/eventos"), tokenTecnico)).andExpect(status().isForbidden());
 
         Map<String, Object> inactivo = personal("Rubén", "Condori Apaza", "6123456 LP", idUsuario);

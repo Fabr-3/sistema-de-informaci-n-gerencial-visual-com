@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud;
+import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 import com.visual.backend.logistica.aplicacion.dto.VistaAsignacionPropia;
 import com.visual.backend.logistica.aplicacion.dto.VistaMisAsignaciones;
 import com.visual.backend.logistica.dominio.modelo.AsignacionPropia;
@@ -46,6 +47,24 @@ public class ServicioAsignacionesPropias {
                                                 new Periodo(propia.inicio(), propia.fin()), propia.idPlan())))
                                 .toList()))
                 .orElseGet(() -> new VistaMisAsignaciones(false, null, List.of()));
+    }
+
+    /**
+     * Cronograma propio: asignaciones de la persona vinculada que se superponen
+     * con el rango (incluye las pasadas), sin calcular cruces.
+     */
+    @Transactional(readOnly = true)
+    public List<VistaAsignacionPropia> cronograma(LocalDateTime desde, LocalDateTime hasta) {
+        if (!hasta.isAfter(desde)) {
+            throw new ReglaNegocioExcepcion("El fin del rango debe ser posterior al inicio");
+        }
+        return personal.buscarPorUsuario(contexto.idUsuarioActual())
+                .map(persona -> asignaciones.listarDePersonal(persona.getId(), desde).stream()
+                        .filter(propia -> propia.inicio().isBefore(hasta))
+                        .map(propia -> new VistaAsignacionPropia(propia.id(), propia.evento(), propia.rol(),
+                                propia.inicio(), propia.fin(), propia.detallesTransporte(), List.of()))
+                        .toList())
+                .orElse(List.of());
     }
 
     /**
