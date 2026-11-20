@@ -4,6 +4,8 @@ export interface DocumentoCliente {
   readonly id: number | null;
   readonly tipo: ElementoCatalogo;
   readonly numero: string;
+  /** Solo en el carnet de identidad (por ejemplo, 1A). */
+  readonly complemento: string | null;
 }
 
 export interface ContactoCliente {
@@ -33,7 +35,12 @@ export interface DatosCliente {
   readonly idTipoCliente: number;
   readonly razonSocial: string;
   readonly direccion: string | null;
-  readonly documentos: readonly { id: number | null; idTipoDocumento: number; numero: string }[];
+  readonly documentos: readonly {
+    id: number | null;
+    idTipoDocumento: number;
+    numero: string;
+    complemento: string | null;
+  }[];
   readonly contactos: readonly { id: number | null; idTipoContacto: number; valor: string; referencia: string | null }[];
 }
 
@@ -46,7 +53,10 @@ export interface FiltroClientes {
 export function documentoPrincipal(cliente: Cliente): string {
   const documento =
     cliente.documentos.find((candidato) => candidato.tipo.nombre === 'NIT') ?? cliente.documentos[0];
-  return documento ? `${documento.tipo.nombre} ${documento.numero}` : '—';
+  if (!documento) {
+    return '—';
+  }
+  return `${documento.tipo.nombre} ${documento.numero}${documento.complemento ? '-' + documento.complemento : ''}`;
 }
 
 /** Cotizacion (por su numero) o proyecto (por su nombre) reciente del cliente. */

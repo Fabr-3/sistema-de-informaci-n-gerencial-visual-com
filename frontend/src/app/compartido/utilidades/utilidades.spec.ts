@@ -1,9 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { FormControl, FormGroup } from '@angular/forms';
 
 import { formatearTamano } from './archivos';
 import { MENSAJE_ERROR_GENERICO, MENSAJE_SIN_CONEXION, conflictosDeError, mensajeDeError } from './errores-http';
 import { aIsoLocal, desdeIsoLocal, finDelDia } from './fechas';
 import { parametrosConsulta } from './parametros-http';
+import { documentoValido, normalizarNumeroDocumento, razonSocialValida, soloLetras } from './validadores-identidad';
 
 describe('mensajeDeError', () => {
   it('usa el detalle de negocio de la API', () => {
@@ -67,5 +69,28 @@ describe('formatearTamano', () => {
     expect(formatearTamano(512)).toBe('512 B');
     expect(formatearTamano(160878)).toBe('157,1 KB');
     expect(formatearTamano(5 * 1024 * 1024)).toBe('5 MB');
+  });
+});
+
+describe('validadores de identidad', () => {
+  const tipos: Record<number, string> = { 1: 'Carnet de identidad', 2: 'NIT' };
+  const grupo = (idTipo: number, numero: string, complemento = '') =>
+    new FormGroup(
+      { idTipoDocumento: new FormControl(idTipo), numero: new FormControl(numero), complemento: new FormControl(complemento) },
+      { validators: documentoValido((id) => tipos[id]) },
+    );
+
+  it('admite solo letras en nombres de personas y signos habituales en razones sociales', () => {
+    expect(soloLetras(new FormControl('María José O\'Connor'))).toBeNull();
+    expect(soloLetras(new FormControl('Juan 2'))).toEqual({ soloLetras: true });
+    expect(razonSocialValida(new FormControl('Radio 92.5 S.R.L.'))).toBeNull();
+    expect(razonSocialValida(new FormControl('<b>Hola</b>'))).toEqual({ razonSocial: true });
+  });
+
+  it('valida el numero segun el tipo y el complemento solo en el carnet', () => {
+    expect(grupo(1, '4876512 lp', '1a').errors).toBeNull();
+    expect(grupo(1, '48A6512').errors).toEqual({ numeroDocumento: true });
+    expect(grupo(2, '1020304025', '1A').errors).toEqual({ complemento: true });
+    expect(normalizarNumeroDocumento(' 4876512   lp ')).toBe('4876512 LP');
   });
 });

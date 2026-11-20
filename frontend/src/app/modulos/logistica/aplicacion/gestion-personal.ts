@@ -23,6 +23,7 @@ export class GestionPersonal {
       apellidos: datos.apellidos.trim(),
       telefono: datos.telefono?.trim() || null,
       numeroDocumento: datos.numeroDocumento.trim(),
+      complementoDocumento: datos.complementoDocumento?.trim().toUpperCase() || null,
     });
   }
 

@@ -5,7 +5,13 @@
       <mat-form-field appearance="outline" class="completo">
         <mat-label>Nombre o razón social</mat-label>
         <input matInput formControlName="razonSocial" />
-        <mat-error>Ingrese el nombre o la razón social</mat-error>
+        @if (formulario.controls.razonSocial.hasError('soloLetras')) {
+          <mat-error>Una persona natural se nombra solo con letras</mat-error>
+        } @else if (formulario.controls.razonSocial.hasError('razonSocial')) {
+          <mat-error>Use letras, números y los signos . , &amp; ' ( ) / -</mat-error>
+        } @else {
+          <mat-error>Ingrese el nombre o la razón social</mat-error>
+        }
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Tipo de cliente</mat-label>
@@ -42,7 +48,21 @@
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Número</mat-label>
             <input matInput formControlName="numero" />
+            @if (grupo.hasError('numeroDocumento')) {
+              <mat-hint class="error-grupo">{{ ayudaDocumento(grupo.controls.idTipoDocumento.value) }}</mat-hint>
+            }
           </mat-form-field>
+          @if (esCarnet(grupo.controls.idTipoDocumento.value)) {
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="complemento">
+              <mat-label>Complemento</mat-label>
+              <input matInput formControlName="complemento" maxlength="2" placeholder="1A" />
+              @if (grupo.hasError('complemento')) {
+                <mat-hint class="error-grupo">1 o 2 letras o números</mat-hint>
+              } @else {
+                <mat-hint>Opcional</mat-hint>
+              }
+            </mat-form-field>
+          }
           <button
             mat-icon-button
             type="button"
@@ -76,6 +96,9 @@
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Valor</mat-label>
             <input matInput formControlName="valor" />
+            @if (grupo.hasError('formatoContacto')) {
+              <mat-hint class="error-grupo">Formato no válido para este tipo</mat-hint>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Referencia</mat-label>

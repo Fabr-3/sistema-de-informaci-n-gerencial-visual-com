@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -8,14 +9,23 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 import { guardarYCerrar } from '../../../../../compartido/utilidades/guardar-y-cerrar';
+import {
+  CARNET_IDENTIDAD,
+  ayudaDocumento,
+  documentoValido,
+  esCarnet,
+  normalizarNumeroDocumento,
+  soloLetras,
+} from '../../../../../compartido/utilidades/validadores-identidad';
 import { ServicioNotificaciones } from '../../../../../nucleo/notificaciones/servicio-notificaciones';
 import { GestionPersonal } from '../../../aplicacion/gestion-personal';
-import { CatalogosLogistica, PersonalTecnico } from '../../../dominio/modelos/personal';
+import { CatalogosLogistica, DatosPersonal, PersonalTecnico } from '../../../dominio/modelos/personal';
 
 const LONGITUD_NOMBRE = 100;
 const LONGITUD_TELEFONO = 30;
 const LONGITUD_DOCUMENTO = 50;
-const TIPO_DOCUMENTO_POR_DEFECTO = 'Carnet de identidad';
+const LONGITUD_COMPLEMENTO = 2;
+const TIPO_DOCUMENTO_POR_DEFECTO = CARNET_IDENTIDAD;
 
 export interface DatosDialogoPersonal {
   readonly catalogos: CatalogosLogistica;
@@ -42,12 +52,12 @@ export interface DatosDialogoPersonal {
           <mat-form-field appearance="outline">
             <mat-label>Nombres</mat-label>
             <input matInput formControlName="nombres" />
-            <mat-error>Ingrese los nombres</mat-error>
+            <mat-error>{{ formulario.controls.nombres.hasError('soloLetras') ? 'Solo letras' : 'Ingrese los nombres' }}</mat-error>
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Apellidos</mat-label>
             <input matInput formControlName="apellidos" />
-            <mat-error>Ingrese los apellidos</mat-error>
+            <mat-error>{{ formulario.controls.apellidos.hasError('soloLetras') ? 'Solo letras' : 'Ingrese los apellidos' }}</mat-error>
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Documento</mat-label>
@@ -61,7 +71,19 @@ export interface DatosDialogoPersonal {
             <mat-label>Número</mat-label>
             <input matInput formControlName="numeroDocumento" placeholder="4876512 LP" />
             <mat-error>Ingrese el número de documento</mat-error>
+            @if (formulario.hasError('numeroDocumento')) {
+              <mat-hint class="error-grupo">{{ ayudaDocumento() }}</mat-hint>
+            }
           </mat-form-field>
+          @if (esCarnet()) {
+            <mat-form-field appearance="outline">
+              <mat-label>Complemento (opcional)</mat-label>
+              <input matInput formControlName="complementoDocumento" maxlength="2" placeholder="1A" />
+              @if (formulario.hasError('complemento')) {
+                <mat-hint class="error-grupo">1 o 2 letras o números</mat-hint>
+              }
+            </mat-form-field>
+          }
           <mat-form-field appearance="outline">
             <mat-label>Teléfono (opcional)</mat-label>
             <input matInput formControlName="telefono" inputmode="tel" />
@@ -113,19 +135,37 @@ export class DialogoPersonal {
     return actual ? [actual, ...this.datos.catalogos.usuarios] : this.datos.catalogos.usuarios;
   });
 
-  protected readonly formulario = inject(NonNullableFormBuilder).group({
-    nombres: [this.datos.personal?.nombres ?? '', [Validators.required, Validators.maxLength(LONGITUD_NOMBRE)]],
-    apellidos: [this.datos.personal?.apellidos ?? '', [Validators.required, Validators.maxLength(LONGITUD_NOMBRE)]],
-    idTipoDocumento: [this.datos.personal?.documento.tipo.id ?? this.tipoPorDefecto(), Validators.min(1)],
-    numeroDocumento: [
-      this.datos.personal?.documento.numero ?? '',
-      [Validators.required, Validators.maxLength(LONGITUD_DOCUMENTO)],
-    ],
-    telefono: [this.datos.personal?.telefono ?? '', Validators.maxLength(LONGITUD_TELEFONO)],
-    idsEspecialidades: [this.datos.personal?.especialidades.map((especialidad) => especialidad.id) ?? []],
-    idUsuario: [this.datos.personal?.usuario?.id ?? (null as number | null)],
-    activo: [this.datos.personal?.activo ?? true],
+  protected readonly formulario = inject(NonNullableFormBuilder).group(
+    {
+      nombres: [this.datos.personal?.nombres ?? '', [Validators.required, Validators.maxLength(LONGITUD_NOMBRE), soloLetras]],
+      apellidos: [
+        this.datos.personal?.apellidos ?? '',
+        [Validators.required, Validators.maxLength(LONGITUD_NOMBRE), soloLetras],
+      ],
+      idTipoDocumento: [this.datos.personal?.documento.tipo.id ?? this.tipoPorDefecto(), Validators.min(1)],
+      numeroDocumento: [
+        this.datos.personal?.documento.numero ?? '',
+        [Validators.required, Validators.maxLength(LONGITUD_DOCUMENTO)],
+      ],
+      complementoDocumento: [this.datos.personal?.documento.complemento ?? '', Validators.maxLength(LONGITUD_COMPLEMENTO)],
+      telefono: [this.datos.personal?.telefono ?? '', Validators.maxLength(LONGITUD_TELEFONO)],
+      idsEspecialidades: [this.datos.personal?.especialidades.map((especialidad) => especialidad.id) ?? []],
+      idUsuario: [this.datos.personal?.usuario?.id ?? (null as number | null)],
+      activo: [this.datos.personal?.activo ?? true],
+    },
+    {
+      validators: documentoValido((idTipo) => this.nombreTipoDocumento(idTipo), {
+        tipo: 'idTipoDocumento',
+        numero: 'numeroDocumento',
+        complemento: 'complementoDocumento',
+      }),
+    },
+  );
+  private readonly idTipoDocumento = toSignal(this.formulario.controls.idTipoDocumento.valueChanges, {
+    initialValue: this.formulario.controls.idTipoDocumento.value,
   });
+  protected readonly esCarnet = computed(() => esCarnet(this.nombreTipoDocumento(this.idTipoDocumento())));
+  protected readonly ayudaDocumento = computed(() => ayudaDocumento(this.nombreTipoDocumento(this.idTipoDocumento())));
 
   protected guardar(): void {
     if (this.formulario.invalid || this.guardando()) {
@@ -133,11 +173,24 @@ export class DialogoPersonal {
       return;
     }
     guardarYCerrar(
-      this.gestion.guardar(this.datos.personal?.id ?? null, this.formulario.getRawValue()),
+      this.gestion.guardar(this.datos.personal?.id ?? null, this.datosParaGuardar()),
       this.dialogo,
       this.guardando,
       (error) => this.notificaciones.error(error),
     );
+  }
+
+  private datosParaGuardar(): DatosPersonal {
+    const valores = this.formulario.getRawValue();
+    return {
+      ...valores,
+      numeroDocumento: normalizarNumeroDocumento(valores.numeroDocumento),
+      complementoDocumento: this.esCarnet() ? valores.complementoDocumento.trim().toUpperCase() || null : null,
+    };
+  }
+
+  private nombreTipoDocumento(idTipo: number): string | undefined {
+    return this.datos.catalogos.tiposDocumento.find((tipo) => tipo.id === idTipo)?.nombre;
   }
 
   private tipoPorDefecto(): number {

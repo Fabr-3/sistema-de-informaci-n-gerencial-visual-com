@@ -29,7 +29,7 @@ describe('casos de uso comerciales', () => {
         idTipoCliente: 2,
         razonSocial: '  Banco Andino  ',
         direccion: '  ',
-        documentos: [{ id: null, idTipoDocumento: 2, numero: ' 1020304025 ' }],
+        documentos: [{ id: null, idTipoDocumento: 1, numero: ' 4876512 LP ', complemento: ' 1a ' }],
         contactos: [
           { id: null, idTipoContacto: 1, valor: ' 71524488 ', referencia: ' ' },
           { id: null, idTipoContacto: 3, valor: '   ', referencia: null },
@@ -41,7 +41,7 @@ describe('casos de uso comerciales', () => {
       idTipoCliente: 2,
       razonSocial: 'Banco Andino',
       direccion: null,
-      documentos: [{ id: null, idTipoDocumento: 2, numero: '1020304025' }],
+      documentos: [{ id: null, idTipoDocumento: 1, numero: '4876512 LP', complemento: '1A' }],
       contactos: [{ id: null, idTipoContacto: 1, valor: '71524488', referencia: null }],
     });
   });

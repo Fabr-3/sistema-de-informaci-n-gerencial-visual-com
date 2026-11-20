@@ -32,7 +32,11 @@ export class GestionComercial {
       ...datos,
       razonSocial: datos.razonSocial.trim(),
       direccion: datos.direccion?.trim() || null,
-      documentos: datos.documentos.map((documento) => ({ ...documento, numero: documento.numero.trim() })),
+      documentos: datos.documentos.map((documento) => ({
+        ...documento,
+        numero: documento.numero.trim(),
+        complemento: documento.complemento?.trim().toUpperCase() || null,
+      })),
       contactos: datos.contactos
         .filter((contacto) => contacto.valor.trim().length > 0)
         .map((contacto) => ({ ...contacto, valor: contacto.valor.trim(), referencia: contacto.referencia?.trim() || null })),

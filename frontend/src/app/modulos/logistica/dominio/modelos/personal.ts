@@ -14,7 +14,7 @@ export interface PersonalTecnico {
   readonly apellidos: string;
   readonly nombreCompleto: string;
   readonly telefono: string | null;
-  readonly documento: { readonly tipo: ElementoCatalogo; readonly numero: string };
+  readonly documento: { readonly tipo: ElementoCatalogo; readonly numero: string; readonly complemento: string | null };
   readonly especialidades: readonly ElementoCatalogo[];
   readonly usuario: UsuarioVinculado | null;
   readonly activo: boolean;
@@ -26,6 +26,8 @@ export interface DatosPersonal {
   readonly telefono: string | null;
   readonly idTipoDocumento: number;
   readonly numeroDocumento: string;
+  /** Solo en el carnet de identidad (por ejemplo, 1A). */
+  readonly complementoDocumento: string | null;
   readonly idsEspecialidades: readonly number[];
   readonly idUsuario: number | null;
   readonly activo: boolean;

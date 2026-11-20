@@ -44,7 +44,7 @@
           <th mat-header-cell *matHeaderCellDef>Nombre</th>
           <td mat-cell *matCellDef="let persona">
             <strong>{{ persona.nombreCompleto }}</strong>
-            <div class="texto-secundario detalle">{{ persona.documento.tipo.nombre }} {{ persona.documento.numero }}</div>
+            <div class="texto-secundario detalle">{{ persona.documento.tipo.nombre }} {{ persona.documento.numero }}{{ persona.documento.complemento ? '-' + persona.documento.complemento : '' }}</div>
           </td>
         </ng-container>
         <ng-container matColumnDef="especialidades">
