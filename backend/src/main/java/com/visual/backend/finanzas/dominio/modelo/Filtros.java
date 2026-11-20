@@ -10,8 +10,8 @@ public final class Filtros {
     private Filtros() {
     }
 
-    /** El texto busca en la razon social, el NIT y los servicios. */
-    public record Proveedores(String texto) {
+    /** El texto busca en la razon social, los documentos y los servicios; activo nulo = todos. */
+    public record Proveedores(String texto, Boolean activo) {
     }
 
     /** Fechas incluidas; el texto busca en el concepto y el numero de factura. */

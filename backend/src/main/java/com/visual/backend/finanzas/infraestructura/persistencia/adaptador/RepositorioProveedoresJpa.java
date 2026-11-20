@@ -2,21 +2,29 @@ package com.visual.backend.finanzas.infraestructura.persistencia.adaptador;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+import com.visual.backend.comercial.infraestructura.persistencia.jpa.TipoDocumentoJpaRepositorio;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.compartido.dominio.Pagina;
 import com.visual.backend.compartido.dominio.SolicitudPagina;
 import com.visual.backend.compartido.infraestructura.persistencia.ConsultasJpa;
+import com.visual.backend.finanzas.dominio.modelo.DocumentoProveedor;
 import com.visual.backend.finanzas.dominio.modelo.Filtros;
 import com.visual.backend.finanzas.dominio.modelo.Proveedor;
 import com.visual.backend.finanzas.dominio.puerto.RepositorioProveedores;
 import com.visual.backend.finanzas.infraestructura.persistencia.entidad.DocumentoProveedorEntidad;
 import com.visual.backend.finanzas.infraestructura.persistencia.entidad.ProveedorEntidad;
 import com.visual.backend.finanzas.infraestructura.persistencia.jpa.ProveedorJpaRepositorio;
+import com.visual.backend.finanzas.infraestructura.persistencia.jpa.TipoProveedorJpaRepositorio;
 
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -25,14 +33,17 @@ import jakarta.persistence.criteria.Subquery;
 @Repository
 public class RepositorioProveedoresJpa implements RepositorioProveedores {
 
-    /** Tipo de documento (V1) con el que se guarda el NIT del proveedor. */
-    static final String TIPO_NIT = "NIT";
     private static final Sort ORDEN_POR_DEFECTO = Sort.by("razonSocial", "id");
 
     private final ProveedorJpaRepositorio proveedores;
+    private final TipoProveedorJpaRepositorio tiposProveedor;
+    private final TipoDocumentoJpaRepositorio tiposDocumento;
 
-    public RepositorioProveedoresJpa(ProveedorJpaRepositorio proveedores) {
+    public RepositorioProveedoresJpa(ProveedorJpaRepositorio proveedores, TipoProveedorJpaRepositorio tiposProveedor,
+                                     TipoDocumentoJpaRepositorio tiposDocumento) {
         this.proveedores = proveedores;
+        this.tiposProveedor = tiposProveedor;
+        this.tiposDocumento = tiposDocumento;
     }
 
     @Override
@@ -47,8 +58,21 @@ public class RepositorioProveedoresJpa implements RepositorioProveedores {
     }
 
     @Override
-    public boolean existeNit(String nit, Integer idExcluido) {
-        return proveedores.existeDocumento(TIPO_NIT, nit, idExcluido);
+    public boolean existeDocumento(Integer idTipoDocumento, String numero, String complemento, Integer idExcluido) {
+        return proveedores.existeDocumento(idTipoDocumento, numero, complemento == null ? "" : complemento,
+                idExcluido);
+    }
+
+    @Override
+    public List<ElementoCatalogo> tiposProveedor() {
+        return tiposProveedor.findAll(Sort.by("nombre")).stream()
+                .map(tipo -> new ElementoCatalogo(tipo.getId(), tipo.getNombre())).toList();
+    }
+
+    @Override
+    public List<ElementoCatalogo> tiposDocumento() {
+        return tiposDocumento.findAll(Sort.by("id")).stream()
+                .map(tipo -> new ElementoCatalogo(tipo.getId(), tipo.getNombre())).toList();
     }
 
     @Override
@@ -64,7 +88,10 @@ public class RepositorioProveedoresJpa implements RepositorioProveedores {
     public Proveedor guardar(Proveedor proveedor) {
         ProveedorEntidad entidad = proveedor.getId() == null ? new ProveedorEntidad()
                 : proveedores.getReferenceById(proveedor.getId());
+        entidad.setTipo(tiposProveedor.getReferenceById(proveedor.getTipo().id()));
         entidad.setRazonSocial(proveedor.getRazonSocial());
+        entidad.setDireccion(proveedor.getDireccion());
+        entidad.setActivo(proveedor.isActivo());
         entidad.setTelefono(proveedor.getTelefono());
         entidad.setEmail(proveedor.getEmail());
         entidad.setCreadoPor(proveedor.getCreadoPor());
@@ -76,41 +103,47 @@ public class RepositorioProveedoresJpa implements RepositorioProveedores {
             entidad.getServicios().clear();
             entidad.getServicios().addAll(proveedor.getServicios());
         }
-        sincronizarNit(entidad, proveedor);
+        sincronizarDocumentos(entidad, proveedor);
         return MapeadorFinanzas.aDominio(proveedores.saveAndFlush(entidad));
     }
 
-    /** El NIT se guarda como documento de tipo NIT; se corrige en el lugar o se quita. */
-    private void sincronizarNit(ProveedorEntidad entidad, Proveedor proveedor) {
-        DocumentoProveedorEntidad actual = MapeadorFinanzas.documentoNit(entidad);
-        if (proveedor.getNit() == null) {
-            if (actual != null) {
-                entidad.getDocumentos().remove(actual);
+    /** Conserva los documentos por id, actualiza los modificados, agrega los nuevos y quita los ausentes. */
+    private void sincronizarDocumentos(ProveedorEntidad entidad, Proveedor proveedor) {
+        Map<Integer, DocumentoProveedorEntidad> existentes = entidad.getDocumentos().stream()
+                .collect(Collectors.toMap(DocumentoProveedorEntidad::getId, Function.identity()));
+        List<DocumentoProveedorEntidad> resultado = new ArrayList<>();
+        for (DocumentoProveedor documento : proveedor.getDocumentos()) {
+            DocumentoProveedorEntidad fila = documento.id() == null ? null : existentes.get(documento.id());
+            if (fila == null) {
+                fila = new DocumentoProveedorEntidad();
+                fila.setProveedor(entidad);
+                fila.setCreadoPor(proveedor.getModificadoPor() == null ? proveedor.getCreadoPor()
+                        : proveedor.getModificadoPor());
+                fila.setFechaCreacion(proveedor.getFechaModificacion() == null ? proveedor.getFechaCreacion()
+                        : proveedor.getFechaModificacion());
+            } else if (!Objects.equals(fila.getNumero(), documento.numero())
+                    || !Objects.equals(fila.getComplemento(), documento.complemento())
+                    || !fila.getTipo().getId().equals(documento.tipo().id())) {
+                fila.setModificadoPor(proveedor.getModificadoPor());
+                fila.setFechaModificacion(proveedor.getFechaModificacion());
             }
-            return;
+            fila.setTipo(tiposDocumento.getReferenceById(documento.tipo().id()));
+            fila.setNumero(documento.numero());
+            fila.setComplemento(documento.complemento());
+            resultado.add(fila);
         }
-        if (actual == null) {
-            actual = new DocumentoProveedorEntidad();
-            actual.setProveedor(entidad);
-            actual.setTipo(proveedores.buscarTipoDocumento(TIPO_NIT)
-                    .orElseThrow(() -> new IllegalStateException("Falta el tipo de documento NIT")));
-            actual.setCreadoPor(proveedor.getModificadoPor() == null ? proveedor.getCreadoPor()
-                    : proveedor.getModificadoPor());
-            actual.setFechaCreacion(proveedor.getFechaModificacion() == null ? proveedor.getFechaCreacion()
-                    : proveedor.getFechaModificacion());
-            entidad.getDocumentos().add(actual);
-        } else if (!actual.getNumero().equals(proveedor.getNit())) {
-            actual.setModificadoPor(proveedor.getModificadoPor());
-            actual.setFechaModificacion(proveedor.getFechaModificacion());
-        }
-        actual.setNumero(proveedor.getNit());
+        entidad.getDocumentos().retainAll(resultado);
+        resultado.stream().filter(fila -> !entidad.getDocumentos().contains(fila)).forEach(entidad.getDocumentos()::add);
     }
 
-    /** Excluye eliminados; el texto busca en razon social, NIT y servicios. */
+    /** Excluye eliminados; el texto busca en razon social, documentos y servicios. */
     private static Specification<ProveedorEntidad> especificacion(Filtros.Proveedores filtro) {
         return (raiz, consulta, cb) -> {
             List<Predicate> condiciones = new ArrayList<>();
             condiciones.add(cb.isNull(raiz.get("fechaEliminacion")));
+            if (filtro.activo() != null) {
+                condiciones.add(cb.equal(raiz.get("activo"), filtro.activo()));
+            }
             if (filtro.texto() != null && !filtro.texto().isBlank()) {
                 String patron = ConsultasJpa.patronContiene(filtro.texto());
                 Subquery<Integer> documentos = consulta.subquery(Integer.class);

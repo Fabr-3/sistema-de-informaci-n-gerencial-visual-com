@@ -23,6 +23,7 @@ import com.visual.backend.finanzas.dominio.modelo.DatosMovimiento;
 import com.visual.backend.finanzas.dominio.modelo.Filtros;
 import com.visual.backend.finanzas.dominio.modelo.ItemVenta;
 import com.visual.backend.finanzas.dominio.modelo.MovimientoFinanciero;
+import com.visual.backend.finanzas.dominio.modelo.Proveedor;
 import com.visual.backend.finanzas.dominio.modelo.Referencia;
 import com.visual.backend.finanzas.dominio.modelo.TipoMovimiento;
 import com.visual.backend.finanzas.dominio.puerto.ConsultaComercialFinanzas;
@@ -185,8 +186,14 @@ public class ServicioMovimientos {
                 .orElseThrow(() -> new RecursoNoEncontradoExcepcion("el evento del proyecto", idEvento));
     }
 
+    /** Solo un proveedor activo se usa en movimientos nuevos. */
     private Referencia proveedor(Integer idProveedor) {
-        return idProveedor == null ? null : proveedores.obtener(idProveedor).comoReferencia();
+        if (idProveedor == null) {
+            return null;
+        }
+        Proveedor proveedor = proveedores.obtener(idProveedor);
+        proveedor.exigirActivo();
+        return proveedor.comoReferencia();
     }
 
     private static List<ItemVenta> items(ComandoMovimiento comando) {

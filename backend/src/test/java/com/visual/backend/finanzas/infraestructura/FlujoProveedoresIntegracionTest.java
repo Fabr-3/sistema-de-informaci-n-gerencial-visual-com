@@ -3,10 +3,12 @@ package com.visual.backend.finanzas.infraestructura;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,14 +59,16 @@ class FlujoProveedoresIntegracionTest {
     }
 
     @Test
-    void registraBuscaYEliminaProveedoresConNitUnico() throws Exception {
+    void registraBuscaAnulaYEliminaProveedoresConDocumentosUnicos() throws Exception {
         JsonNode creado = cuerpo(ejecutar(post(RUTA), proveedor("Transportes de prueba S.R.L.", "990077001"))
                 .andExpect(status().isCreated()));
         int id = creado.get("id").asInt();
         assertThat(creado.get("servicios")).hasSize(2);
+        assertThat(creado.get("tipo").get("nombre").asString()).isEqualTo("Empresa privada");
+        assertThat(creado.get("documentoPrincipal").asString()).isEqualTo("NIT 990077001");
 
         ejecutar(post(RUTA), proveedor("Otro proveedor de prueba", "990077001")).andExpect(status().isConflict());
-        ejecutar(post(RUTA), proveedor("NIT inválido", "12AB")).andExpect(status().isBadRequest());
+        ejecutar(post(RUTA), proveedor("NIT inválido", "12AB")).andExpect(status().isUnprocessableContent());
 
         JsonNode porServicio = cuerpo(mvc.perform(autorizado(get(RUTA).param("texto", "grúa de prueba")))
                 .andExpect(status().isOk()));
@@ -72,10 +76,18 @@ class FlujoProveedoresIntegracionTest {
                 .satisfies(fila -> assertThat(fila.get("id").asInt()).isEqualTo(id));
         nuevaSolicitud();
 
-        ejecutar(put(RUTA + "/" + id), proveedor("Transportes de prueba S.R.L.", "")).andExpect(status().isOk());
+        ejecutar(patch(RUTA + "/" + id + "/estado"), Map.of("activo", false)).andExpect(status().isOk());
+        nuevaSolicitud();
+        assertThat(cuerpo(mvc.perform(autorizado(get(RUTA).param("texto", "grúa de prueba").param("activo", "true")))
+                .andExpect(status().isOk())).get("totalElementos").asInt()).isZero();
+        ejecutar(patch(RUTA + "/" + id + "/estado"), Map.of("activo", true)).andExpect(status().isOk());
+
+        Map<String, Object> sinDocumentos = new HashMap<>(proveedor("Transportes de prueba S.R.L.", "990077001"));
+        sinDocumentos.put("documentos", List.of());
+        ejecutar(put(RUTA + "/" + id), sinDocumentos).andExpect(status().isOk());
         nuevaSolicitud();
         assertThat(cuerpo(mvc.perform(autorizado(get(RUTA + "/" + id))).andExpect(status().isOk()))
-                .get("nit").isNull()).isTrue();
+                .get("documentos")).isEmpty();
 
         mvc.perform(autorizado(delete(RUTA + "/" + id))).andExpect(status().isNoContent());
         nuevaSolicitud();
@@ -88,9 +100,20 @@ class FlujoProveedoresIntegracionTest {
         entityManager.clear();
     }
 
-    private static Map<String, Object> proveedor(String razonSocial, String nit) {
-        return Map.of("razonSocial", razonSocial, "nit", nit, "telefono", "22445566",
+    private Map<String, Object> proveedor(String razonSocial, String nit) throws Exception {
+        return Map.of("razonSocial", razonSocial, "telefono", "22445566",
+                "documentos", List.of(Map.of("idTipoDocumento", idTipoNit(), "numero", nit)),
                 "servicios", List.of("Transporte de carga", "Grúa de prueba"));
+    }
+
+    private int idTipoNit() throws Exception {
+        for (JsonNode tipo : cuerpo(mvc.perform(autorizado(get(RUTA + "/catalogos"))).andExpect(status().isOk()))
+                .get("tiposDocumento")) {
+            if ("NIT".equals(tipo.get("nombre").asString())) {
+                return tipo.get("id").asInt();
+            }
+        }
+        throw new IllegalStateException("Falta el tipo de documento NIT");
     }
 
     private ResultActions ejecutar(MockHttpServletRequestBuilder solicitud, Map<String, ?> datos) throws Exception {

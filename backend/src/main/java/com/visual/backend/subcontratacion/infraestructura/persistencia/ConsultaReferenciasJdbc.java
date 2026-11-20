@@ -26,7 +26,7 @@ public class ConsultaReferenciasJdbc implements ConsultaReferencias {
               and estado <> 'CANCELADO'
             """;
     private static final String PROVEEDOR = """
-            select id_proveedor, razon_social, fecha_eliminacion is null as vigente
+            select id_proveedor, razon_social, fecha_eliminacion is null and activo as vigente
             from proveedores where id_proveedor = :id
             """;
     private static final String SERVICIOS = """

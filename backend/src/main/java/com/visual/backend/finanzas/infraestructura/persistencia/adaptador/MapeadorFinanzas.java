@@ -5,6 +5,8 @@ import java.util.List;
 import com.visual.backend.activos.infraestructura.persistencia.entidad.ActivoEntidad;
 import com.visual.backend.activos.infraestructura.persistencia.entidad.ExistenciaLoteEntidad;
 import com.visual.backend.activos.infraestructura.persistencia.entidad.ModeloActivoEntidad;
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
+import com.visual.backend.finanzas.dominio.modelo.DocumentoProveedor;
 import com.visual.backend.finanzas.dominio.modelo.ItemVenta;
 import com.visual.backend.finanzas.dominio.modelo.MovimientoFinanciero;
 import com.visual.backend.finanzas.dominio.modelo.Proveedor;
@@ -13,7 +15,6 @@ import com.visual.backend.finanzas.dominio.modelo.TipoMovimiento;
 import com.visual.backend.finanzas.infraestructura.persistencia.entidad.MovimientoFinancieroEntidad;
 import com.visual.backend.finanzas.infraestructura.persistencia.entidad.TipoMovimientoEntidad;
 import com.visual.backend.finanzas.infraestructura.persistencia.entidad.VentaDetalleEntidad;
-import com.visual.backend.finanzas.infraestructura.persistencia.entidad.DocumentoProveedorEntidad;
 import com.visual.backend.finanzas.infraestructura.persistencia.entidad.ProveedorEntidad;
 
 /** Conversion de entidades JPA a modelos de dominio del modulo financiero. */
@@ -23,11 +24,17 @@ final class MapeadorFinanzas {
     }
 
     static Proveedor aDominio(ProveedorEntidad entidad) {
-        DocumentoProveedorEntidad nit = documentoNit(entidad);
         return Proveedor.builder()
                 .id(entidad.getId())
+                .tipo(new ElementoCatalogo(entidad.getTipo().getId(), entidad.getTipo().getNombre()))
                 .razonSocial(entidad.getRazonSocial())
-                .nit(nit == null ? null : nit.getNumero())
+                .direccion(entidad.getDireccion())
+                .documentos(entidad.getDocumentos().stream().filter(documento -> documento.getFechaEliminacion() == null)
+                        .map(documento -> new DocumentoProveedor(documento.getId(),
+                                new ElementoCatalogo(documento.getTipo().getId(), documento.getTipo().getNombre()),
+                                documento.getNumero(), documento.getComplemento()))
+                        .toList())
+                .activo(entidad.isActivo())
                 .telefono(entidad.getTelefono())
                 .email(entidad.getEmail())
                 .servicios(List.copyOf(entidad.getServicios()))
@@ -83,12 +90,5 @@ final class MapeadorFinanzas {
 
     private static String modelo(ModeloActivoEntidad modelo) {
         return modelo.getFabricante().getNombre() + " " + modelo.getNombre();
-    }
-
-    static DocumentoProveedorEntidad documentoNit(ProveedorEntidad entidad) {
-        return entidad.getDocumentos().stream()
-                .filter(documento -> documento.getFechaEliminacion() == null
-                        && RepositorioProveedoresJpa.TIPO_NIT.equals(documento.getTipo().getNombre()))
-                .findFirst().orElse(null);
     }
 }

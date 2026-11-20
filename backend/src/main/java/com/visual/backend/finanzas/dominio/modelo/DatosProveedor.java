@@ -2,5 +2,10 @@ package com.visual.backend.finanzas.dominio.modelo;
 
 import java.util.List;
 
-public record DatosProveedor(String razonSocial, String nit, String telefono, String email, List<String> servicios) {
+import com.visual.backend.compartido.dominio.ElementoCatalogo;
+
+/** Los documentos son opcionales (proveedores informales), pero no se repiten. */
+public record DatosProveedor(ElementoCatalogo tipo, String razonSocial, String direccion,
+                             List<DocumentoProveedor> documentos, String telefono, String email,
+                             List<String> servicios) {
 }
