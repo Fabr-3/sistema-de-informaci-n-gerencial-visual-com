@@ -167,8 +167,10 @@ class FlujoActivosIntegracionTest {
     @Test
     void unTecnicoRegistraUsoPeroNoAdministraElInventario() throws Exception {
         int idModelo = crearModelo("Consola prueba", "UNIDAD", null);
-        int idActivo = registrarActivos(Map.of("idModelo", idModelo, "idBodega", idBodegaPrincipal,
-                "cantidad", 1)).get(0).get("id").asInt();
+        JsonNode unidades = registrarActivos(Map.of("idModelo", idModelo, "idBodega", idBodegaPrincipal,
+                "cantidad", 3));
+        int idActivo = unidades.get(0).get("id").asInt();
+        List<Integer> todos = unidades.valueStream().map(unidad -> unidad.get("id").asInt()).toList();
         crear("/api/usuarios", Map.of("nombreUsuario", "tecnico.activos", "nombres", "Tecnico",
                 "apellidoPaterno", "Activos", "email", "tecnico.activos@visual.com.bo", "idRol", ID_ROL_TECNICO,
                 "contrasenaTemporal", CONTRASENA_TEMPORAL));
@@ -176,6 +178,17 @@ class FlujoActivosIntegracionTest {
         LocalDateTime base = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES).minusDays(1);
 
         registrarUso(idActivo, base, base.plusHours(4), tokenTecnico).andExpect(status().isCreated());
+        ejecutar(post("/api/activos/usos-grupales"), Map.of("idsActivos", todos, "fechaInicio",
+                base.plusHours(2).toString(), "fechaFin", base.plusHours(6).toString()), tokenTecnico)
+                .andExpect(status().isUnprocessableContent());
+        assertThat(leer(get("/api/activos/{id}/usos", todos.get(1)), tokenAdministrador).get("totalElementos")
+                .asInt()).isZero();
+        String grupo = mvc.perform(autorizado(post("/api/activos/usos-grupales"), tokenTecnico)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(Map.of(
+                                "idsActivos", todos, "fechaInicio", base.plusHours(5).toString(),
+                                "fechaFin", base.plusHours(8).toString(), "descripcion", "Evento de prueba"))))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(grupo)).hasSize(3);
         mvc.perform(autorizado(get("/api/activos/{id}", idActivo), tokenTecnico)).andExpect(status().isOk());
         ejecutar(post("/api/activos"), Map.of("idModelo", idModelo, "idBodega", idBodegaPrincipal,
                 "cantidad", 1), tokenTecnico).andExpect(status().isForbidden());

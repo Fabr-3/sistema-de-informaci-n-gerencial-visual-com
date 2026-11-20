@@ -3,6 +3,8 @@ package com.visual.backend.activos.aplicacion.servicio;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import com.visual.backend.accesos.aplicacion.servicio.ServicioAuditoria;
 import com.visual.backend.accesos.dominio.modelo.AccionAuditoria;
 import com.visual.backend.accesos.dominio.puerto.ContextoSolicitud;
 import com.visual.backend.activos.aplicacion.dto.ComandoRegistroUso;
+import com.visual.backend.activos.aplicacion.dto.ComandoUsoGrupal;
 import com.visual.backend.activos.dominio.modelo.Activo;
 import com.visual.backend.activos.dominio.modelo.RegistroUso;
 import com.visual.backend.activos.dominio.puerto.RepositorioActivos;
@@ -62,6 +65,17 @@ public class ServicioUsoActivos {
         auditoria.registrarOperacion(AccionAuditoria.CREAR, ENTIDAD, guardado.id(), null,
                 mapa(activo, guardado), null);
         return guardado;
+    }
+
+    /**
+     * Uso grupal: registra el mismo periodo para varios equipos. Se registran
+     * todos o ninguno; el error indica el equipo que no se pudo registrar.
+     */
+    @Transactional
+    public List<RegistroUso> registrarGrupo(ComandoUsoGrupal comando) {
+        ComandoRegistroUso uso = new ComandoRegistroUso(comando.fechaInicio(), comando.fechaFin(),
+                comando.descripcion());
+        return new LinkedHashSet<>(comando.idsActivos()).stream().map(idActivo -> registrar(idActivo, uso)).toList();
     }
 
     /** Anula un registro erroneo; deja de contar para las horas de uso. */
