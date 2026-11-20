@@ -11,6 +11,7 @@ import {
   MovimientoConsumible,
 } from '../modelos/consumible';
 import { Consumo, DatosConsumo, EventoAsignado, FiltroConsumos } from '../modelos/consumo';
+import { DatosGasto, FiltroGastos, GastoEvento } from '../modelos/gasto';
 import { DatosSubcontratacion, FiltroSubcontrataciones, Subcontratacion } from '../modelos/subcontratacion';
 
 export abstract class RepositorioSubcontrataciones {
@@ -33,4 +34,12 @@ export abstract class RepositorioConsumos {
   abstract registrar(datos: DatosConsumo): Observable<Consumo>;
   abstract anular(id: number, motivo: string): Observable<Consumo>;
   abstract eventosAsignados(): Observable<EventoAsignado[]>;
+}
+
+/** Gastos del evento: el comprobante viaja como archivo junto con los datos. */
+export abstract class RepositorioGastos {
+  abstract listar(filtro: FiltroGastos, solicitud: SolicitudPagina): Observable<Pagina<GastoEvento>>;
+  abstract registrar(datos: DatosGasto, comprobante: File): Observable<GastoEvento>;
+  abstract comprobante(id: number): Observable<Blob>;
+  abstract anular(id: number, motivo: string): Observable<GastoEvento>;
 }

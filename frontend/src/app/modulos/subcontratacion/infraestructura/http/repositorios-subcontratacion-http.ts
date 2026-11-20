@@ -16,10 +16,12 @@ import {
   MovimientoConsumible,
 } from '../../dominio/modelos/consumible';
 import { Consumo, DatosConsumo, EventoAsignado, FiltroConsumos } from '../../dominio/modelos/consumo';
+import { DatosGasto, FiltroGastos, GastoEvento } from '../../dominio/modelos/gasto';
 import { DatosSubcontratacion, FiltroSubcontrataciones, Subcontratacion } from '../../dominio/modelos/subcontratacion';
 import {
   RepositorioConsumibles,
   RepositorioConsumos,
+  RepositorioGastos,
   RepositorioSubcontrataciones,
 } from '../../dominio/repositorios/repositorios-subcontratacion';
 
@@ -95,5 +97,31 @@ export class RepositorioConsumosHttp extends RepositorioConsumos {
 
   eventosAsignados(): Observable<EventoAsignado[]> {
     return this.http.get<EventoAsignado[]>(`${this.url}/eventos-asignados`);
+  }
+}
+
+@Injectable()
+export class RepositorioGastosHttp extends RepositorioGastos {
+  private readonly http = inject(HttpClient);
+  private readonly url = inject(URL_API) + RUTA_MODULO + '/gastos-evento';
+
+  listar(filtro: FiltroGastos, solicitud: SolicitudPagina): Observable<Pagina<GastoEvento>> {
+    return this.http.get<Pagina<GastoEvento>>(this.url, { params: parametrosConsulta({ ...filtro, ...solicitud }) });
+  }
+
+  /** Multipart: parte "datos" en JSON y parte "archivo" con el comprobante. */
+  registrar(datos: DatosGasto, comprobante: File): Observable<GastoEvento> {
+    const formulario = new FormData();
+    formulario.append('datos', new Blob([JSON.stringify(datos)], { type: 'application/json' }));
+    formulario.append('archivo', comprobante, comprobante.name);
+    return this.http.post<GastoEvento>(this.url, formulario);
+  }
+
+  comprobante(id: number): Observable<Blob> {
+    return this.http.get(`${this.url}/${id}/comprobante`, { responseType: 'blob' });
+  }
+
+  anular(id: number, motivo: string): Observable<GastoEvento> {
+    return this.http.post<GastoEvento>(`${this.url}/${id}/anulacion`, { motivo });
   }
 }

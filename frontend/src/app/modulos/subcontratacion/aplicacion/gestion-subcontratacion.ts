@@ -12,10 +12,12 @@ import {
   MovimientoConsumible,
 } from '../dominio/modelos/consumible';
 import { Consumo, DatosConsumo, EventoAsignado, FiltroConsumos } from '../dominio/modelos/consumo';
+import { DatosGasto, FiltroGastos, GastoEvento } from '../dominio/modelos/gasto';
 import { DatosSubcontratacion, FiltroSubcontrataciones, Subcontratacion } from '../dominio/modelos/subcontratacion';
 import {
   RepositorioConsumibles,
   RepositorioConsumos,
+  RepositorioGastos,
   RepositorioSubcontrataciones,
 } from '../dominio/repositorios/repositorios-subcontratacion';
 
@@ -92,5 +94,28 @@ export class GestionConsumos {
 
   eventosAsignados(): Observable<EventoAsignado[]> {
     return this.repositorio.eventosAsignados();
+  }
+}
+
+/** Casos de uso de los gastos del evento con comprobante. */
+@Injectable({ providedIn: 'root' })
+export class GestionGastos {
+  private readonly repositorio = inject(RepositorioGastos);
+
+  listar(filtro: FiltroGastos, solicitud: SolicitudPagina): Observable<Pagina<GastoEvento>> {
+    return this.repositorio.listar(filtro, solicitud);
+  }
+
+  registrar(datos: DatosGasto, comprobante: File): Observable<GastoEvento> {
+    return this.repositorio.registrar({ ...datos, descripcion: datos.descripcion.trim() }, comprobante);
+  }
+
+  comprobante(id: number): Observable<Blob> {
+    return this.repositorio.comprobante(id);
+  }
+
+  /** Anula tambien su egreso en Finanzas, con el mismo motivo. */
+  anular(id: number, motivo: string): Observable<GastoEvento> {
+    return this.repositorio.anular(id, motivo.trim());
   }
 }

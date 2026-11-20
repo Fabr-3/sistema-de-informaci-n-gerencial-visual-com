@@ -159,6 +159,12 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
         ruta: rutaAbsoluta(Rutas.SUBCONTRATACION, Rutas.CONSUMOS),
         permisos: [Permisos.PROVEEDORES_VER, Permisos.PROVEEDORES_GESTIONAR, Permisos.CONSUMIBLES_REGISTRAR],
       },
+      {
+        etiqueta: 'Gastos del evento',
+        icono: 'receipt_long',
+        ruta: rutaAbsoluta(Rutas.SUBCONTRATACION, Rutas.GASTOS_EVENTO),
+        permisos: [Permisos.PROVEEDORES_VER, Permisos.PROVEEDORES_GESTIONAR, Permisos.CONSUMIBLES_REGISTRAR],
+      },
     ],
   },
   {

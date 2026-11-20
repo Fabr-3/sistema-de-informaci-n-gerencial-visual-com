@@ -35,6 +35,14 @@ export const RUTAS_SUBCONTRATACION: Routes = [
         ],
         loadComponent: () => import('./paginas/consumos/pagina-consumos').then((m) => m.PaginaConsumos),
       },
+      {
+        path: Rutas.GASTOS_EVENTO,
+        title: 'Gastos del evento',
+        canActivate: [
+          permisoGuard(Permisos.PROVEEDORES_VER, Permisos.PROVEEDORES_GESTIONAR, Permisos.CONSUMIBLES_REGISTRAR),
+        ],
+        loadComponent: () => import('./paginas/gastos/pagina-gastos').then((m) => m.PaginaGastos),
+      },
     ],
   },
 ];

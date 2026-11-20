@@ -1,0 +1,105 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Gastos del evento</h1>
+      <p>
+        @if (limitado) {
+          Compras o pagos que hizo en los eventos donde está asignado, con su comprobante.
+        } @else {
+          Compras o pagos del personal durante los eventos, fuera del catálogo de consumibles. Cada uno es un egreso del evento.
+        }
+      </p>
+    </div>
+    @if (puedeRegistrar) {
+      <button mat-flat-button (click)="registrar()"><mat-icon>receipt_long</mat-icon>Registrar gasto</button>
+    }
+  </header>
+
+  <section class="panel">
+    <form class="filtros" [formGroup]="periodo">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Desde</mat-label>
+        <input matInput type="date" formControlName="desde" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Hasta</mat-label>
+        <input matInput type="date" formControlName="hasta" />
+      </mat-form-field>
+      @if (resultado(); as pagina) {
+        <p class="texto-secundario">Registrado en esta página: {{ montoRegistrado(pagina.contenido) | currency: 'BOB' : 'Bs ' }}</p>
+      }
+    </form>
+
+    <div class="tabla-contenedor">
+      @if (cargando()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <table mat-table [dataSource]="resultado()?.contenido ?? []">
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let fila">{{ fila.fecha | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="descripcion">
+          <th mat-header-cell *matHeaderCellDef>Gasto</th>
+          <td mat-cell *matCellDef="let fila"><strong>{{ fila.descripcion }}</strong></td>
+        </ng-container>
+        <ng-container matColumnDef="destino">
+          <th mat-header-cell *matHeaderCellDef>Evento</th>
+          <td mat-cell *matCellDef="let fila">
+            {{ fila.evento.nombre }}
+            <div class="texto-secundario detalle">{{ fila.proyecto.nombre }}</div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="monto">
+          <th mat-header-cell *matHeaderCellDef class="numero">Monto</th>
+          <td mat-cell *matCellDef="let fila" class="numero">{{ fila.monto | currency: 'BOB' : 'Bs ' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="comprobante">
+          <th mat-header-cell *matHeaderCellDef>Comprobante</th>
+          <td mat-cell *matCellDef="let fila">
+            <button mat-button (click)="verComprobante(fila)" [attr.aria-label]="'Ver comprobante ' + fila.comprobante">
+              <mat-icon>{{ fila.tipoComprobante === 'application/pdf' ? 'picture_as_pdf' : 'image' }}</mat-icon>Ver
+            </button>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="registradoPor">
+          <th mat-header-cell *matHeaderCellDef>Registrado por</th>
+          <td mat-cell *matCellDef="let fila" class="texto-secundario">{{ fila.registradoPor ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let fila">
+            <span class="estado" [class.estado--activo]="fila.estado === 'REGISTRADO'" [class.estado--neutro]="fila.estado === 'ANULADO'">
+              {{ fila.estado | etiqueta: estados }}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+          <td mat-cell *matCellDef="let fila" class="celda-acciones">
+            @if (puedeRegistrar && fila.estado === 'REGISTRADO') {
+              <button mat-icon-button matTooltip="Anular" (click)="anular(fila)" aria-label="Anular gasto">
+                <mat-icon>block</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas" [class.fila-anulada]="fila.estado === 'ANULADO'"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="vacio" [attr.colspan]="columnas.length">
+            {{ cargando() ? 'Cargando gastos…' : 'No hay gastos en el periodo.' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-paginator
+      [length]="resultado()?.totalElementos ?? 0"
+      [pageIndex]="criterios().solicitud.pagina"
+      [pageSize]="criterios().solicitud.tamano"
+      [pageSizeOptions]="tamanosPagina"
+      (page)="cambiarPagina($event)"
+      aria-label="Paginación de gastos"
+    />
+  </section>
+</div>

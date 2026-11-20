@@ -3,11 +3,13 @@ import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import {
   RepositorioConsumibles,
   RepositorioConsumos,
+  RepositorioGastos,
   RepositorioSubcontrataciones,
 } from '../dominio/repositorios/repositorios-subcontratacion';
 import {
   RepositorioConsumiblesHttp,
   RepositorioConsumosHttp,
+  RepositorioGastosHttp,
   RepositorioSubcontratacionesHttp,
 } from './http/repositorios-subcontratacion-http';
 
@@ -17,5 +19,6 @@ export function proveerSubcontratacion(): EnvironmentProviders {
     { provide: RepositorioSubcontrataciones, useClass: RepositorioSubcontratacionesHttp },
     { provide: RepositorioConsumibles, useClass: RepositorioConsumiblesHttp },
     { provide: RepositorioConsumos, useClass: RepositorioConsumosHttp },
+    { provide: RepositorioGastos, useClass: RepositorioGastosHttp },
   ]);
 }

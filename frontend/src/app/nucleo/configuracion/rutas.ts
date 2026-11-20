@@ -35,6 +35,7 @@ export const Rutas = {
   SUBCONTRATACIONES: 'subcontrataciones',
   CONSUMIBLES: 'consumibles',
   CONSUMOS: 'consumos',
+  GASTOS_EVENTO: 'gastos-evento',
 } as const;
 
 /** Parametro de consulta con la URL a la que se vuelve tras iniciar sesion. */
