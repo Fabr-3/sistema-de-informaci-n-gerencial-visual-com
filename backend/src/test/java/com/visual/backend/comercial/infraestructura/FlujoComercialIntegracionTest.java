@@ -184,7 +184,7 @@ class FlujoComercialIntegracionTest {
     }
 
     @Test
-    void elGerenteApruebaPeroNoRegistraCotizaciones() throws Exception {
+    void elGerenteRegistraYApruebaCotizaciones() throws Exception {
         int idCotizacion = crear("/api/comercial/cotizaciones", cotizacion(hoy.plusDays(15)));
         crear("/api/usuarios", Map.of("nombreUsuario", "gerente.comercial", "nombres", "Gerente",
                 "apellidoPaterno", "Comercial", "email", "gerente.comercial@visual.com.bo", "idRol", ID_ROL_GERENTE,
@@ -194,7 +194,7 @@ class FlujoComercialIntegracionTest {
         mvc.perform(post("/api/comercial/cotizaciones").header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenGerente)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(cotizacion(hoy.plusDays(15)))))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isCreated());
         mvc.perform(post("/api/comercial/cotizaciones/{id}/aceptacion", idCotizacion)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenGerente))
                 .andExpect(status().isOk());
