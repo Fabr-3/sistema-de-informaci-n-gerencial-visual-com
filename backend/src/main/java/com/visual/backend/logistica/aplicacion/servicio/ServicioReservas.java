@@ -25,6 +25,7 @@ import com.visual.backend.logistica.aplicacion.dto.VistaReserva;
 import com.visual.backend.logistica.dominio.modelo.ActivoReservable;
 import com.visual.backend.logistica.dominio.modelo.ConflictoReserva;
 import com.visual.backend.logistica.dominio.modelo.DisponibilidadModelo;
+import com.visual.backend.logistica.dominio.modelo.EquipoSubalquilado;
 import com.visual.backend.logistica.dominio.modelo.EventoLogistico;
 import com.visual.backend.logistica.dominio.modelo.FaltanteModelo;
 import com.visual.backend.logistica.dominio.modelo.Filtros;
@@ -36,6 +37,7 @@ import com.visual.backend.logistica.dominio.modelo.ReservaActivo;
 import com.visual.backend.logistica.dominio.modelo.ReservaAutomatica;
 import com.visual.backend.logistica.dominio.puerto.ConsultaActivosReservables;
 import com.visual.backend.logistica.dominio.puerto.ConsultaEventosLogistica;
+import com.visual.backend.logistica.dominio.puerto.ConsultaSubalquileres;
 import com.visual.backend.logistica.dominio.puerto.RepositorioReservas;
 
 /**
@@ -56,17 +58,19 @@ public class ServicioReservas {
     private final PlanesEvento planes;
     private final RepositorioReservas reservas;
     private final ConsultaActivosReservables activos;
+    private final ConsultaSubalquileres subalquileres;
     private final ServicioAuditoria auditoria;
     private final ContextoSolicitud contexto;
     private final Clock reloj;
 
     public ServicioReservas(ConsultaEventosLogistica eventos, PlanesEvento planes, RepositorioReservas reservas,
-                            ConsultaActivosReservables activos, ServicioAuditoria auditoria,
-                            ContextoSolicitud contexto, Clock reloj) {
+                            ConsultaActivosReservables activos, ConsultaSubalquileres subalquileres,
+                            ServicioAuditoria auditoria, ContextoSolicitud contexto, Clock reloj) {
         this.eventos = eventos;
         this.planes = planes;
         this.reservas = reservas;
         this.activos = activos;
+        this.subalquileres = subalquileres;
         this.auditoria = auditoria;
         this.contexto = contexto;
         this.reloj = reloj;
@@ -77,6 +81,13 @@ public class ServicioReservas {
         eventos.obtener(idEvento);
         return planes.buscar(idEvento).map(plan -> vistas(reservas.buscarActivasPorPlan(plan.getId())))
                 .orElse(List.of());
+    }
+
+    /** Equipos que faltaban y se alquilaron a proveedores para el evento. */
+    @Transactional(readOnly = true)
+    public List<EquipoSubalquilado> subalquileres(Integer idEvento) {
+        eventos.obtener(idEvento);
+        return subalquileres.delEvento(idEvento);
     }
 
     @Transactional(readOnly = true)

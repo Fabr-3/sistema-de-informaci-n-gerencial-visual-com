@@ -30,9 +30,11 @@ public class RepositorioSubcontratacionesJdbc implements RepositorioSubcontratac
             join proveedores pr on pr.id_proveedor = s.id_proveedor
             join proyectos p on p.id_proyecto = s.id_proyecto
             left join eventos e on e.id_evento = s.id_evento
+            left join modelos_activo mo on mo.id_modelo = s.id_modelo
+            left join fabricantes f on f.id_fabricante = mo.id_fabricante
             """;
     private static final String SELECCION = """
-            select s.*, pr.razon_social, p.nombre_proyecto, e.nombre_evento
+            select s.*, pr.razon_social, p.nombre_proyecto, e.nombre_evento, f.nombre || ' ' || mo.nombre as modelo
             """ + DESDE;
     private static final String CONDICIONES = """
             where (cast(:idProyecto as integer) is null or s.id_proyecto = :idProyecto)
@@ -46,10 +48,10 @@ public class RepositorioSubcontratacionesJdbc implements RepositorioSubcontratac
     private static final String POR_ID = SELECCION + " where s.id_subcontratacion = :id";
     private static final String INSERTAR = """
             insert into subcontrataciones (id_proveedor, id_servicio_prov, servicio, id_proyecto, id_evento,
-                                           descripcion, costo, fecha, estado, id_movimiento, creado_por,
-                                           fecha_creacion)
-            values (:idProveedor, :idServicio, :servicio, :idProyecto, :idEvento, :descripcion, :costo, :fecha,
-                    :estado, :idMovimiento, :creadoPor, :fechaCreacion)
+                                           id_modelo, cantidad, descripcion, costo, fecha, estado, id_movimiento,
+                                           creado_por, fecha_creacion)
+            values (:idProveedor, :idServicio, :servicio, :idProyecto, :idEvento, :idModelo, :cantidad, :descripcion,
+                    :costo, :fecha, :estado, :idMovimiento, :creadoPor, :fechaCreacion)
             returning id_subcontratacion
             """;
     /** Solo cambia el estado: la subcontratacion no se edita. */
@@ -103,6 +105,8 @@ public class RepositorioSubcontratacionesJdbc implements RepositorioSubcontratac
                 .addValue("servicio", servicio == null ? null : servicio.nombre())
                 .addValue("idProyecto", subcontratacion.getProyecto().id())
                 .addValue("idEvento", evento == null ? null : evento.id())
+                .addValue("idModelo", subcontratacion.getModelo() == null ? null : subcontratacion.getModelo().id())
+                .addValue("cantidad", subcontratacion.getCantidad())
                 .addValue("descripcion", subcontratacion.getDescripcion())
                 .addValue("costo", subcontratacion.getCosto())
                 .addValue("fecha", subcontratacion.getFecha())
@@ -116,12 +120,15 @@ public class RepositorioSubcontratacionesJdbc implements RepositorioSubcontratac
     private static Subcontratacion subcontratacion(ResultSet fila, int numero) throws SQLException {
         String servicio = fila.getString("servicio");
         Integer idEvento = entero(fila, "id_evento");
+        Integer idModelo = entero(fila, "id_modelo");
         return Subcontratacion.builder()
                 .id(fila.getInt("id_subcontratacion"))
                 .proveedor(new ElementoCatalogo(fila.getInt("id_proveedor"), fila.getString("razon_social")))
                 .servicio(servicio == null ? null : new ElementoCatalogo(entero(fila, "id_servicio_prov"), servicio))
                 .proyecto(new ElementoCatalogo(fila.getInt("id_proyecto"), fila.getString("nombre_proyecto")))
                 .evento(idEvento == null ? null : new ElementoCatalogo(idEvento, fila.getString("nombre_evento")))
+                .modelo(idModelo == null ? null : new ElementoCatalogo(idModelo, fila.getString("modelo")))
+                .cantidad(entero(fila, "cantidad"))
                 .descripcion(fila.getString("descripcion"))
                 .costo(fila.getBigDecimal("costo"))
                 .fecha(fila.getObject("fecha", LocalDate.class))

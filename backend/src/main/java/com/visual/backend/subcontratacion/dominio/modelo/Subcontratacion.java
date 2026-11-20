@@ -31,6 +31,9 @@ public class Subcontratacion {
     private ElementoCatalogo servicio;
     private ElementoCatalogo proyecto;
     private ElementoCatalogo evento;
+    /** Modelo y cantidad subalquilados; nulos en una subcontratacion de servicios. */
+    private ElementoCatalogo modelo;
+    private Integer cantidad;
     private String descripcion;
     private BigDecimal costo;
     private LocalDate fecha;
@@ -49,6 +52,8 @@ public class Subcontratacion {
                 .servicio(datos.servicio())
                 .proyecto(datos.proyecto())
                 .evento(datos.evento())
+                .modelo(datos.modelo())
+                .cantidad(datos.modelo() == null ? null : datos.cantidad())
                 .descripcion(datos.descripcion().trim())
                 .costo(datos.costo().setScale(DECIMALES, RoundingMode.HALF_UP))
                 .fecha(datos.fecha())
@@ -58,8 +63,15 @@ public class Subcontratacion {
                 .build();
     }
 
+    public boolean esSubalquiler() {
+        return modelo != null;
+    }
+
     /** Concepto del egreso financiero que genera. */
     public String concepto() {
+        if (esSubalquiler()) {
+            return "Subalquiler · " + proveedor.nombre() + " · " + cantidad + " × " + modelo.nombre();
+        }
         String detalle = servicio == null ? descripcion : servicio.nombre();
         return "Subcontratación · " + proveedor.nombre() + " · " + detalle;
     }
@@ -91,6 +103,14 @@ public class Subcontratacion {
         }
         if (datos.costo() == null || datos.costo().signum() <= 0) {
             throw new ReglaNegocioExcepcion("El costo debe ser mayor a cero");
+        }
+        if (datos.modelo() != null) {
+            if (datos.cantidad() == null || datos.cantidad() <= 0) {
+                throw new ReglaNegocioExcepcion("Indique cuántas unidades se subalquilan");
+            }
+            if (datos.evento() == null) {
+                throw new ReglaNegocioExcepcion("Un subalquiler de equipos se registra para un evento");
+            }
         }
         if (datos.fecha() == null || datos.fecha().isAfter(hoy)) {
             throw new ReglaNegocioExcepcion("La fecha de la subcontratación no puede ser futura");

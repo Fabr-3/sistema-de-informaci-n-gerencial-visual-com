@@ -43,6 +43,12 @@ public class ReferenciasImputacion {
         return consulta.serviciosDelProveedor(idProveedor);
     }
 
+    /** Modelo opcional (subalquiler de equipos): nulo si no se indica. */
+    public ElementoCatalogo modelo(Integer idModelo) {
+        return idModelo == null ? null : consulta.modeloPorUnidad(idModelo)
+                .orElseThrow(() -> new RecursoNoEncontradoExcepcion("el modelo controlado por unidad", idModelo));
+    }
+
     /** Servicio opcional del proveedor: nulo si no se indica. */
     public ElementoCatalogo servicio(Integer idServicio, Integer idProveedor) {
         return idServicio == null ? null : consulta.servicioDelProveedor(idServicio, idProveedor)

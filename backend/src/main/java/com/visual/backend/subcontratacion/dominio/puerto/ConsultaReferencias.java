@@ -21,4 +21,7 @@ public interface ConsultaReferencias {
 
     /** El servicio solo se devuelve si pertenece al proveedor indicado. */
     Optional<ElementoCatalogo> servicioDelProveedor(Integer idServicio, Integer idProveedor);
+
+    /** Modelo de activos controlado por unidad (los unicos que se reservan y se subalquilan). */
+    Optional<ElementoCatalogo> modeloPorUnidad(Integer idModelo);
 }

@@ -88,4 +88,23 @@ class ReglasSubcontratacionTest {
         assertThatThrownBy(() -> new ProyectoReferencia(3, "Feria cerrada", false).exigirVigente())
                 .isInstanceOf(ReglaNegocioExcepcion.class);
     }
+
+    @Test
+    void elSubalquilerExigeCantidadYEventoYSuConceptoNombraElModelo() {
+        ElementoCatalogo proveedor = new ElementoCatalogo(7, "Luces del Sur");
+        ElementoCatalogo modelo = new ElementoCatalogo(4, "Robe Pointe");
+        LocalDate fecha = LocalDate.of(2026, 11, 10);
+
+        Subcontratacion subalquiler = Subcontratacion.registrar(new DatosSubcontratacion(proveedor, null, PROYECTO,
+                EVENTO, "Faltan cabezales", new BigDecimal("600"), fecha, modelo, 2), ACTOR, AHORA);
+
+        assertThat(subalquiler.esSubalquiler()).isTrue();
+        assertThat(subalquiler.concepto()).isEqualTo("Subalquiler · Luces del Sur · 2 × Robe Pointe");
+        assertThatThrownBy(() -> Subcontratacion.registrar(new DatosSubcontratacion(proveedor, null, PROYECTO, null,
+                "Faltan cabezales", new BigDecimal("600"), fecha, modelo, 2), ACTOR, AHORA))
+                .hasMessageContaining("evento");
+        assertThatThrownBy(() -> Subcontratacion.registrar(new DatosSubcontratacion(proveedor, null, PROYECTO, EVENTO,
+                "Faltan cabezales", new BigDecimal("600"), fecha, modelo, null), ACTOR, AHORA))
+                .hasMessageContaining("unidades");
+    }
 }

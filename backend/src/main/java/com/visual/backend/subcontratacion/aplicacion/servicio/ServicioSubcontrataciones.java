@@ -65,7 +65,8 @@ public class ServicioSubcontrataciones {
         Subcontratacion subcontratacion = Subcontratacion.registrar(new DatosSubcontratacion(proveedor,
                 referencias.servicio(comando.idServicio(), proveedor.id()), proyecto,
                 referencias.evento(comando.idEvento(), proyecto.id()), comando.descripcion(), comando.costo(),
-                comando.fecha()), contexto.idUsuarioActual(), LocalDateTime.now(reloj));
+                comando.fecha(), referencias.modelo(comando.idModelo()), comando.cantidad()),
+                contexto.idUsuarioActual(), LocalDateTime.now(reloj));
         subcontratacion.vincularEgreso(egresos.registrar(subcontratacion.concepto(), subcontratacion.getCosto(),
                 subcontratacion.getFecha(), proyecto.id(), comando.idEvento(), proveedor.id()));
         Subcontratacion guardada = repositorio.guardar(subcontratacion);
@@ -91,6 +92,8 @@ public class ServicioSubcontrataciones {
         mapa.put("servicio", subcontratacion.getServicio() == null ? null : subcontratacion.getServicio().nombre());
         mapa.put("proyecto", subcontratacion.getProyecto().nombre());
         mapa.put("evento", subcontratacion.getEvento() == null ? null : subcontratacion.getEvento().nombre());
+        mapa.put("modelo", subcontratacion.getModelo() == null ? null : subcontratacion.getModelo().nombre());
+        mapa.put("cantidad", subcontratacion.getCantidad());
         mapa.put("descripcion", subcontratacion.getDescripcion());
         mapa.put("costo", subcontratacion.getCosto().toPlainString());
         mapa.put("fecha", subcontratacion.getFecha().toString());

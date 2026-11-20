@@ -100,6 +100,34 @@ class FlujoSubcontratacionIntegracionTest {
     }
 
     @Test
+    void elSubalquilerDeEquiposFiguraEnElEventoYSuEgresoEnFinanzas() throws Exception {
+        int idCategoria = leer(get("/api/activos/catalogos/categorias")).get(0).get("id").asInt();
+        int idFabricante = crear("/api/activos/catalogos/fabricantes", Map.of("nombre", "Fabricante subalquiler"));
+        Map<String, Object> modelo = new HashMap<>(Map.of("idFabricante", idFabricante, "idCategoria", idCategoria,
+                "nombre", "Cabezal móvil", "tipoControl", "UNIDAD"));
+        modelo.put("prefijoCodigo", "SBQ");
+        int idModelo = crear("/api/activos/modelos", modelo);
+        Map<String, Object> subalquiler = new HashMap<>(Map.of("idProveedor", idProveedor, "idProyecto", idProyecto,
+                "descripcion", "Faltaban unidades para el evento", "costo", "900", "fecha", hoy.toString(),
+                "idModelo", idModelo, "cantidad", 3));
+
+        ejecutar(post(RUTA_SUBCONTRATACIONES), subalquiler).andExpect(status().isUnprocessableContent());
+        subalquiler.put("idEvento", idEvento);
+        JsonNode registrado = cuerpo(ejecutar(post(RUTA_SUBCONTRATACIONES), subalquiler)
+                .andExpect(status().isCreated()));
+
+        assertThat(registrado.get("cantidad").asInt()).isEqualTo(3);
+        JsonNode egreso = leer(get("/api/finanzas/movimientos/{id}", registrado.get("idMovimiento").asInt()));
+        assertThat(egreso.get("concepto").asString()).contains("Subalquiler").contains("3 × Fabricante subalquiler");
+        assertThat(egreso.get("evento").get("id").asInt()).isEqualTo(idEvento);
+        assertThat(leer(get("/api/logistica/eventos/{id}/subalquileres", idEvento))).singleElement()
+                .satisfies(equipo -> {
+                    assertThat(equipo.get("cantidad").asInt()).isEqualTo(3);
+                    assertThat(equipo.get("modelo").asString()).isEqualTo("Fabricante subalquiler Cabezal móvil");
+                });
+    }
+
+    @Test
     void elTipoDeSubcontratacionNoSeRegistraAManoEnFinanzas() throws Exception {
         int idTipo = 0;
         for (JsonNode tipo : leer(get("/api/finanzas/tipos-movimiento"))) {

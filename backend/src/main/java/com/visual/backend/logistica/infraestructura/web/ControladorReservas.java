@@ -20,6 +20,7 @@ import com.visual.backend.logistica.aplicacion.dto.VistaReserva;
 import com.visual.backend.logistica.aplicacion.servicio.ServicioReservas;
 import com.visual.backend.logistica.dominio.modelo.ActivoReservable;
 import com.visual.backend.logistica.dominio.modelo.DisponibilidadModelo;
+import com.visual.backend.logistica.dominio.modelo.EquipoSubalquilado;
 import com.visual.backend.logistica.dominio.modelo.Filtros;
 
 import jakarta.validation.Valid;
@@ -55,6 +56,12 @@ public class ControladorReservas {
     @PreAuthorize(ReglasAccesoLogistica.GESTIONAR)
     public List<VistaReserva> reservar(@PathVariable Integer idEvento, @Valid @RequestBody ComandoReserva comando) {
         return reservas.reservar(idEvento, comando);
+    }
+
+    @GetMapping("/subalquileres")
+    @PreAuthorize(ReglasAccesoLogistica.VER)
+    public List<EquipoSubalquilado> subalquileres(@PathVariable Integer idEvento) {
+        return reservas.subalquileres(idEvento);
     }
 
     /** Unidades libres por modelo, para reservar por cantidades. */

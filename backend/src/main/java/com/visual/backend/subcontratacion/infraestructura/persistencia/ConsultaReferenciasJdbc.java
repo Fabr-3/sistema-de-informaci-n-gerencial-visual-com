@@ -38,6 +38,12 @@ public class ConsultaReferenciasJdbc implements ConsultaReferencias {
             where id_servicio_prov = :id and id_proveedor = :idProveedor
             """;
 
+    private static final String MODELO = """
+            select mo.id_modelo, f.nombre || ' ' || mo.nombre as modelo from modelos_activo mo
+            join fabricantes f on f.id_fabricante = mo.id_fabricante
+            where mo.id_modelo = :id and mo.tipo_control = 'UNIDAD'
+            """;
+
     private final NamedParameterJdbcTemplate jdbc;
 
     public ConsultaReferenciasJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -76,5 +82,11 @@ public class ConsultaReferenciasJdbc implements ConsultaReferencias {
         return jdbc.query(SERVICIO, new MapSqlParameterSource().addValue("id", idServicio)
                 .addValue("idProveedor", idProveedor), (fila, numero) -> new ElementoCatalogo(
                 fila.getInt("id_servicio_prov"), fila.getString("descripcion_servicio"))).stream().findFirst();
+    }
+
+    @Override
+    public Optional<ElementoCatalogo> modeloPorUnidad(Integer idModelo) {
+        return jdbc.query(MODELO, new MapSqlParameterSource("id", idModelo), (fila, numero) ->
+                new ElementoCatalogo(fila.getInt("id_modelo"), fila.getString("modelo"))).stream().findFirst();
     }
 }
