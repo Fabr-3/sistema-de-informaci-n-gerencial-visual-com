@@ -1,0 +1,124 @@
+<h2 mat-dialog-title>Reserva automática</h2>
+<mat-dialog-content>
+  <p class="indicacion">
+    Indique cuántas unidades de cada modelo necesita el evento entre
+    {{ datos.plan.ventanaInicio | date: 'dd/MM/yyyy HH:mm' }} y {{ datos.plan.ventanaFin | date: 'dd/MM/yyyy HH:mm' }};
+    el sistema elige las unidades libres.
+  </p>
+  <mat-form-field appearance="outline" class="buscador" subscriptSizing="dynamic">
+    <mat-label>Buscar modelo o categoría</mat-label>
+    <input matInput [value]="texto()" (input)="texto.set($any($event.target).value)" />
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  <div class="lista-modelos">
+  <table class="modelos" aria-label="Cantidades por modelo">
+    <thead>
+      <tr>
+        <th>Modelo</th>
+        <th class="numero">Libres</th>
+        <th class="numero">Cantidad</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (modelo of visibles(); track modelo.idModelo) {
+        <tr [class.fila-faltante]="cantidad(modelo.idModelo) > modelo.disponibles">
+          <td>
+            <strong>{{ modelo.modelo }}</strong>
+            <div class="texto-secundario detalle">{{ modelo.categoria }}</div>
+          </td>
+          <td class="numero">{{ modelo.disponibles }}</td>
+          <td class="numero">
+            <input
+              class="cantidad"
+              type="number"
+              min="0"
+              [max]="maximo"
+              [value]="cantidad(modelo.idModelo) || ''"
+              placeholder="0"
+              (input)="cambiarCantidad(modelo.idModelo, $any($event.target).value)"
+              [attr.aria-label]="'Cantidad de ' + modelo.modelo"
+            />
+          </td>
+        </tr>
+      } @empty {
+        @if (!cargando()) {
+          <tr>
+            <td colspan="3" class="texto-secundario">No hay modelos por unidad con ese criterio.</td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+  </div>
+
+  @if (faltantes().length) {
+    <div class="aviso aviso--alerta faltantes" role="alert">
+      <mat-icon>inventory</mat-icon>
+      <div>
+        <p><strong>No hay suficientes equipos libres en ese periodo:</strong></p>
+        <ul>
+          @for (faltante of faltantes(); track faltante.idModelo) {
+            <li>
+              {{ faltante.modelo }}: pidió {{ faltante.solicitada }}, hay {{ faltante.disponibles }} libres
+              (faltan <strong>{{ faltante.faltante }}</strong>)
+            </li>
+          }
+        </ul>
+        <p>Puede bajar las cantidades, subalquilar lo que falta a un proveedor o cancelar el evento.</p>
+        <div class="opciones">
+          @if (puedeSubalquilar) {
+            <button mat-stroked-button type="button" (click)="subalquilar.set(!subalquilar())">
+              <mat-icon>handshake</mat-icon>{{ subalquilar() ? 'No subalquilar' : 'Subalquilar lo que falta' }}
+            </button>
+          }
+          @if (puedeCancelar) {
+            <button mat-stroked-button type="button" class="peligro" (click)="cancelarEvento()">
+              <mat-icon>event_busy</mat-icon>Cancelar el evento
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (subalquilar()) {
+      <section class="subalquileres" aria-label="Subalquiler de los faltantes">
+        <h3>Subalquiler</h3>
+        <p class="texto-secundario">
+          Se registra como subcontratación con su egreso imputado al proyecto y al evento; los equipos figurarán
+          como subcontratados en el plan.
+        </p>
+        @for (faltante of faltantes(); track faltante.idModelo) {
+          <div class="subalquiler" [formGroup]="grupo(faltante)">
+            <span class="subalquiler__modelo">{{ faltante.faltante }} × {{ faltante.modelo }}</span>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Proveedor</mat-label>
+              <mat-select formControlName="idProveedor">
+                @for (proveedor of proveedoresActivos(); track proveedor.id) {
+                  <mat-option [value]="proveedor.id">{{ proveedor.razonSocial }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Costo (Bs)</mat-label>
+              <input matInput type="number" min="0.01" step="0.01" formControlName="costo" />
+            </mat-form-field>
+          </div>
+        }
+      </section>
+    }
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" mat-dialog-close>Cerrar</button>
+  <button mat-flat-button type="button" [disabled]="!listo()" (click)="confirmar()">
+    @if (faltantes().length && subalquilar()) {
+      Reservar y subalquilar
+    } @else {
+      Reservar{{ totalPedido() ? ' (' + totalPedido() + ')' : '' }}
+    }
+  </button>
+</mat-dialog-actions>

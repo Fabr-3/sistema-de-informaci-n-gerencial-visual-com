@@ -4,7 +4,14 @@ import { Observable } from 'rxjs';
 
 import { parametrosConsulta } from '../../../../compartido/utilidades/parametros-http';
 import { URL_API } from '../../../../nucleo/configuracion/api';
-import { ActivoReservable, FiltroActivosReservables, Reserva } from '../../dominio/modelos/reservas';
+import {
+  ActivoReservable,
+  DisponibilidadModelo,
+  EquipoSubalquilado,
+  FiltroActivosReservables,
+  PedidoModelo,
+  Reserva,
+} from '../../dominio/modelos/reservas';
 import { RepositorioReservas } from '../../dominio/repositorios/repositorio-reservas';
 
 @Injectable()
@@ -24,6 +31,18 @@ export class RepositorioReservasHttp extends RepositorioReservas {
 
   reservar(idEvento: number, idsActivos: readonly number[]): Observable<Reserva[]> {
     return this.http.post<Reserva[]>(`${this.url}/${idEvento}/reservas`, { idsActivos });
+  }
+
+  disponibilidadPorModelo(idEvento: number): Observable<DisponibilidadModelo[]> {
+    return this.http.get<DisponibilidadModelo[]>(`${this.url}/${idEvento}/disponibilidad-modelos`);
+  }
+
+  reservarAutomaticamente(idEvento: number, pedidos: readonly PedidoModelo[]): Observable<Reserva[]> {
+    return this.http.post<Reserva[]>(`${this.url}/${idEvento}/reservas/automatica`, { pedidos });
+  }
+
+  subalquileres(idEvento: number): Observable<EquipoSubalquilado[]> {
+    return this.http.get<EquipoSubalquilado[]>(`${this.url}/${idEvento}/subalquileres`);
   }
 
   liberar(idEvento: number, idReserva: number, motivo: string): Observable<Reserva> {

@@ -6,6 +6,8 @@ const subcontratacion = (costo: number, estado: Subcontratacion['estado']): Subc
   id: costo,
   proveedor: { id: 1, nombre: 'Generadores Illimani S.R.L.' },
   servicio: null,
+  modelo: null,
+  cantidad: null,
   proyecto: { id: 2, nombre: 'Concierto aniversario' },
   evento: null,
   descripcion: 'Generador de 60 kVA',

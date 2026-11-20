@@ -1,4 +1,4 @@
-import { DatePipe, formatDate } from '@angular/common';
+import { CurrencyPipe, DatePipe, formatDate } from '@angular/common';
 import { ChangeDetectionStrategy, Component, LOCALE_ID, computed, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -28,8 +28,13 @@ import { GestionPersonal } from '../../../aplicacion/gestion-personal';
 import { GestionPlanificacion } from '../../../aplicacion/gestion-planificacion';
 import { GestionReservas } from '../../../aplicacion/gestion-reservas';
 import { Asignacion, Cruce, Jornada, PlanEvento, TIPOS_JORNADA } from '../../../dominio/modelos/planificacion';
-import { Reserva } from '../../../dominio/modelos/reservas';
+import { EquipoSubalquilado, Reserva } from '../../../dominio/modelos/reservas';
 import { DatosDialogoAsignacion, DatosDialogoJornada, DialogoAsignacion, DialogoJornada } from './dialogos-plan';
+import {
+  DatosDialogoReservaAutomatica,
+  DialogoReservaAutomatica,
+  ResultadoReservaAutomatica,
+} from './dialogo-reserva-automatica';
 import { DatosDialogoReserva, DialogoReservarEquipos } from './dialogo-reservar-equipos';
 
 const LONGITUD_TRANSPORTE = 2000;
@@ -37,11 +42,13 @@ const LONGITUD_MOTIVO_LIBERACION = 255;
 const COLUMNAS_JORNADAS = ['tipo', 'horario', 'descripcion', 'acciones'];
 const COLUMNAS_ASIGNACIONES = ['persona', 'rol', 'horario', 'cruces', 'acciones'];
 const COLUMNAS_RESERVAS = ['codigo', 'modelo', 'categoria', 'salida', 'retorno', 'acciones'];
+const COLUMNAS_SUBALQUILERES = ['modelo', 'proveedor', 'costo'];
 
 /** Plan logistico de un evento: transporte, jornadas de montaje y desmontaje, personal y equipos reservados. */
 @Component({
   selector: 'app-pagina-plan-evento',
   imports: [
+    CurrencyPipe,
     DatePipe,
     EtiquetaPipe,
     RouterLink,
@@ -75,7 +82,9 @@ export class PaginaPlanEvento {
   protected readonly columnasJornadas = COLUMNAS_JORNADAS;
   protected readonly columnasAsignaciones = COLUMNAS_ASIGNACIONES;
   protected readonly columnasReservas = COLUMNAS_RESERVAS;
+  protected readonly columnasSubalquileres = COLUMNAS_SUBALQUILERES;
   protected readonly reservas = signal<Reserva[]>([]);
+  protected readonly subalquileres = signal<EquipoSubalquilado[]>([]);
   protected readonly plan = signal<PlanEvento | null>(null);
   protected readonly cargando = signal(true);
   protected readonly veComercial = this.sesion.tienePermiso(Permisos.COMERCIAL_VER);
@@ -217,6 +226,29 @@ export class PaginaPlanEvento {
       });
   }
 
+  /** Reserva por cantidades; los faltantes se subalquilan o se cancela el evento. */
+  protected reservaAutomatica(plan: PlanEvento): void {
+    this.dialogos
+      .open<DialogoReservaAutomatica, DatosDialogoReservaAutomatica, ResultadoReservaAutomatica>(
+        DialogoReservaAutomatica,
+        { data: { plan }, width: '720px' },
+      )
+      .afterClosed()
+      .pipe(filter((resultado): resultado is ResultadoReservaAutomatica => !!resultado))
+      .subscribe((resultado) => {
+        if (resultado.eventoCancelado) {
+          this.recargar(plan, 'Evento cancelado: sus reservas quedaron liberadas');
+          return;
+        }
+        this.cargarReservas(plan.evento.id);
+        const partes = [`${resultado.reservadas} equipos reservados`];
+        if (resultado.subalquiladas) {
+          partes.push(`${resultado.subalquiladas} subalquileres registrados con su egreso`);
+        }
+        this.notificaciones.exito(partes.join(' y '));
+      });
+  }
+
   protected liberarReserva(plan: PlanEvento, reserva: Reserva): void {
     this.dialogos
       .open<DialogoEntradaTexto, DatosEntradaTexto, string>(DialogoEntradaTexto, {
@@ -248,6 +280,10 @@ export class PaginaPlanEvento {
   private cargarReservas(idEvento: number): void {
     this.reservasEvento.listar(idEvento).subscribe({
       next: (reservas) => this.reservas.set(reservas),
+      error: (error: unknown) => this.notificaciones.error(error),
+    });
+    this.reservasEvento.subalquileres(idEvento).subscribe({
+      next: (subalquileres) => this.subalquileres.set(subalquileres),
       error: (error: unknown) => this.notificaciones.error(error),
     });
   }

@@ -15,6 +15,9 @@ export interface Subcontratacion {
   readonly servicio: ElementoCatalogo | null;
   readonly proyecto: ElementoCatalogo;
   readonly evento: ElementoCatalogo | null;
+  /** Modelo y cantidad de un subalquiler de equipos; nulos en servicios. */
+  readonly modelo: ElementoCatalogo | null;
+  readonly cantidad: number | null;
   readonly descripcion: string;
   readonly costo: number;
   readonly fecha: string;
@@ -31,6 +34,9 @@ export interface DatosSubcontratacion {
   readonly descripcion: string;
   readonly costo: number;
   readonly fecha: string;
+  /** Solo en un subalquiler de equipos (exige el evento). */
+  readonly idModelo?: number;
+  readonly cantidad?: number;
 }
 
 export interface FiltroSubcontrataciones {

@@ -39,7 +39,9 @@
               <th mat-header-cell *matHeaderCellDef>Proveedor</th>
               <td mat-cell *matCellDef="let fila">
                 <strong>{{ fila.proveedor.nombre }}</strong>
-                @if (fila.servicio) {
+                @if (fila.modelo) {
+                  <div class="texto-secundario detalle">Subalquiler: {{ fila.cantidad }} × {{ fila.modelo.nombre }}</div>
+                } @else if (fila.servicio) {
                   <div class="texto-secundario detalle">{{ fila.servicio.nombre }}</div>
                 }
               </td>

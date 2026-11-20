@@ -1,4 +1,10 @@
-import { ActivoReservable, alternarSeleccion, categoriasDe } from './reservas';
+import {
+  ActivoReservable,
+  alternarSeleccion,
+  categoriasDe,
+  faltantesDe,
+  pedidosReservables,
+} from './reservas';
 
 const activo = (id: number, categoria: string): ActivoReservable => ({
   id,
@@ -21,5 +27,24 @@ describe('reservas de equipos', () => {
       'Iluminación',
       'Sonido',
     ]);
+  });
+
+  it('calcula los faltantes y lo que se puede reservar de cada modelo', () => {
+    const disponibilidad = [
+      { idModelo: 1, modelo: 'Robe Pointe', categoria: 'Iluminación', disponibles: 4 },
+      { idModelo: 2, modelo: 'Shure SM58', categoria: 'Audio', disponibles: 0 },
+    ];
+    const pedidos = [
+      { idModelo: 1, cantidad: 6 },
+      { idModelo: 2, cantidad: 2 },
+      { idModelo: 3, cantidad: 1 },
+    ];
+
+    expect(faltantesDe(pedidos, disponibilidad)).toEqual([
+      { idModelo: 1, modelo: 'Robe Pointe', solicitada: 6, disponibles: 4, faltante: 2 },
+      { idModelo: 2, modelo: 'Shure SM58', solicitada: 2, disponibles: 0, faltante: 2 },
+      { idModelo: 3, modelo: '', solicitada: 1, disponibles: 0, faltante: 1 },
+    ]);
+    expect(pedidosReservables(pedidos, disponibilidad)).toEqual([{ idModelo: 1, cantidad: 4 }]);
   });
 });

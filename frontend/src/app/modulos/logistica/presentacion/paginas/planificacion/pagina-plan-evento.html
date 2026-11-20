@@ -176,9 +176,12 @@
     </section>
     <section class="panel">
       <div class="seccion__encabezado">
-        <h2 class="titulo-seccion">Equipos reservados</h2>
+        <h2 class="titulo-seccion">Equipos</h2>
         @if (puedeGestionar()) {
-          <button mat-stroked-button (click)="reservarEquipos(actual)"><mat-icon>inventory_2</mat-icon>Reservar equipos</button>
+          <div class="acciones-seccion">
+            <button mat-flat-button (click)="reservaAutomatica(actual)"><mat-icon>auto_awesome</mat-icon>Reserva automática</button>
+            <button mat-stroked-button (click)="reservarEquipos(actual)"><mat-icon>inventory_2</mat-icon>Elegir por unidad</button>
+          </div>
         }
       </div>
       <div class="tabla-contenedor">
@@ -220,6 +223,30 @@
           </tr>
         </table>
       </div>
+      @if (subalquileres().length) {
+        <h3 class="subtitulo-seccion">Subcontratados (subalquiler)</h3>
+        <div class="tabla-contenedor">
+          <table mat-table [dataSource]="subalquileres()">
+            <ng-container matColumnDef="modelo">
+              <th mat-header-cell *matHeaderCellDef>Modelo</th>
+              <td mat-cell *matCellDef="let equipo">
+                <strong>{{ equipo.cantidad }} × {{ equipo.modelo }}</strong>
+                <span class="estado estado--alerta subcontratado">Subcontratado</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="proveedor">
+              <th mat-header-cell *matHeaderCellDef>Proveedor</th>
+              <td mat-cell *matCellDef="let equipo">{{ equipo.proveedor }}</td>
+            </ng-container>
+            <ng-container matColumnDef="costo">
+              <th mat-header-cell *matHeaderCellDef class="numero">Costo (egreso)</th>
+              <td mat-cell *matCellDef="let equipo" class="numero">{{ equipo.costo | currency: 'BOB' : 'Bs ' }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasSubalquileres"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnasSubalquileres"></tr>
+          </table>
+        </div>
+      }
     </section>
   } @else if (!cargando()) {
     <p class="texto-secundario">No se pudo cargar el plan logístico del evento.</p>

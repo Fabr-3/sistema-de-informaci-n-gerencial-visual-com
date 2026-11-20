@@ -1,0 +1,99 @@
+.buscador {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.modelos {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--vc-texto-secundario);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--vc-borde);
+  }
+
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--vc-borde);
+  }
+
+  .numero {
+    text-align: right;
+    width: 90px;
+  }
+}
+
+.fila-faltante td {
+  background: var(--vc-alerta-suave);
+}
+
+.cantidad {
+  width: 64px;
+  padding: 6px 8px;
+  border: 1px solid var(--vc-borde);
+  border-radius: 6px;
+  font: inherit;
+  text-align: right;
+  background: var(--vc-superficie, transparent);
+  color: inherit;
+}
+
+.faltantes {
+  align-items: flex-start;
+  margin-top: 16px;
+
+  p,
+  ul {
+    margin: 0 0 6px;
+  }
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.peligro {
+  color: var(--vc-rojo);
+}
+
+.subalquileres {
+  margin-top: 16px;
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+.subalquiler {
+  display: grid;
+  grid-template-columns: 1.2fr 1.4fr 0.8fr;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+@media (max-width: 599px) {
+  .subalquiler {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lista-modelos {
+  max-height: 280px;
+  overflow-y: auto;
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--vc-superficie);
+  }
+}

@@ -6,3 +6,23 @@
   margin: 0;
   white-space: pre-line;
 }
+
+.acciones-seccion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.subtitulo-seccion {
+  margin: 16px 16px 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.subcontratado {
+  margin-left: 8px;
+}
+
+.numero {
+  text-align: right;
+}
