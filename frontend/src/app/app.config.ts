@@ -8,7 +8,7 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
+import { MAT_DATE_LOCALE, MAT_NATIVE_DATE_FORMATS, provideNativeDateAdapter } from '@angular/material/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 
@@ -25,6 +25,8 @@ import { proveerSubcontratacion } from './modulos/subcontratacion/infraestructur
 import { EstrategiaTitulo } from './nucleo/configuracion/estrategia-titulo';
 
 const LOCALE = 'es-BO';
+/** Horas en formato de 24 horas (14:30), como en el resto del sistema. */
+const HORA_24: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
 const CLASE_FUENTE_ICONOS = 'material-symbols-outlined';
 
 registerLocaleData(localeEsBo);
@@ -34,7 +36,10 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([interceptorAutenticacion])),
-    provideNativeDateAdapter(),
+    provideNativeDateAdapter({
+      ...MAT_NATIVE_DATE_FORMATS,
+      display: { ...MAT_NATIVE_DATE_FORMATS.display, timeInput: HORA_24, timeOptionLabel: HORA_24 },
+    }),
     proveerAccesos(),
     proveerActivos(),
     proveerComercial(),

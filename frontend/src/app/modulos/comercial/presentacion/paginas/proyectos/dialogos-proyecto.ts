@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
+import { CampoFechaHora } from '../../../../../compartido/componentes/campo-fecha-hora/campo-fecha-hora';
 import { aFechaIso, desdeFechaIso } from '../../../../../compartido/utilidades/fechas';
 import { guardarYCerrar } from '../../../../../compartido/utilidades/guardar-y-cerrar';
 import { ServicioNotificaciones } from '../../../../../nucleo/notificaciones/servicio-notificaciones';
@@ -102,7 +103,15 @@ export interface DatosDialogoEvento {
 /** Alta y edicion de un evento del cronograma del proyecto. */
 @Component({
   selector: 'app-dialogo-evento',
-  imports: [ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [
+    CampoFechaHora,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+  ],
   template: `
     <h2 mat-dialog-title>{{ datos.evento ? 'Editar evento' : 'Programar evento' }}</h2>
     <form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
@@ -122,16 +131,8 @@ export interface DatosDialogoEvento {
             </mat-select>
             <mat-error>Seleccione el lugar</mat-error>
           </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Inicio</mat-label>
-            <input matInput type="datetime-local" formControlName="fechaInicio" />
-            <mat-error>Indique el inicio</mat-error>
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Fin</mat-label>
-            <input matInput type="datetime-local" formControlName="fechaFin" />
-            <mat-error>Indique el fin</mat-error>
-          </mat-form-field>
+          <app-campo-fecha-hora class="completo" formControlName="fechaInicio" etiqueta="Fecha de inicio" mensajeError="Indique la fecha y hora de inicio" />
+          <app-campo-fecha-hora class="completo" formControlName="fechaFin" etiqueta="Fecha de fin" mensajeError="Indique la fecha y hora de fin" />
           @if (formulario.hasError('periodoInvalido')) {
             <p class="completo error-grupo" role="alert">El fin debe ser posterior al inicio</p>
           }

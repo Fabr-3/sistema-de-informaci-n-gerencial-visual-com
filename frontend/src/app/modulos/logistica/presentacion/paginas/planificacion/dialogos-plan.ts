@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { catchError, debounceTime, distinctUntilChanged, filter, map, of, startWith, switchMap } from 'rxjs';
 
+import { CampoFechaHora } from '../../../../../compartido/componentes/campo-fecha-hora/campo-fecha-hora';
 import { guardarYCerrar } from '../../../../../compartido/utilidades/guardar-y-cerrar';
 import { finPosteriorAInicio } from '../../../../../compartido/utilidades/validadores-periodo';
 import { ServicioNotificaciones } from '../../../../../nucleo/notificaciones/servicio-notificaciones';
@@ -40,6 +41,7 @@ export interface DatosDialogoJornada {
 @Component({
   selector: 'app-dialogo-jornada',
   imports: [
+    CampoFechaHora,
     DatePipe,
     KeyValuePipe,
     ReactiveFormsModule,
@@ -66,16 +68,8 @@ export interface DatosDialogoJornada {
               }
             </mat-select>
           </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Inicio</mat-label>
-            <input matInput type="datetime-local" formControlName="inicio" />
-            <mat-error>Indique el inicio</mat-error>
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Fin</mat-label>
-            <input matInput type="datetime-local" formControlName="fin" />
-            <mat-error>Indique el fin</mat-error>
-          </mat-form-field>
+          <app-campo-fecha-hora class="completo" formControlName="inicio" [referencia]="evento.fechaInicio" etiqueta="Fecha de inicio" mensajeError="Indique la fecha y hora de inicio" />
+          <app-campo-fecha-hora class="completo" formControlName="fin" [referencia]="evento.fechaFin" etiqueta="Fecha de fin" mensajeError="Indique la fecha y hora de fin" />
           @if (formulario.hasError('periodoInvalido')) {
             <p class="completo error-grupo" role="alert">El fin debe ser posterior al inicio</p>
           }
@@ -143,6 +137,7 @@ export interface DatosDialogoAsignacion {
 @Component({
   selector: 'app-dialogo-asignacion',
   imports: [
+    CampoFechaHora,
     DatePipe,
     ReactiveFormsModule,
     MatButtonModule,
@@ -168,16 +163,8 @@ export interface DatosDialogoAsignacion {
           }
         </div>
         <div class="formulario">
-          <mat-form-field appearance="outline">
-            <mat-label>Inicio</mat-label>
-            <input matInput type="datetime-local" formControlName="inicio" />
-            <mat-error>Indique el inicio</mat-error>
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Fin</mat-label>
-            <input matInput type="datetime-local" formControlName="fin" />
-            <mat-error>Indique el fin</mat-error>
-          </mat-form-field>
+          <app-campo-fecha-hora class="completo" formControlName="inicio" [referencia]="datos.plan.evento.fechaInicio" etiqueta="Fecha de inicio" mensajeError="Indique la fecha y hora de inicio" />
+          <app-campo-fecha-hora class="completo" formControlName="fin" [referencia]="datos.plan.evento.fechaFin" etiqueta="Fecha de fin" mensajeError="Indique la fecha y hora de fin" />
           @if (formulario.hasError('periodoInvalido')) {
             <p class="completo error-grupo" role="alert">El fin debe ser posterior al inicio</p>
           }
