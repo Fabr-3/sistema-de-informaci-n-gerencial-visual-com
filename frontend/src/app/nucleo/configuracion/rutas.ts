@@ -1,6 +1,7 @@
 /** Rutas de navegacion de la aplicacion (sin barra inicial, como las usa el Router). */
 export const Rutas = {
   INICIO: '',
+  CALCULADORA_LED: 'calculadora-led',
   INICIO_SESION: 'inicio-sesion',
   CAMBIO_CONTRASENA: 'cambio-contrasena',
   ACCESOS: 'accesos',

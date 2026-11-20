@@ -1,0 +1,109 @@
+<div class="pagina">
+  <header class="pagina__encabezado">
+    <div>
+      <h1>Calculadora LED</h1>
+      <p>Consulta rápida para cotizar una pantalla: resolución, módulos y costo de alquiler. No se guarda nada.</p>
+    </div>
+  </header>
+
+  <div class="calculadora">
+    <section class="panel datos" [formGroup]="formulario" aria-label="Datos de la pantalla">
+      <h2 class="titulo-seccion">Pantalla</h2>
+      <mat-button-toggle-group formControlName="modo" aria-label="Cómo indicar el tamaño" class="modo">
+        <mat-button-toggle value="dimensiones">Ancho y alto</mat-button-toggle>
+        <mat-button-toggle value="area">Metros cuadrados</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <div class="formulario">
+        @if (modo() === 'dimensiones') {
+          <mat-form-field appearance="outline">
+            <mat-label>Ancho (m)</mat-label>
+            <input matInput type="number" min="0.01" step="0.1" formControlName="ancho" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Alto (m)</mat-label>
+            <input matInput type="number" min="0.01" step="0.1" formControlName="alto" />
+          </mat-form-field>
+        } @else {
+          <mat-form-field appearance="outline" class="completo">
+            <mat-label>Superficie (m²)</mat-label>
+            <input matInput type="number" min="0.01" step="0.5" formControlName="area" />
+            <mat-hint>Se supone una pantalla panorámica 16:9 para estimar el ancho y el alto.</mat-hint>
+          </mat-form-field>
+        }
+        <mat-form-field appearance="outline">
+          <mat-label>Pixel pitch (mm)</mat-label>
+          <input matInput type="number" min="0.1" step="0.1" formControlName="pitchMm" />
+          <mat-hint>Menor pitch, más resolución</mat-hint>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Módulo o gabinete</mat-label>
+          <mat-select formControlName="modulo">
+            @for (modulo of modulosHabituales; track modulo.etiqueta; let indice = $index) {
+              <mat-option [value]="indice">{{ modulo.etiqueta }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-chip-set class="completo atajos" aria-label="Pitch habituales">
+          @for (pitch of pitches; track pitch) {
+            <mat-chip (click)="elegirPitch(pitch)">P{{ pitch }}</mat-chip>
+          }
+        </mat-chip-set>
+      </div>
+
+      <h2 class="titulo-seccion">Alquiler</h2>
+      <div class="formulario">
+        <mat-form-field appearance="outline">
+          <mat-label>Precio por m² por día (Bs)</mat-label>
+          <input matInput type="number" min="0" step="10" formControlName="precioM2Dia" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Días</mat-label>
+          <input matInput type="number" min="1" step="1" formControlName="dias" />
+        </mat-form-field>
+      </div>
+    </section>
+
+    <section class="panel resultados" aria-live="polite" aria-label="Resultado">
+      <h2 class="titulo-seccion">Resultado</h2>
+      @if (resultado(); as calculo) {
+        <div class="cifra cifra--destacada">
+          <span class="texto-secundario">Costo total</span>
+          <strong>{{ calculo.costoTotal | currency: 'BOB' : 'Bs ' }}</strong>
+          <span class="texto-secundario">{{ calculo.costoPorDia | currency: 'BOB' : 'Bs ' }} por día</span>
+        </div>
+        <dl class="datos-resultado">
+          <dt>Superficie armada</dt>
+          <dd>
+            {{ calculo.areaArmada | number: '1.0-2' }} m²
+            <span class="texto-secundario">({{ calculo.anchoArmado | number: '1.0-2' }} × {{ calculo.altoArmado | number: '1.0-2' }} m)</span>
+          </dd>
+          <dt>Módulos</dt>
+          <dd>{{ calculo.modulos }} <span class="texto-secundario">({{ calculo.columnas }} columnas × {{ calculo.filas }} filas)</span></dd>
+          <dt>Resolución</dt>
+          <dd>
+            {{ calculo.pixelesAncho | number }} × {{ calculo.pixelesAlto | number }} px
+            <span class="texto-secundario">({{ calculo.pixelesTotales | number }} píxeles)</span>
+          </dd>
+          <dt>Distancia mínima de visión</dt>
+          <dd>≈ {{ calculo.distanciaMinimaVision | number: '1.0-1' }} m</dd>
+          @if (modo() === 'area') {
+            <dt>Medidas estimadas</dt>
+            <dd>{{ calculo.anchoPedido | number: '1.0-2' }} × {{ calculo.altoPedido | number: '1.0-2' }} m (16:9)</dd>
+          }
+        </dl>
+        @if (calculo.areaArmada > calculo.areaPedida + 0.001) {
+          <p class="nota">
+            <mat-icon>info</mat-icon>
+            La pantalla se arma con módulos completos, por eso la superficie armada es mayor a la pedida
+            ({{ calculo.areaPedida | number: '1.0-2' }} m²). El costo se calcula sobre la superficie armada.
+          </p>
+        }
+      } @else {
+        <p class="texto-secundario vacio-resultado">
+          Indique el tamaño de la pantalla, el pixel pitch y los días para ver el cálculo.
+        </p>
+      }
+    </section>
+  </div>
+</div>

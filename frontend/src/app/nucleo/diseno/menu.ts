@@ -214,6 +214,10 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
       },
     ],
   },
+  {
+    titulo: 'Herramientas',
+    elementos: [{ etiqueta: 'Calculadora LED', icono: 'calculate', ruta: rutaAbsoluta(Rutas.CALCULADORA_LED) }],
+  },
 ];
 
 function elementoPermitido(elemento: ElementoMenu, tienePermiso: (permiso: string) => boolean): boolean {

@@ -43,6 +43,14 @@ export const routes: Routes = [
           import('./modulos/inicio/presentacion/pagina-inicio/pagina-inicio').then((m) => m.PaginaInicio),
       },
       {
+        path: Rutas.CALCULADORA_LED,
+        title: 'Calculadora LED',
+        loadComponent: () =>
+          import('./modulos/herramientas/presentacion/calculadora-led/pagina-calculadora-led').then(
+            (m) => m.PaginaCalculadoraLed,
+          ),
+      },
+      {
         path: Rutas.ACCESOS,
         loadChildren: () => import('./modulos/accesos/presentacion/rutas-accesos').then((m) => m.RUTAS_ACCESOS),
       },
