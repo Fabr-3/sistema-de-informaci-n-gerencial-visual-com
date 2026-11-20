@@ -20,4 +20,8 @@ export class RepositorioResultadosHttp extends RepositorioResultados {
   detalle(idProyecto: number): Observable<DetalleResultadoProyecto> {
     return this.http.get<DetalleResultadoProyecto>(`${this.url}/${idProyecto}`);
   }
+
+  pdfMovimientos(idProyecto: number): Observable<Blob> {
+    return this.http.get(`${this.url}/${idProyecto}/pdf`, { responseType: 'blob' });
+  }
 }

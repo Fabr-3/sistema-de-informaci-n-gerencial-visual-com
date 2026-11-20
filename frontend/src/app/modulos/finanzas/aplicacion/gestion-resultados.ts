@@ -18,4 +18,9 @@ export class GestionResultados {
   detalle(idProyecto: number): Observable<DetalleResultadoProyecto> {
     return this.repositorio.detalle(idProyecto);
   }
+
+  /** PDF con los movimientos registrados del proyecto y sus resultados. */
+  pdfMovimientos(idProyecto: number): Observable<Blob> {
+    return this.repositorio.pdfMovimientos(idProyecto);
+  }
 }

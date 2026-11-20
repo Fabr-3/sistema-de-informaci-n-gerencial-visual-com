@@ -6,4 +6,5 @@ import { DetalleResultadoProyecto, FiltroResultados, ResultadoProyecto } from '.
 export abstract class RepositorioResultados {
   abstract listar(filtro: FiltroResultados, solicitud: SolicitudPagina): Observable<Pagina<ResultadoProyecto>>;
   abstract detalle(idProyecto: number): Observable<DetalleResultadoProyecto>;
+  abstract pdfMovimientos(idProyecto: number): Observable<Blob>;
 }

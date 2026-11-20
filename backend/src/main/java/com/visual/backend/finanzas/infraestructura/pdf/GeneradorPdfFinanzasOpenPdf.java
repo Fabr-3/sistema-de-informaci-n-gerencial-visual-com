@@ -44,6 +44,8 @@ public class GeneradorPdfFinanzasOpenPdf implements GeneradorPdfFinanzas {
     private static final float[] ANCHOS_TIPOS = {4f, 1.6f, 1.6f};
     private static final float[] ANCHOS_EVENTOS = {3.4f, 1.6f, 1.6f, 1.6f, 1.6f, 1.1f};
     private static final String SIN_DATO = "—";
+    private static final Map<String, String> ESTADOS_PROYECTO = Map.of("PLANIFICACION", "En planificación",
+            "EN_EJECUCION", "En ejecución", "FINALIZADO", "Finalizado", "CANCELADO", "Cancelado");
 
     private final PropiedadesEmpresa empresa;
 
@@ -77,7 +79,7 @@ public class GeneradorPdfFinanzasOpenPdf implements GeneradorPdfFinanzas {
         Map<String, String> datos = new LinkedHashMap<>();
         datos.put("Proyecto", proyecto.proyecto());
         datos.put("Cliente", proyecto.cliente());
-        datos.put("Estado", proyecto.estado());
+        datos.put("Estado", ESTADOS_PROYECTO.getOrDefault(proyecto.estado(), proyecto.estado()));
         datos.put("Generado", FECHA_HORA.format(generado));
         return datos;
     }

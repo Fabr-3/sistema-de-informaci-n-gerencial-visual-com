@@ -14,9 +14,14 @@
         </h1>
         <p>{{ proyecto.cliente }}</p>
       </div>
-      <a mat-stroked-button [routerLink]="rutaMovimientos" [queryParams]="{ idProyecto: proyecto.idProyecto }">
-        <mat-icon>receipt_long</mat-icon>Ver movimientos
-      </a>
+      <div class="acciones-encabezado">
+        <a mat-stroked-button [routerLink]="rutaMovimientos" [queryParams]="{ idProyecto: proyecto.idProyecto }">
+          <mat-icon>receipt_long</mat-icon>Ver movimientos
+        </a>
+        <button mat-flat-button [disabled]="descargando()" (click)="descargarPdf(proyecto.idProyecto)">
+          <mat-icon>picture_as_pdf</mat-icon>Descargar PDF
+        </button>
+      </div>
     </header>
 
     <div class="cifras">

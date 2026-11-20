@@ -1,14 +1,15 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, finalize, of, switchMap } from 'rxjs';
 
 import { EtiquetaPipe } from '../../../../../compartido/pipes/etiqueta.pipe';
+import { descargarArchivo } from '../../../../../compartido/utilidades/archivos';
 import { Rutas, rutaAbsoluta } from '../../../../../nucleo/configuracion/rutas';
 import { ServicioNotificaciones } from '../../../../../nucleo/notificaciones/servicio-notificaciones';
 import { ESTADOS_PROYECTO, tipoVisualProyecto } from '../../../../comercial/dominio/modelos/proyecto';
@@ -50,6 +51,7 @@ export class DetalleResultado {
   protected readonly tipoVisualProyecto = tipoVisualProyecto;
   protected readonly tipoVisualMargen = tipoVisualMargen;
   protected readonly textoPorcentaje = textoPorcentaje;
+  protected readonly descargando = signal(false);
 
   /** undefined mientras carga; null si fallo. */
   protected readonly detalle = toSignal<DetalleResultadoProyecto | null>(
@@ -64,4 +66,15 @@ export class DetalleResultado {
       ),
     ),
   );
+
+  protected descargarPdf(idProyecto: number): void {
+    this.descargando.set(true);
+    this.gestion
+      .pdfMovimientos(idProyecto)
+      .pipe(finalize(() => this.descargando.set(false)))
+      .subscribe({
+        next: (contenido) => descargarArchivo(contenido, `movimientos-proyecto-${idProyecto}.pdf`),
+        error: (error: unknown) => this.notificaciones.error(error),
+      });
+  }
 }
