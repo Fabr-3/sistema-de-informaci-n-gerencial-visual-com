@@ -3,8 +3,11 @@ package com.visual.backend.finanzas.infraestructura;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -91,6 +94,19 @@ class FlujoResultadosIntegracionTest {
                 .param("hasta", hoy.minusDays(1).toString()))).andExpect(status().isUnprocessableContent());
         mvc.perform(autorizado(get(RESULTADOS).param("orden", "costos; drop table proyectos")))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void generaElPdfDeLosMovimientosDelProyecto() throws Exception {
+        byte[] pdf = mvc.perform(autorizado(get(RESULTADOS + "/{id}/pdf", idGrande)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"movimientos-proyecto-" + idGrande + ".pdf\""))
+                .andReturn().getResponse().getContentAsByteArray();
+
+        assertThat(new String(pdf, 0, 4, StandardCharsets.US_ASCII)).isEqualTo("%PDF");
+        mvc.perform(autorizado(get(RESULTADOS + "/{id}/pdf", Integer.MAX_VALUE))).andExpect(status().isNotFound());
     }
 
     private List<Integer> ids(String orden) throws Exception {

@@ -3,6 +3,10 @@ package com.visual.backend.finanzas.infraestructura.web;
 import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.visual.backend.comercial.dominio.modelo.EstadoProyecto;
 import com.visual.backend.compartido.dominio.Pagina;
 import com.visual.backend.compartido.dominio.SolicitudPagina;
+import com.visual.backend.finanzas.aplicacion.dto.ArchivoPdf;
 import com.visual.backend.finanzas.aplicacion.servicio.ServicioResultados;
 import com.visual.backend.finanzas.dominio.modelo.DetalleResultadoProyecto;
 import com.visual.backend.finanzas.dominio.modelo.Filtros;
@@ -50,5 +55,17 @@ public class ControladorResultados {
     @PreAuthorize(ReglasAccesoFinanzas.VER)
     public DetalleResultadoProyecto detalle(@PathVariable Integer id) {
         return servicio.detalleProyecto(id);
+    }
+
+    /** PDF de los movimientos economicos del proyecto. */
+    @GetMapping("/{id}/pdf")
+    @PreAuthorize(ReglasAccesoFinanzas.VER)
+    public ResponseEntity<byte[]> pdf(@PathVariable Integer id) {
+        ArchivoPdf archivo = servicio.pdfMovimientosProyecto(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename(archivo.nombreArchivo()).build().toString())
+                .body(archivo.contenido());
     }
 }
