@@ -9,7 +9,7 @@ Sistema de información gerencial para **Visual Com S.R.L.** (La Paz, Bolivia), 
 | Comercial y planificación de proyectos (clientes, cotizaciones, proyectos, eventos, contratos y cronograma) | ✅ Implementado |
 | Logística (personal técnico, jornadas de montaje y desmontaje, asignación de personal y reserva de equipos) | ✅ Implementado |
 | Financiero (ingresos y egresos, ventas, proveedores, márgenes por proyecto y evento, indicadores del gerente) | ✅ Implementado |
-| Información gerencial (KPIs, alertas con seguimiento de atención y reportes operativos en PDF) | ✅ Implementado |
+| Información gerencial (tablero del gerente al ingresar, KPIs, alertas con avisos al ingresar y seguimiento de atención, reportes operativos en PDF) | ✅ Implementado |
 | Subcontratación y consumibles (subcontrataciones con su egreso, catálogo y stock de consumibles, consumos por proyecto y evento) | ✅ Implementado |
 
 ## Tecnologías
@@ -135,6 +135,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V13`: historial de los módulos LED (`historial_modulos_led`: alta, cambio de estado, reemplazo y reasignación, con pantallas de origen y destino, estados, módulo relacionado y motivo) y carga del alta de los módulos existentes en su pantalla actual.
   - `V14`: subcontratación y consumibles. Tablas `subcontrataciones` (con su egreso `id_movimiento`; triggers que exigen que el evento sea del proyecto y el servicio del proveedor), `consumibles`, `movimientos_consumible` y `consumos_proyecto` (con el costo unitario copiado). El tipo *Subcontratación de servicios* pasa a ser de sistema (`codigo_sistema = 'SUBCONTRATACION'`).
   - `V15`: alertas persistentes (`alertas`: tipo, severidad, activo y evento opcionales, `clave` de la situación, detalle, estado `PENDIENTE`, `ATENDIDA` o `RESUELTA` y datos de la atención); índice único parcial por tipo y clave entre las no resueltas.
+  - `V16`: el gerente recibe `COMERCIAL_GESTIONAR` para realizar todo el flujo comercial.
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -186,10 +187,11 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 - **Proyectos:** pasan de *Planificación* a *En ejecución* y de ahí a *Finalizado*; en cualquiera de los dos primeros estados se pueden cancelar. Solo un proyecto vigente (planificación o ejecución) admite eventos y contratos, y su periodo no puede cambiar si deja eventos programados fuera.
 - **Eventos:** se programan en un lugar y dentro del periodo del proyecto (también validado por la base de datos). Un evento se marca *Ejecutado* solo después de haber comenzado; también puede cancelarse.
 - **Contratos:** se numeran por año (`CTR-2026-0001`), su fecha de firma no puede ser futura y se generan en PDF a partir de la plantilla `backend/src/main/resources/plantillas/contrato-servicios.txt`. A cada contrato se le puede adjuntar la copia firmada escaneada (solo PDF, hasta 10 MB; se verifica el contenido del archivo). La copia se guarda en `CONTRATOS_DIRECTORIO` con el número del contrato y una nueva reemplaza a la anterior.
+- **Flujo de trabajo:** el gerente encadena las pantallas: en la cotización busca o registra al cliente (sin salir del formulario); al aceptarla pasa al proyecto generado, que muestra su avance (cotización aceptada, contrato, eventos programados y eventos ejecutados) y lleva al plan logístico de cada evento (jornadas, personal y equipos) y al cronograma. El plan logístico vuelve al proyecto y al cronograma.
 - **Cronograma:** muestra los eventos de todos los proyectos por mes, semana o día, con colores por estado. Al seleccionar un evento se abre su proyecto.
 - **Permisos:**
   - `COMERCIAL_VER` (gerente): consultar clientes, cotizaciones, proyectos y cronograma.
-  - `COMERCIAL_GESTIONAR` (administrador): registrar clientes, catálogos, cotizaciones, proyectos, eventos y contratos.
+  - `COMERCIAL_GESTIONAR` (administrador y gerente, desde `V16`): registrar clientes, catálogos, cotizaciones, proyectos, eventos y contratos.
   - `COTIZACIONES_APROBAR` (gerente): aceptar o rechazar cotizaciones.
 
 ## Reglas del módulo de logística
@@ -237,6 +239,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 - **Alertas** (se calculan sobre la situación actual): equipo reservado para un evento próximo que está en mantenimiento (reserva en riesgo, crítica); mantenimiento preventivo vencido (crítica) o próximo según horas de uso; mantenimiento en proceso desde hace 7 días o más; módulos LED defectuosos; 3 o más correctivos en los últimos 12 meses (fallas recurrentes); equipos disponibles sin uso en los últimos 90 días (informativa); y consumibles activos con el stock en su mínimo o por debajo. Los umbrales se configuran en `app.gerencial`.
 - **Seguimiento de alertas:** cada vez que se consultan, y cada 30 minutos (`app.gerencial.cron-sincronizacion-alertas`), las alertas calculadas se sincronizan con las registradas: una situación nueva se registra como *Pendiente*, una que ya no se presenta pasa a *Resuelta* y una *Atendida* no se reabre mientras la situación siga presente (su detalle se actualiza). La situación se identifica por su tipo y su clave (el activo, el mantenimiento, la reserva o el consumible). Solo una alerta pendiente se marca como atendida, con un comentario que queda en la auditoría; el listado filtra por estado (por defecto, pendientes), tipo y severidad. El tablero y los reportes cuentan solo las pendientes.
 - **Reportes operativos en PDF:** resumen gerencial, eventos del periodo, estado de activos e inventario (situación actual), mantenimientos de equipos con su costo y utilización del personal técnico. Cada emisión queda en la auditoría.
+- **Ingreso:** el gerente entra directamente a su tablero de KPIs. Quien ve reportes recibe al ingresar un aviso temporal con sus alertas pendientes, y el técnico o sub-contratado, con sus asignaciones de las próximas 48 horas o con cruce de horario; el inicio del técnico resume sus asignaciones pendientes. El aviso se muestra una vez por sesión del navegador.
 - **Permisos:** `REPORTES_VER` (administrador y gerente) para el tablero, las alertas y los reportes.
 
 ## Reglas del módulo de subcontratación y consumibles
