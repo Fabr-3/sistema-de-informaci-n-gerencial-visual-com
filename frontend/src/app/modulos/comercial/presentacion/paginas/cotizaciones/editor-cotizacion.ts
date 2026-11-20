@@ -11,8 +11,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
-import { Observable, filter, map, of, switchMap } from 'rxjs';
+import { Observable, filter, forkJoin, map, of, switchMap } from 'rxjs';
 
 import {
   DatosConfirmacion,
@@ -34,7 +35,7 @@ import { Permisos } from '../../../../accesos/dominio/modelos/permisos';
 import { GestionComercial } from '../../../aplicacion/gestion-comercial';
 import { GestionCotizaciones } from '../../../aplicacion/gestion-cotizaciones';
 import { Servicio } from '../../../dominio/modelos/catalogos';
-import { ResumenCliente } from '../../../dominio/modelos/cliente';
+import { Cliente, ResumenCliente } from '../../../dominio/modelos/cliente';
 import {
   Cotizacion,
   DatosLinea,
@@ -44,6 +45,7 @@ import {
   tipoVisualCotizacion,
   totalCotizacion,
 } from '../../../dominio/modelos/cotizacion';
+import { DatosDialogoCliente, DialogoCliente } from '../clientes/dialogo-cliente';
 
 /** Sugerencias del buscador de clientes. */
 const CLIENTES_SUGERIDOS = 10;
@@ -74,6 +76,7 @@ const CANTIDAD_MAXIMA = 100_000;
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,
+    MatTooltipModule,
   ],
   templateUrl: './editor-cotizacion.html',
   styleUrl: './editor-cotizacion.scss',
@@ -214,6 +217,30 @@ export class EditorCotizacion {
     );
   }
 
+  /** Registra un cliente sin salir de la cotizacion y lo deja elegido. */
+  protected nuevoCliente(): void {
+    forkJoin({
+      tiposCliente: this.comercial.listarTiposCliente(),
+      tiposDocumento: this.comercial.listarTiposDocumento(),
+      tiposContacto: this.comercial.listarTiposContacto(),
+    })
+      .pipe(
+        switchMap((catalogos) =>
+          this.dialogos
+            .open<DialogoCliente, DatosDialogoCliente, Cliente>(DialogoCliente, { data: catalogos, width: '720px' })
+            .afterClosed(),
+        ),
+        filter((cliente): cliente is Cliente => !!cliente),
+      )
+      .subscribe({
+        next: (cliente) => {
+          this.formulario.controls.cliente.setValue({ id: cliente.id, razonSocial: cliente.razonSocial });
+          this.notificaciones.exito(`Cliente ${cliente.razonSocial} registrado`);
+        },
+        error: (error: unknown) => this.notificaciones.error(error),
+      });
+  }
+
   protected aceptar(cotizacion: Cotizacion): void {
     this.confirmar({
       titulo: 'Aceptar cotización',
@@ -223,8 +250,12 @@ export class EditorCotizacion {
       .pipe(switchMap(() => this.gestion.aceptar(cotizacion.id)))
       .subscribe({
         next: (aceptada) => {
-          this.cargar(aceptada);
-          this.notificaciones.exito('Cotización aceptada: proyecto generado');
+          this.notificaciones.exito('Cotización aceptada: continúe con el contrato y los eventos del proyecto');
+          if (aceptada.idProyecto) {
+            void this.router.navigateByUrl(this.rutaProyecto(aceptada.idProyecto));
+          } else {
+            this.cargar(aceptada);
+          }
         },
         error: (error: unknown) => this.notificaciones.error(error),
       });

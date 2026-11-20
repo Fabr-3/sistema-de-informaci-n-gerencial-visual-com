@@ -2,8 +2,10 @@ import { etiquetaLugar } from './catalogos';
 import { Cliente, ResumenComercialCliente, documentoPrincipal, tasaConversion } from './cliente';
 import { subtotalLinea, tipoVisualCotizacion, totalCotizacion } from './cotizacion';
 import {
+  DetalleProyecto,
   TAMANO_MAXIMO_FIRMADO,
   TRANSICIONES_PROYECTO,
+  pasosProyecto,
   problemaArchivoFirmado,
   proyectoVigente,
   tipoVisualEvento,
@@ -71,5 +73,24 @@ describe('resumen comercial del cliente', () => {
     expect(tasaConversion(resumen(8000, 4000))).toBe(50);
     expect(tasaConversion(resumen(3000, 1000))).toBe(33.3);
     expect(tasaConversion(resumen(0, 0))).toBeNull();
+  });
+});
+
+describe('avance del proyecto', () => {
+  const detalle = (contratos: number, estados: string[]): DetalleProyecto =>
+    ({
+      contratos: Array.from({ length: contratos }, () => ({})),
+      eventos: estados.map((estado) => ({ estado })),
+    }) as unknown as DetalleProyecto;
+
+  it('marca los pasos cumplidos del flujo comercial', () => {
+    expect(pasosProyecto(detalle(0, [])).map((paso) => paso.completo)).toEqual([true, false, false, false]);
+    expect(pasosProyecto(detalle(1, ['PROGRAMADO', 'CANCELADO'])).map((paso) => paso.completo)).toEqual([
+      true,
+      true,
+      true,
+      false,
+    ]);
+    expect(pasosProyecto(detalle(1, ['EJECUTADO', 'CANCELADO'])).every((paso) => paso.completo)).toBe(true);
   });
 });

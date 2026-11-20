@@ -33,7 +33,7 @@ import {
 } from '../../../dominio/modelos/cotizacion';
 
 const RETARDO_BUSQUEDA_MS = 300;
-const COLUMNAS = ['numero', 'cliente', 'titulo', 'emision', 'validez', 'importe', 'estado'];
+const COLUMNAS = ['numero', 'cliente', 'titulo', 'emision', 'validez', 'importe', 'estado', 'abrir'];
 
 interface CriteriosCotizaciones {
   readonly filtro: FiltroCotizaciones;

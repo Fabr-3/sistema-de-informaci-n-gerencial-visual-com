@@ -15,6 +15,12 @@
         </h1>
         <p>{{ evento.cliente }} · {{ evento.proyecto }}</p>
       </div>
+      <div class="acciones-encabezado">
+        @if (veComercial) {
+          <a mat-stroked-button [routerLink]="rutaProyecto(evento.idProyecto)"><mat-icon>work</mat-icon>Ver proyecto</a>
+          <a mat-stroked-button [routerLink]="rutaCronograma"><mat-icon>calendar_month</mat-icon>Cronograma</a>
+        }
+      </div>
     </header>
 
     @if (!actual.editable) {

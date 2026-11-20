@@ -68,6 +68,7 @@ export class PaginaPlanEvento {
   private readonly locale = inject(LOCALE_ID);
 
   protected readonly rutaListado = rutaAbsoluta(Rutas.LOGISTICA, Rutas.PLANIFICACION);
+  protected readonly rutaCronograma = rutaAbsoluta(Rutas.COMERCIAL, Rutas.CRONOGRAMA);
   protected readonly tiposJornada = TIPOS_JORNADA;
   protected readonly estadosEvento = ESTADOS_EVENTO;
   protected readonly tipoVisualEvento = tipoVisualEvento;
@@ -77,6 +78,7 @@ export class PaginaPlanEvento {
   protected readonly reservas = signal<Reserva[]>([]);
   protected readonly plan = signal<PlanEvento | null>(null);
   protected readonly cargando = signal(true);
+  protected readonly veComercial = this.sesion.tienePermiso(Permisos.COMERCIAL_VER);
   protected readonly puedeGestionar = computed(
     () => this.sesion.tienePermiso(Permisos.LOGISTICA_GESTIONAR) && !!this.plan()?.editable,
   );
@@ -101,6 +103,10 @@ export class PaginaPlanEvento {
           this.cargarReservas(plan.evento.id);
         }
       });
+  }
+
+  protected rutaProyecto(idProyecto: number): string {
+    return rutaAbsoluta(Rutas.COMERCIAL, Rutas.PROYECTOS, String(idProyecto));
   }
 
   protected textoCruces(cruces: readonly Cruce[]): string {

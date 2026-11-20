@@ -30,7 +30,7 @@ import {
 } from '../../../dominio/modelos/proyecto';
 
 const RETARDO_BUSQUEDA_MS = 300;
-const COLUMNAS = ['nombre', 'cliente', 'cotizacion', 'periodo', 'estado'];
+const COLUMNAS = ['nombre', 'cliente', 'cotizacion', 'periodo', 'estado', 'abrir'];
 
 interface CriteriosProyectos {
   readonly filtro: FiltroProyectos;

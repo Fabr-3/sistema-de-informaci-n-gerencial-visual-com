@@ -67,6 +67,11 @@
               }
             </mat-autocomplete>
             <mat-error>Seleccione un cliente de la lista</mat-error>
+            <button mat-icon-button matSuffix type="button" (click)="nuevoCliente()" matTooltip="Registrar un cliente nuevo"
+                    aria-label="Registrar un cliente nuevo">
+              <mat-icon>person_add</mat-icon>
+            </button>
+            <mat-hint>¿No está en la lista? Regístrelo con el botón de la derecha</mat-hint>
           </mat-form-field>
           <mat-form-field appearance="outline" class="doble">
             <mat-label>Título</mat-label>

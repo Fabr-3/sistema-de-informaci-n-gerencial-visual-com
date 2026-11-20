@@ -147,3 +147,23 @@ export interface FiltroProyectos {
   readonly estado?: EstadoProyecto;
   readonly idCliente?: number;
 }
+
+/** Paso del flujo comercial de un proyecto, de la cotizacion a la ejecucion. */
+export interface PasoProyecto {
+  readonly etiqueta: string;
+  readonly completo: boolean;
+}
+
+/** Avance del proyecto: cotizacion aceptada, contrato, eventos programados y eventos ejecutados. */
+export function pasosProyecto(detalle: DetalleProyecto): PasoProyecto[] {
+  const vigentes = detalle.eventos.filter((evento) => evento.estado !== 'CANCELADO');
+  return [
+    { etiqueta: 'Cotización aceptada', completo: true },
+    { etiqueta: 'Contrato registrado', completo: detalle.contratos.length > 0 },
+    { etiqueta: 'Eventos programados', completo: vigentes.length > 0 },
+    {
+      etiqueta: 'Eventos ejecutados',
+      completo: vigentes.length > 0 && vigentes.every((evento) => evento.estado === 'EJECUTADO'),
+    },
+  ];
+}

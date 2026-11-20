@@ -265,10 +265,27 @@ a {
 
 .fila-navegable {
   cursor: pointer;
+  transition: background-color 120ms ease;
 
   &:hover,
   &:focus-visible {
-    background: var(--vc-fondo);
+    background: var(--vc-rojo-suave);
+
+    .celda-abrir mat-icon {
+      color: var(--vc-rojo);
+      transform: translateX(2px);
+    }
+  }
+}
+
+.celda-abrir {
+  width: 40px;
+  text-align: right;
+
+  mat-icon {
+    color: var(--vc-texto-secundario);
+    vertical-align: middle;
+    transition: transform 120ms ease;
   }
 }
 

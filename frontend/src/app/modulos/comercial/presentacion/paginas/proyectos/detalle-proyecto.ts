@@ -34,6 +34,7 @@ import {
   Evento,
   Proyecto,
   TRANSICIONES_PROYECTO,
+  pasosProyecto,
   problemaArchivoFirmado,
   proyectoVigente,
   tipoVisualEvento,
@@ -92,6 +93,8 @@ export class PaginaDetalleProyecto {
   protected readonly etiquetaLugar = etiquetaLugar;
   protected readonly columnasEventos = ['nombre', 'lugar', 'horario', 'estado', 'acciones'];
   protected readonly rutaListado = rutaAbsoluta(Rutas.COMERCIAL, Rutas.PROYECTOS);
+  protected readonly rutaCronograma = rutaAbsoluta(Rutas.COMERCIAL, Rutas.CRONOGRAMA);
+  protected readonly veLogistica = this.sesion.tienePermiso(Permisos.LOGISTICA_VER);
   protected readonly detalle = signal<DetalleProyecto | null>(null);
   protected readonly noEncontrado = signal(false);
   private readonly version = signal(0);
@@ -100,6 +103,10 @@ export class PaginaDetalleProyecto {
   protected readonly vigente = computed(() => {
     const actual = this.detalle();
     return !!actual && proyectoVigente(actual.proyecto.estado);
+  });
+  protected readonly pasos = computed(() => {
+    const actual = this.detalle();
+    return actual ? pasosProyecto(actual) : [];
   });
   protected readonly transiciones = computed<readonly EstadoProyecto[]>(() => {
     const actual = this.detalle();
@@ -121,6 +128,10 @@ export class PaginaDetalleProyecto {
         takeUntilDestroyed(),
       )
       .subscribe((detalle) => this.detalle.set(detalle));
+  }
+
+  protected rutaPlanEvento(idEvento: number): string {
+    return rutaAbsoluta(Rutas.LOGISTICA, Rutas.PLANIFICACION, String(idEvento));
   }
 
   protected rutaCotizacion(idCotizacion: number): string {
