@@ -10,13 +10,17 @@ import org.junit.jupiter.api.Test;
 
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 import com.visual.backend.logistica.dominio.modelo.ActivoReservable;
+import com.visual.backend.logistica.dominio.modelo.DisponibilidadModelo;
 import com.visual.backend.logistica.dominio.modelo.EstadoEventoLogistico;
 import com.visual.backend.logistica.dominio.modelo.EstadoReserva;
 import com.visual.backend.logistica.dominio.modelo.EventoLogistico;
+import com.visual.backend.logistica.dominio.modelo.FaltanteModelo;
 import com.visual.backend.logistica.dominio.modelo.Jornada;
+import com.visual.backend.logistica.dominio.modelo.PedidoModelo;
 import com.visual.backend.logistica.dominio.modelo.Periodo;
 import com.visual.backend.logistica.dominio.modelo.PeriodoReserva;
 import com.visual.backend.logistica.dominio.modelo.ReservaActivo;
+import com.visual.backend.logistica.dominio.modelo.ReservaAutomatica;
 import com.visual.backend.logistica.dominio.modelo.TipoJornada;
 
 class ReglasReservasTest {
@@ -103,5 +107,22 @@ class ReglasReservasTest {
         assertThat(reserva.getFechaLiberacion()).isEqualTo(AHORA);
         assertThatThrownBy(() -> reserva.reprogramar(new PeriodoReserva(INICIO_EVENTO, FIN_EVENTO.plusHours(1)),
                 ACTOR, AHORA)).isInstanceOf(ReglaNegocioExcepcion.class);
+    }
+
+    @Test
+    void laReservaAutomaticaInformaSoloLosModelosQueNoAlcanzan() {
+        List<PedidoModelo> pedidos = List.of(new PedidoModelo(1, 4), new PedidoModelo(2, 2), new PedidoModelo(3, 1));
+        List<DisponibilidadModelo> libres = List.of(new DisponibilidadModelo(1, "Novastar VX1000", "Video", 4),
+                new DisponibilidadModelo(2, "Shure SM58", "Audio", 1));
+
+        List<FaltanteModelo> faltantes = ReservaAutomatica.faltantes(pedidos, libres, id -> "Modelo " + id);
+
+        assertThat(faltantes).extracting(FaltanteModelo::modelo, FaltanteModelo::faltante)
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("Shure SM58", 1),
+                        org.assertj.core.groups.Tuple.tuple("Modelo 3", 1));
+        assertThatThrownBy(() -> ReservaAutomatica.validar(List.of(new PedidoModelo(1, 0))))
+                .isInstanceOf(ReglaNegocioExcepcion.class);
+        assertThatThrownBy(() -> ReservaAutomatica.validar(List.of(new PedidoModelo(1, 1), new PedidoModelo(1, 2))))
+                .hasMessageContaining("una sola vez");
     }
 }

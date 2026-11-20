@@ -103,6 +103,42 @@ class FlujoReservasIntegracionTest {
     }
 
     @Test
+    void laReservaAutomaticaEligeUnidadesLibresOInformaLosFaltantes() throws Exception {
+        int idModelo = jdbc.queryForObject("select id_modelo from activos where id_activo = ?", Integer.class,
+                idPantalla);
+        String ruta = RUTA_RESERVAS + "/automatica";
+        assertThat(disponibles(idGala, idModelo)).isEqualTo(2);
+
+        JsonNode error = cuerpo(ejecutar(post(ruta, idGala), pedido(idModelo, 3)).andExpect(status().isConflict()));
+
+        assertThat(error.get("conflictos")).singleElement().satisfies(faltante -> {
+            assertThat(faltante.get("solicitada").asInt()).isEqualTo(3);
+            assertThat(faltante.get("disponibles").asInt()).isEqualTo(2);
+            assertThat(faltante.get("faltante").asInt()).isEqualTo(1);
+        });
+        assertThat(leer(get(RUTA_RESERVAS, idGala))).isEmpty();
+
+        assertThat(cuerpo(ejecutar(post(ruta, idGala), pedido(idModelo, 2)).andExpect(status().isCreated())))
+                .hasSize(2);
+        int idBrindis = crearEvento("Brindis de cierre", 20, 22);
+        assertThat(disponibles(idBrindis, idModelo)).isZero();
+        assertThat(disponibles(idAlmuerzo, idModelo)).isEqualTo(2);
+    }
+
+    private int disponibles(int idEvento, int idModelo) throws Exception {
+        for (JsonNode modelo : leer(get("/api/logistica/eventos/{id}/disponibilidad-modelos", idEvento))) {
+            if (modelo.get("idModelo").asInt() == idModelo) {
+                return modelo.get("disponibles").asInt();
+            }
+        }
+        return 0;
+    }
+
+    private static Map<String, Object> pedido(int idModelo, int cantidad) {
+        return Map.of("pedidos", List.of(Map.of("idModelo", idModelo, "cantidad", cantidad)));
+    }
+
+    @Test
     void unConflictoRechazaTodaLaReservaYDetallaQuienOcupaElEquipo() throws Exception {
         reservar(idGala, idPantalla).andExpect(status().isCreated());
         int idBrindis = crearEvento("Brindis de cierre", 20, 22);

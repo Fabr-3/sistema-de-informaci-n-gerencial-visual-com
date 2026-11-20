@@ -20,15 +20,20 @@ import com.visual.backend.compartido.dominio.excepcion.ConflictoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 import com.visual.backend.logistica.aplicacion.dto.ComandoReserva;
+import com.visual.backend.logistica.aplicacion.dto.ComandoReservaAutomatica;
 import com.visual.backend.logistica.aplicacion.dto.VistaReserva;
 import com.visual.backend.logistica.dominio.modelo.ActivoReservable;
 import com.visual.backend.logistica.dominio.modelo.ConflictoReserva;
+import com.visual.backend.logistica.dominio.modelo.DisponibilidadModelo;
 import com.visual.backend.logistica.dominio.modelo.EventoLogistico;
+import com.visual.backend.logistica.dominio.modelo.FaltanteModelo;
 import com.visual.backend.logistica.dominio.modelo.Filtros;
 import com.visual.backend.logistica.dominio.modelo.Jornada;
+import com.visual.backend.logistica.dominio.modelo.PedidoModelo;
 import com.visual.backend.logistica.dominio.modelo.PeriodoReserva;
 import com.visual.backend.logistica.dominio.modelo.PlanLogistico;
 import com.visual.backend.logistica.dominio.modelo.ReservaActivo;
+import com.visual.backend.logistica.dominio.modelo.ReservaAutomatica;
 import com.visual.backend.logistica.dominio.puerto.ConsultaActivosReservables;
 import com.visual.backend.logistica.dominio.puerto.ConsultaEventosLogistica;
 import com.visual.backend.logistica.dominio.puerto.RepositorioReservas;
@@ -44,6 +49,8 @@ public class ServicioReservas {
     public static final String ENTIDAD = "reservas_activo";
     public static final String MOTIVO_EVENTO_CANCELADO = "Evento cancelado";
     static final String MENSAJE_CONFLICTO = "Algunos equipos ya están reservados para otro evento en ese periodo";
+    static final String MENSAJE_FALTANTES = "No hay suficientes equipos libres en ese periodo; subalquile lo que "
+            + "falta o cancele el evento";
 
     private final ConsultaEventosLogistica eventos;
     private final PlanesEvento planes;
@@ -77,6 +84,40 @@ public class ServicioReservas {
         EventoLogistico evento = eventos.obtener(idEvento);
         List<Jornada> jornadas = planes.buscar(idEvento).map(PlanLogistico::getJornadas).orElse(List.of());
         return activos.buscarDisponibles(PeriodoReserva.calcular(evento, jornadas), filtro);
+    }
+
+    /** Unidades libres de cada modelo durante el periodo de la reserva del evento. */
+    @Transactional(readOnly = true)
+    public List<DisponibilidadModelo> disponibilidadPorModelo(Integer idEvento) {
+        EventoLogistico evento = eventos.obtener(idEvento);
+        List<Jornada> jornadas = planes.buscar(idEvento).map(PlanLogistico::getJornadas).orElse(List.of());
+        return activos.disponibilidadPorModelo(PeriodoReserva.calcular(evento, jornadas));
+    }
+
+    /**
+     * Reserva por cantidades: elige las primeras unidades libres de cada modelo.
+     * Si algun pedido supera lo disponible no reserva nada y responde 409 con
+     * los faltantes, para subalquilarlos o cancelar el evento.
+     */
+    @Transactional
+    public List<VistaReserva> reservarAutomaticamente(Integer idEvento, ComandoReservaAutomatica comando) {
+        List<PedidoModelo> pedidos = comando.pedidos().stream()
+                .map(pedido -> new PedidoModelo(pedido.idModelo(), pedido.cantidad())).toList();
+        ReservaAutomatica.validar(pedidos);
+        EventoLogistico evento = eventos.obtener(idEvento);
+        exigirReservable(evento);
+        List<Jornada> jornadas = planes.buscar(idEvento).map(PlanLogistico::getJornadas).orElse(List.of());
+        PeriodoReserva periodo = PeriodoReserva.calcular(evento, jornadas);
+        List<FaltanteModelo> faltantes = ReservaAutomatica.faltantes(pedidos, activos.disponibilidadPorModelo(periodo),
+                idModelo -> activos.nombreModelo(idModelo)
+                        .orElseThrow(() -> new RecursoNoEncontradoExcepcion("el modelo", idModelo)));
+        if (!faltantes.isEmpty()) {
+            throw new ConflictoExcepcion(MENSAJE_FALTANTES, faltantes);
+        }
+        List<Integer> ids = pedidos.stream()
+                .flatMap(pedido -> activos.elegirDisponibles(periodo, pedido.idModelo(), pedido.cantidad()).stream())
+                .map(ActivoReservable::id).toList();
+        return reservar(idEvento, new ComandoReserva(ids));
     }
 
     @Transactional

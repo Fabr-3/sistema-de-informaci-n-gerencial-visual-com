@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.visual.backend.logistica.aplicacion.dto.ComandoLiberacion;
 import com.visual.backend.logistica.aplicacion.dto.ComandoReserva;
+import com.visual.backend.logistica.aplicacion.dto.ComandoReservaAutomatica;
 import com.visual.backend.logistica.aplicacion.dto.VistaReserva;
 import com.visual.backend.logistica.aplicacion.servicio.ServicioReservas;
 import com.visual.backend.logistica.dominio.modelo.ActivoReservable;
+import com.visual.backend.logistica.dominio.modelo.DisponibilidadModelo;
 import com.visual.backend.logistica.dominio.modelo.Filtros;
 
 import jakarta.validation.Valid;
@@ -53,6 +55,22 @@ public class ControladorReservas {
     @PreAuthorize(ReglasAccesoLogistica.GESTIONAR)
     public List<VistaReserva> reservar(@PathVariable Integer idEvento, @Valid @RequestBody ComandoReserva comando) {
         return reservas.reservar(idEvento, comando);
+    }
+
+    /** Unidades libres por modelo, para reservar por cantidades. */
+    @GetMapping("/disponibilidad-modelos")
+    @PreAuthorize(ReglasAccesoLogistica.GESTIONAR)
+    public List<DisponibilidadModelo> disponibilidadPorModelo(@PathVariable Integer idEvento) {
+        return reservas.disponibilidadPorModelo(idEvento);
+    }
+
+    /** Reserva por cantidades; 409 con los faltantes si algun modelo no alcanza. */
+    @PostMapping("/reservas/automatica")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize(ReglasAccesoLogistica.GESTIONAR)
+    public List<VistaReserva> reservarAutomaticamente(@PathVariable Integer idEvento,
+                                                      @Valid @RequestBody ComandoReservaAutomatica comando) {
+        return reservas.reservarAutomaticamente(idEvento, comando);
     }
 
     @PostMapping("/reservas/{idReserva}/liberacion")
