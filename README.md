@@ -323,6 +323,10 @@ La base de pruebas debe existir antes de correrlas:
 createdb -h localhost -U postgres proyecto_visual_com_test
 ```
 
+## Mejoras de las pruebas de usuarios
+
+`docs/mejoras-pruebas-usuarios.md` resume los pedidos de las pruebas con el gerente y el personal técnico y dónde quedó implementado cada uno.
+
 ## Desvíos respecto a los diagramas
 
 `docs/desvios-diagramas.md` resume en qué difiere la implementación de los diagramas del documento del proyecto (casos de uso, secuencia, base de datos y paquetes) y por qué, para poder actualizarlos.
