@@ -136,6 +136,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V14`: subcontratación y consumibles. Tablas `subcontrataciones` (con su egreso `id_movimiento`; triggers que exigen que el evento sea del proyecto y el servicio del proveedor), `consumibles`, `movimientos_consumible` y `consumos_proyecto` (con el costo unitario copiado). El tipo *Subcontratación de servicios* pasa a ser de sistema (`codigo_sistema = 'SUBCONTRATACION'`).
   - `V15`: alertas persistentes (`alertas`: tipo, severidad, activo y evento opcionales, `clave` de la situación, detalle, estado `PENDIENTE`, `ATENDIDA` o `RESUELTA` y datos de la atención); índice único parcial por tipo y clave entre las no resueltas.
   - `V16`: el gerente recibe `COMERCIAL_GESTIONAR` para realizar todo el flujo comercial.
+  - `V17`: complemento del carnet de identidad (`complemento`, 1 o 2 letras o números) en los documentos de clientes, personal técnico y proveedores; un documento se distingue por tipo, número y complemento.
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -177,7 +178,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 
 ## Reglas del módulo comercial y de planificación
 
-- **Clientes:** en las cotizaciones el cliente se busca por nombre o número de documento. Cada cliente tiene al menos un documento (CI o NIT) que no se repite entre clientes, y puede tener varios contactos. Un cliente con cotizaciones no se elimina. Su **resumen comercial** muestra las cotizaciones y proyectos por estado, el importe cotizado (todas las cotizaciones) y el contratado (las aceptadas), con la conversión entre ambos, y las cinco cotizaciones y proyectos más recientes con enlace a cada uno.
+- **Clientes:** en las cotizaciones el cliente se busca por nombre o número de documento. Cada cliente tiene al menos un documento (CI o NIT) que no se repite entre clientes, y puede tener varios contactos. **Validación:** el nombre de una persona natural solo admite letras (con tildes, espacios, apóstrofos, puntos y guiones); la razón social de una empresa o institución admite además números y los signos `. , & ' ( ) / -`. El carnet de identidad lleva solo números, con la sigla opcional del departamento (`4876512 LP`), y un complemento opcional (`1A`); el NIT, solo números (6 a 15); el pasaporte, de 5 a 15 letras o números. Celulares y teléfonos fijos solo admiten números, y el correo debe tener un formato válido. Las mismas reglas de nombres y de documentos se aplican al personal técnico. Un cliente con cotizaciones no se elimina. Su **resumen comercial** muestra las cotizaciones y proyectos por estado, el importe cotizado (todas las cotizaciones) y el contratado (las aceptadas), con la conversión entre ambos, y las cinco cotizaciones y proyectos más recientes con enlace a cada uno.
 - **Cotizaciones:**
   - Se numeran por año (`COT-2026-0001`) y su importe es la suma de sus líneas (cantidad × precio unitario − descuento). Solo admiten servicios activos.
   - Solo se editan en *Borrador*. Al resolverse, sus líneas quedan bloqueadas también en la base de datos.
