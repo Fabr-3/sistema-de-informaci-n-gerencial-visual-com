@@ -17,7 +17,7 @@ public interface ConsultaActivosReservables {
     /** Equipos reservables sin reservas activas que se superpongan con el periodo. */
     List<ActivoReservable> buscarDisponibles(PeriodoReserva periodo, Filtros.ActivosReservables filtro);
 
-    /** Unidades libres por modelo (solo modelos con al menos una unidad libre). */
+    /** Unidades libres de cada modelo por unidad que tiene equipos en el inventario (pueden ser cero). */
     List<DisponibilidadModelo> disponibilidadPorModelo(PeriodoReserva periodo);
 
     /** Las primeras unidades libres del modelo, por codigo de inventario. */

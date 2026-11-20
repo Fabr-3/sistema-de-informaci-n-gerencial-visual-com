@@ -54,8 +54,18 @@ public class ConsultaActivosReservablesJdbc implements ConsultaActivosReservable
             order by categoria, codigo_inventario
             limit :maximo
             """;
-    private static final String POR_MODELO = "select id_modelo, modelo, categoria, count(*) as disponibles from ("
-            + SELECCION + LIBRE + ") candidatos" + RESERVABLE + """
+    /** Todos los modelos por unidad con equipos en el inventario; disponibles puede ser cero. */
+    private static final String POR_MODELO = """
+            select id_modelo, modelo, categoria,
+                   count(*) filter (where libre and not en_mantenimiento) as disponibles
+            from (
+            """ + SELECCION.replace("select a.id_activo,", """
+                select not exists (select 1 from reservas_activo r where r.id_activo = a.id_activo
+                                   and r.estado = 'ACTIVA' and r.fecha_salida < :retorno
+                                   and r.fecha_retorno > :salida) as libre,
+                       a.id_activo,""") + """
+            ) candidatos
+            where por_unidad and vigente
             group by id_modelo, modelo, categoria
             order by categoria, modelo
             """;
