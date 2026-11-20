@@ -111,6 +111,7 @@ El perfil `dev` (activo por defecto, en `application-dev.yaml`) trae valores loc
 | `ADMIN_EMAIL`, `ADMIN_CONTRASENA_INICIAL` | Administrador que se crea si no existe ninguno |
 | `RESPALDOS_DIRECTORIO` | Carpeta de respaldos (por defecto `./respaldos`) |
 | `CONTRATOS_DIRECTORIO` | Carpeta de las copias firmadas de los contratos (por defecto `./documentos/contratos`) |
+| `COMPROBANTES_DIRECTORIO` | Carpeta de los comprobantes de los gastos del evento (por defecto `./documentos/comprobantes`) |
 
 Los datos de la empresa que se imprimen en cotizaciones y contratos (razón social, dirección, ciudad, correo, teléfono y NIT) se configuran en `app.empresa` de `application.yaml`.
 
@@ -140,6 +141,8 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V18`: proveedores con los mismos datos que un cliente. Catálogo `tipos_proveedor` (persona natural, empresa privada, institución pública), `direccion` y estado `activo` en `proveedores`; los existentes quedan como empresa privada.
   - `V19`: un proveedor registrado sin tipo (scripts anteriores a `V18`) se toma como empresa privada.
   - `V20`: subalquiler de equipos. `subcontrataciones` recibe `id_modelo` y `cantidad` (ambos o ninguno; con modelo se exige el evento).
+  - `V21`: descripción de los modelos de activo (`modelos_activo.descripcion`).
+  - `V22`: gastos del evento. Tabla `gastos_evento` (proyecto, evento obligatorio, descripción, monto, fecha, comprobante con nombre generado, nombre original y tipo, estado y egreso vinculado; trigger que exige que el evento sea del proyecto) y tipo de movimiento de sistema *Gastos del evento* (`codigo_sistema = 'GASTO_EVENTO'`).
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -159,6 +162,8 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 ## Reglas del módulo de activos e inventario
 
 - **Registro de unidades:** se pueden registrar varias unidades de un modelo en una sola operación (hasta 100). Cada unidad recibe un código correlativo con el prefijo del modelo (`ABPL-0001`, `ABPL-0002`, …); el código manual solo se admite al registrar una unidad. El prefijo es obligatorio para los modelos por unidad y no cambia una vez que el modelo tiene inventario. En Catálogos se muestra la cantidad en inventario de cada modelo.
+- **Descripción de los modelos:** cada modelo puede tener una descripción (qué es el equipo, para qué se usa y cómo se conecta). Quien ve los activos (también el personal técnico) la consulta en Catálogos, en la ficha del modelo (con su categoría, control, mantenimiento y especificaciones), y en la ficha de cada activo.
+- **Uso grupal:** con `MANTENIMIENTOS_REGISTRAR` se registra el mismo periodo de uso (ya realizado) para varios equipos a la vez desde la lista de activos (`POST /api/activos/usos-grupales`). Se registran todos o ninguno: si un equipo ya tiene un uso superpuesto o no admite registro, el error lo indica.
 - **Tipo de control:** lo define cada modelo.
   - **Por unidad:** equipos con código, serie, horas de uso y mantenimiento.
   - **Por lote:** cables y accesorios que se controlan por cantidad en cada bodega.
@@ -206,6 +211,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 - **Asignación de personal:** cada asignación tiene persona, rol y horario. Una persona no se repite en el mismo horario de un mismo evento, pero sí puede estar en varios eventos a la vez: el sistema muestra el cruce como alerta (en la lista de eventos, en el plan, al elegir a la persona y en «Mis asignaciones») y no lo bloquea. Los eventos cancelados no generan cruces.
 - **Personal técnico:** documento de identidad único, especialidades y, opcionalmente, una cuenta de técnico o sub-contratado (una cuenta por persona). No se elimina: se desactiva, y solo si no tiene asignaciones pendientes. Al personal inactivo no se le asigna trabajo.
 - **Mis asignaciones:** el técnico o sub-contratado con cuenta vinculada ve sus asignaciones desde hoy, con el lugar, el transporte y los cruces.
+- **Mi cronograma:** el mismo calendario del cronograma (mes, semana o día) solo con los eventos donde la persona está asignada, en su horario de trabajo e incluidas las asignaciones pasadas (`GET /api/logistica/mis-asignaciones/cronograma`).
 - **Fechas y horas:** las jornadas, las asignaciones y los eventos se programan con un calendario desplegable (que se abre en la fecha del evento) y una lista de horas cada 30 minutos, en formato de 24 horas; también se pueden escribir.
 - **Reserva de equipos:**
   - Solo se reservan equipos por unidad que siguen en el inventario y no están en mantenimiento, para eventos *Programados* de proyectos en planificación o en ejecución. Los lotes (cables y accesorios) quedan fuera de las reservas.
@@ -255,6 +261,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 - **Subcontrataciones:** servicio contratado a un proveedor vigente (activo y no eliminado) para un proyecto en planificación o en ejecución y, opcionalmente, uno de sus eventos (no cancelado). Se puede indicar uno de los servicios del proveedor. Al registrarla se crea en la misma operación el egreso *Subcontratación de servicios* imputado al proyecto, al evento y al proveedor, y quedan vinculados. No se edita: anularla, con motivo, anula también su egreso.
 - **Consumibles:** catálogo con nombre único, unidad de medida, costo unitario vigente y stock mínimo opcional. El stock nunca queda negativo y cada cambio queda como movimiento: ingreso (compra o reposición; puede actualizar el costo vigente), ajuste por conteo (con motivo y signo), consumo y anulación de consumo. Con el stock en el mínimo o por debajo se advierte *Stock bajo*.
 - **Consumos:** descuentan el stock en el momento; si la cantidad supera el stock, se rechaza (422) indicando lo disponible y no se registra nada. Copian el costo unitario vigente, de modo que un cambio posterior del costo no altera el margen ya calculado. Anular un consumo devuelve el stock. No generan movimientos financieros: su costo se suma a los costos directos del proyecto y de su evento en los resultados.
+- **Gastos del evento:** compras o pagos que el personal hace durante un evento y que no están en el catálogo de consumibles. Exigen evento, descripción, monto, fecha (no futura) y comprobante: foto (JPG, PNG, WEBP) o PDF de hasta 5 MB, validado por su contenido y guardado en `COMPROBANTES_DIRECTORIO` con un nombre generado. Al registrarlo se crea en la misma operación el egreso de sistema *Gastos del evento* imputado al proyecto y al evento (aparece en Finanzas y en los resultados); no mueve stock. Se anula con motivo, lo que anula también su egreso (desde Finanzas no se anula, 422). Igual que los consumos, el técnico (`CONSUMIBLES_REGISTRAR`) solo registra, ve y descarga comprobantes de los eventos donde está asignado.
 - **Técnicos:** quien solo tiene `CONSUMIBLES_REGISTRAR` registra, ve y anula consumos únicamente de los eventos donde tiene una asignación (que terminó hace 90 días o menos, o futura); en cualquier otro evento recibe 403.
 - **Permisos:**
   - `PROVEEDORES_VER` (gerente): consultar subcontrataciones, consumibles y consumos.
@@ -263,7 +270,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 
 ## Respaldos
 
-Se generan con `pg_dump` en formato personalizado: uno automático cada día a las 02:00 y otros manuales desde **Administración de accesos → Respaldos**. Las copias firmadas de los contratos no están en la base: hay que copiar también la carpeta `CONTRATOS_DIRECTORIO`. Para restaurar uno:
+Se generan con `pg_dump` en formato personalizado: uno automático cada día a las 02:00 y otros manuales desde **Administración de accesos → Respaldos**. Las copias firmadas de los contratos y los comprobantes de los gastos no están en la base: hay que copiar también las carpetas `CONTRATOS_DIRECTORIO` y `COMPROBANTES_DIRECTORIO`. Para restaurar uno:
 
 ```bash
 pg_restore --clean -h localhost -U postgres -d proyecto-visual-com respaldo_AAAAMMDD_HHMMSS_mmm.dump
