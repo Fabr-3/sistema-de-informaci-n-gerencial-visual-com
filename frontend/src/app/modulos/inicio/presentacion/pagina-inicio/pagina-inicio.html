@@ -8,6 +8,38 @@
     </header>
   }
 
+  @if (veAsignaciones) {
+    <section class="panel asignaciones" aria-labelledby="titulo-asignaciones">
+      <div class="seccion__encabezado">
+        <h2 id="titulo-asignaciones" class="titulo-seccion">Mis asignaciones pendientes</h2>
+        <a class="ver-todas" [routerLink]="rutaMisAsignaciones">Ver todas</a>
+      </div>
+      @if (asignaciones(); as lista) {
+        <ul>
+          @for (asignacion of lista; track asignacion.id) {
+            <li>
+              <div class="asignacion__fecha">
+                <strong>{{ asignacion.inicio | date: 'EEE dd/MM' }}</strong>
+                <span class="texto-secundario">{{ asignacion.inicio | date: 'HH:mm' }}–{{ asignacion.fin | date: 'HH:mm' }}</span>
+              </div>
+              <div>
+                <strong>{{ asignacion.evento.nombre }}</strong>
+                <div class="texto-secundario">{{ asignacion.rol }} · {{ asignacion.evento.lugar }}</div>
+              </div>
+              @if (asignacion.cruces.length) {
+                <span class="estado estado--alerta"><mat-icon>warning</mat-icon>Cruce</span>
+              }
+            </li>
+          } @empty {
+            <li class="texto-secundario">No tiene asignaciones pendientes.</li>
+          }
+        </ul>
+      } @else if (asignaciones() === null) {
+        <p class="texto-secundario">Su cuenta aún no está vinculada al personal técnico o no se pudieron cargar las asignaciones.</p>
+      }
+    </section>
+  }
+
   @if (accesosRapidos().length > 0) {
     <section class="accesos" aria-label="Accesos rápidos">
       @for (acceso of accesosRapidos(); track acceso.ruta) {

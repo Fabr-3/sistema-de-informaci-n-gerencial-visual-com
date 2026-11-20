@@ -5,6 +5,7 @@ import {
   invitadoGuard,
   sesionIniciadaGuard,
 } from './modulos/accesos/presentacion/guardias/guardias-sesion';
+import { inicioPorRolGuard } from './modulos/inicio/presentacion/guardia-inicio';
 import { Rutas } from './nucleo/configuracion/rutas';
 
 export const routes: Routes = [
@@ -37,6 +38,7 @@ export const routes: Routes = [
         path: Rutas.INICIO,
         pathMatch: 'full',
         title: 'Inicio',
+        canActivate: [inicioPorRolGuard],
         loadComponent: () =>
           import('./modulos/inicio/presentacion/pagina-inicio/pagina-inicio').then((m) => m.PaginaInicio),
       },

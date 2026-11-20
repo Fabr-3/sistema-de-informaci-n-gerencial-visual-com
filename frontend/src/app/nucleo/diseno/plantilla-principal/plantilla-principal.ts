@@ -12,6 +12,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { map } from 'rxjs';
 
 import { ServicioSesion } from '../../../modulos/accesos/aplicacion/servicio-sesion';
+import { AvisosInicio } from '../../../modulos/inicio/aplicacion/avisos-inicio';
 import { Rutas, rutaAbsoluta } from '../../configuracion/rutas';
 import { GrupoMenu, menuPermitido } from '../menu';
 
@@ -59,6 +60,10 @@ export class PlantillaPrincipal {
       .map((parte) => parte[0].toUpperCase())
       .join(''),
   );
+
+  constructor() {
+    inject(AvisosInicio).mostrarUnaVez();
+  }
 
   protected alNavegar(menuLateral: MatSidenav): void {
     if (this.pantallaAngosta()) {

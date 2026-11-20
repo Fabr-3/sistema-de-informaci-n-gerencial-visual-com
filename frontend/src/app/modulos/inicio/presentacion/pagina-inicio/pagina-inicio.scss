@@ -28,3 +28,37 @@
   margin-left: auto;
   color: var(--vc-texto-secundario);
 }
+
+.asignaciones {
+  margin-bottom: var(--vc-espacio);
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 16px 8px;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+    border-top: 1px solid var(--vc-borde);
+  }
+
+  .estado {
+    margin-left: auto;
+  }
+}
+
+.asignacion__fecha {
+  display: flex;
+  flex-direction: column;
+  min-width: 96px;
+  text-transform: capitalize;
+}
+
+.ver-todas {
+  color: var(--vc-rojo);
+  font-weight: 500;
+}
