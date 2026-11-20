@@ -9,6 +9,7 @@ export function activo(cambios: Partial<Activo> = {}): Activo {
     numeroSerie: null,
     idModelo: 1,
     modelo: 'Absen PL3.9',
+    descripcionModelo: null,
     idCategoria: 1,
     categoria: 'Pantalla LED',
     idBodega: 1,
@@ -39,6 +40,7 @@ export function modelo(cambios: Partial<ModeloActivo> = {}): ModeloActivo {
     horasMantenimiento: 500,
     prefijoCodigo: 'ABS',
     especificaciones: [],
+    descripcion: null,
     cantidadInventario: 0,
     ...cambios,
   };

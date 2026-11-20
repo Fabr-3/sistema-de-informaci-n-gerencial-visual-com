@@ -55,6 +55,7 @@ describe('casos de uso de activos', () => {
         horasMantenimiento: 100,
         prefijoCodigo: 'cab',
         especificaciones: [],
+        descripcion: null,
       })
       .subscribe();
 

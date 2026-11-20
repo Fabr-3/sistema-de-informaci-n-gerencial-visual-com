@@ -20,6 +20,7 @@ export interface DatosDialogoModelo {
   readonly categorias: readonly Categoria[];
 }
 
+const LONGITUD_DESCRIPCION = 2000;
 const LONGITUD_NOMBRE = 100;
 const LONGITUD_CARACTERISTICA = 100;
 const LONGITUD_VALOR = 150;
@@ -66,6 +67,7 @@ export class DialogoModelo {
     tipoControl: [this.modelo?.tipoControl ?? ('UNIDAD' as TipoControl), Validators.required],
     horasMantenimiento: [this.modelo?.horasMantenimiento ?? (null as number | null), Validators.min(1)],
     prefijoCodigo: [this.modelo?.prefijoCodigo ?? '', [Validators.required, Validators.pattern(FORMATO_PREFIJO)]],
+    descripcion: [this.modelo?.descripcion ?? '', Validators.maxLength(LONGITUD_DESCRIPCION)],
     especificaciones: this.formularios.array(
       (this.modelo?.especificaciones ?? []).map((especificacion) => this.grupoEspecificacion(especificacion)),
     ),
@@ -105,6 +107,7 @@ export class DialogoModelo {
         tipoControl: valores.tipoControl,
         horasMantenimiento: valores.horasMantenimiento,
         prefijoCodigo: valores.prefijoCodigo,
+        descripcion: valores.descripcion.trim() || null,
         especificaciones: valores.especificaciones.map((especificacion) => ({
           caracteristica: especificacion.caracteristica.trim(),
           valor: especificacion.valor.trim(),

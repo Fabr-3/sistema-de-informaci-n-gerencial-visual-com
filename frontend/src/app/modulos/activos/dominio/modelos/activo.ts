@@ -27,6 +27,8 @@ export interface Activo {
   readonly numeroSerie: string | null;
   readonly idModelo: number;
   readonly modelo: string;
+  /** Que es el equipo (descripcion de su modelo). */
+  readonly descripcionModelo: string | null;
   readonly idCategoria: number;
   readonly categoria: string;
   readonly idBodega: number;

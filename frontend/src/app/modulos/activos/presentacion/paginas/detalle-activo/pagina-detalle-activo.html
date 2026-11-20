@@ -9,6 +9,9 @@
           <span class="estado estado--{{ tipoVisualEstado(activo.estado) }}">{{ activo.estado | etiqueta: estados }}</span>
         </h1>
         <p>{{ activo.modelo }} · {{ activo.categoria }}</p>
+        @if (activo.descripcionModelo) {
+          <p class="texto-secundario descripcion-modelo">{{ activo.descripcionModelo }}</p>
+        }
       </div>
       <div *siPermiso="permisos.ACTIVOS_GESTIONAR">
         <button mat-stroked-button [matMenuTriggerFor]="menuAcciones">

@@ -23,7 +23,12 @@
             </ng-container>
             <ng-container matColumnDef="nombre">
               <th mat-header-cell *matHeaderCellDef>Modelo</th>
-              <td mat-cell *matCellDef="let modelo"><strong>{{ modelo.nombre }}</strong></td>
+              <td mat-cell *matCellDef="let modelo">
+                <strong>{{ modelo.nombre }}</strong>
+                @if (modelo.descripcion) {
+                  <div class="texto-secundario detalle resumen-descripcion">{{ modelo.descripcion }}</div>
+                }
+              </td>
             </ng-container>
             <ng-container matColumnDef="categoria">
               <th mat-header-cell *matHeaderCellDef>Categoría</th>
@@ -49,22 +54,27 @@
               <th mat-header-cell *matHeaderCellDef>Inventario</th>
               <td mat-cell *matCellDef="let modelo">
                 @if (modelo.tipoControl === 'UNIDAD') {
-                  <a [routerLink]="rutaActivos" [queryParams]="{ idModelo: modelo.id }">{{ modelo.cantidadInventario }} {{ modelo.cantidadInventario === 1 ? 'unidad' : 'unidades' }}</a>
+                  <a [routerLink]="rutaActivos" [queryParams]="{ idModelo: modelo.id }" (click)="$event.stopPropagation()">{{ modelo.cantidadInventario }} {{ modelo.cantidadInventario === 1 ? 'unidad' : 'unidades' }}</a>
                 } @else {
-                  <a [routerLink]="rutaLotes">{{ modelo.cantidadInventario }} en existencia</a>
+                  <a [routerLink]="rutaLotes" (click)="$event.stopPropagation()">{{ modelo.cantidadInventario }} en existencia</a>
                 }
               </td>
             </ng-container>
             <ng-container matColumnDef="acciones">
               <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
               <td mat-cell *matCellDef="let modelo" class="celda-acciones">
-                <button mat-icon-button matTooltip="Editar" (click)="editarModelo(modelo)" aria-label="Editar modelo">
-                  <mat-icon>edit</mat-icon>
+                <button mat-icon-button matTooltip="Ver ficha" (click)="$event.stopPropagation(); verFicha(modelo)" aria-label="Ver ficha del modelo">
+                  <mat-icon>info</mat-icon>
                 </button>
+                @if (puedeGestionar()) {
+                  <button mat-icon-button matTooltip="Editar" (click)="$event.stopPropagation(); editarModelo(modelo)" aria-label="Editar modelo">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                }
               </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="columnasModelos()"></tr>
-            <tr mat-row *matRowDef="let fila; columns: columnasModelos()"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnasModelos()" class="fila-navegable" (click)="verFicha(fila)"></tr>
             <tr class="mat-row" *matNoDataRow>
               <td class="vacio" [attr.colspan]="columnasModelos().length">Aún no hay modelos registrados.</td>
             </tr>

@@ -23,6 +23,7 @@ import { SiPermiso } from '../../../../accesos/presentacion/directivas/si-permis
 import { CatalogosActivos } from '../../../aplicacion/catalogos-activos';
 import { Bodega, Categoria, Fabricante } from '../../../dominio/modelos/catalogos';
 import { ModeloActivo, TIPOS_CONTROL } from '../../../dominio/modelos/modelo-activo';
+import { DialogoFichaModelo } from './dialogo-ficha-modelo';
 import { DialogoBodega } from './dialogo-bodega';
 import { DatosDialogoModelo, DialogoModelo } from './dialogo-modelo';
 
@@ -40,6 +41,15 @@ const TITULOS_CATALOGO: Readonly<Record<TipoCatalogoSimple, { nuevo: string; edi
   selector: 'app-pagina-catalogos',
   imports: [NgTemplateOutlet, EtiquetaPipe, RouterLink, MatButtonModule, MatIconModule, MatTableModule, MatTabsModule, MatTooltipModule, SiPermiso],
   templateUrl: './pagina-catalogos.html',
+  styles: `
+    .resumen-descripcion {
+      display: -webkit-box;
+      max-width: 420px;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaginaCatalogos {
@@ -61,7 +71,7 @@ export class PaginaCatalogos {
   protected readonly puedeGestionar = computed(() => this.sesion.tienePermiso(Permisos.ACTIVOS_GESTIONAR));
   protected readonly columnasModelos = computed(() => {
     const base = ['fabricante', 'nombre', 'categoria', 'tipoControl', 'prefijo', 'horasMantenimiento', 'inventario'];
-    return this.puedeGestionar() ? [...base, 'acciones'] : base;
+    return [...base, 'acciones'];
   });
   protected readonly columnasSimples = computed(() => (this.puedeGestionar() ? ['nombre', 'acciones'] : ['nombre']));
   protected readonly columnasBodegas = computed(() => {
@@ -91,6 +101,11 @@ export class PaginaCatalogos {
         },
         error: (error: unknown) => this.notificaciones.error(error),
       });
+  }
+
+  /** Ficha de consulta (descripcion y especificaciones), disponible para todos los que ven los catalogos. */
+  protected verFicha(modelo: ModeloActivo): void {
+    this.dialogos.open(DialogoFichaModelo, { data: modelo, width: '560px' });
   }
 
   protected editarModelo(modelo?: ModeloActivo): void {

@@ -48,6 +48,13 @@
       </mat-form-field>
     </div>
 
+    <mat-form-field appearance="outline" class="descripcion">
+      <mat-label>Descripción (opcional)</mat-label>
+      <textarea matInput rows="3" formControlName="descripcion" placeholder="Qué es el equipo, para qué se usa y cómo se conecta"></textarea>
+      <mat-hint>La ve el personal técnico en los catálogos.</mat-hint>
+      <mat-error>Máximo 2000 caracteres</mat-error>
+    </mat-form-field>
+
     <div class="especificaciones">
       <div class="especificaciones__titulo">
         <h3>Especificaciones técnicas</h3>
