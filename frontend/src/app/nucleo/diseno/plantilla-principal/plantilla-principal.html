@@ -5,7 +5,7 @@
     [mode]="pantallaAngosta() ? 'over' : 'side'"
     [opened]="!pantallaAngosta()"
   >
-    <div class="marca">VISUAL<strong>COM</strong></div>
+    <div class="marca"><span class="logotipo">visual.com</span></div>
     <nav aria-label="Navegación principal">
       @for (grupo of menu(); track grupo.titulo) {
         @if (grupo.titulo) {
@@ -36,7 +36,6 @@
           <mat-icon>menu</mat-icon>
         </button>
       }
-      <span class="barra__titulo">Sistema de Información Gerencial</span>
       <span class="espaciador"></span>
       @if (usuario(); as usuarioActual) {
         <button mat-button class="barra__usuario" [matMenuTriggerFor]="menuUsuario">

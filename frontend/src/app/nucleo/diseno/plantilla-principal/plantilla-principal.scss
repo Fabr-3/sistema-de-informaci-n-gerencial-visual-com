@@ -17,13 +17,7 @@
   padding: 0 24px;
   border-bottom: 1px solid var(--vc-borde);
   color: var(--vc-rojo);
-  font-size: 20px;
-  font-weight: 300;
-  letter-spacing: 0.12em;
-
-  strong {
-    font-weight: 700;
-  }
+  font-size: 26px;
 }
 
 .menu-lateral__grupo {
@@ -57,12 +51,6 @@ mat-nav-list a.activo {
   gap: 8px;
   border-bottom: 1px solid var(--vc-borde);
   background: var(--vc-superficie);
-}
-
-.barra__titulo {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--vc-texto-secundario);
 }
 
 .espaciador {
