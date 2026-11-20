@@ -2,6 +2,7 @@ package com.visual.backend.subcontratacion.infraestructura;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -44,6 +46,7 @@ class FlujoSubcontratacionIntegracionTest {
     private static final String RUTA_SUBCONTRATACIONES = "/api/subcontratacion/subcontrataciones";
     private static final String RUTA_CONSUMIBLES = "/api/subcontratacion/consumibles";
     private static final String RUTA_CONSUMOS = "/api/subcontratacion/consumos";
+    private static final String RUTA_GASTOS = "/api/subcontratacion/gastos-evento";
 
     @Autowired
     private MockMvc mvc;
@@ -153,6 +156,52 @@ class FlujoSubcontratacionIntegracionTest {
                 .isEqualByComparingTo("4");
         assertThat(leer(get(RUTA_CONSUMOS).param("idConsumible", String.valueOf(idConsumible)))
                 .get("totalElementos").asInt()).isZero();
+    }
+
+    @Test
+    void elTecnicoRegistraGastosDelEventoConComprobanteYSuEgreso() throws Exception {
+        int idUsuario = crear("/api/usuarios", Map.of("nombreUsuario", "tecnico.gastos", "nombres", "Técnico",
+                "apellidoPaterno", "Gastos", "email", "tecnico.gastos@visual.com.bo", "idRol", ID_ROL_TECNICO,
+                "contrasenaTemporal", CONTRASENA_TEMPORAL));
+        String tokenTecnico = cambiarContrasena(iniciarSesion("tecnico.gastos", CONTRASENA_TEMPORAL));
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10, 0, 0};
+
+        registrarGasto(tokenTecnico, "recibo.png", "image/png", png).andExpect(status().isForbidden());
+        asignar(idUsuario);
+        registrarGasto(tokenTecnico, "recibo.png", "image/png", "no es imagen".getBytes())
+                .andExpect(status().isUnprocessableContent());
+        JsonNode gasto = cuerpo(registrarGasto(tokenTecnico, "recibo.png", "image/png", png)
+                .andExpect(status().isCreated()));
+
+        assertThat(gasto.get("comprobante").asString()).isEqualTo("recibo.png");
+        int idMovimiento = gasto.get("idMovimiento").asInt();
+        JsonNode egreso = leer(get("/api/finanzas/movimientos/{id}", idMovimiento));
+        assertThat(egreso.get("tipo").get("codigoSistema").asString()).isEqualTo("GASTO_EVENTO");
+        assertThat(egreso.get("monto").decimalValue()).isEqualByComparingTo("85.50");
+        assertThat(egreso.get("evento").get("id").asInt()).isEqualTo(idEvento);
+        ejecutar(post("/api/finanzas/movimientos/{id}/anulacion", idMovimiento), Map.of("motivo", "Error"))
+                .andExpect(status().isUnprocessableContent());
+        byte[] descargado = mvc.perform(autorizado(get(RUTA_GASTOS + "/{id}/comprobante", gasto.get("id").asInt()),
+                        tokenTecnico)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+        assertThat(descargado).isEqualTo(png);
+        assertThat(leer(get(RUTA_GASTOS), tokenTecnico).get("totalElementos").asInt()).isEqualTo(1);
+
+        ejecutar(post(RUTA_GASTOS + "/{id}/anulacion", gasto.get("id").asInt()),
+                Map.of("motivo", "Se registró dos veces"), tokenTecnico).andExpect(status().isOk());
+        nuevaSolicitud();
+        assertThat(leer(get("/api/finanzas/movimientos/{id}", idMovimiento)).get("estado").asString())
+                .isEqualTo("ANULADO");
+    }
+
+    private ResultActions registrarGasto(String tokenUsuario, String nombre, String tipo, byte[] contenido)
+            throws Exception {
+        MockMultipartFile datos = new MockMultipartFile("datos", "", MediaType.APPLICATION_JSON_VALUE,
+                json.writeValueAsBytes(Map.of("idProyecto", idProyecto, "idEvento", idEvento,
+                        "descripcion", "Repuesto de cable de energía", "monto", "85.50", "fecha", hoy.toString())));
+        MockMultipartFile archivo = new MockMultipartFile("archivo", nombre, tipo, contenido);
+        return mvc.perform(multipart(RUTA_GASTOS).file(datos).file(archivo)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenUsuario));
     }
 
     @Test

@@ -20,3 +20,5 @@ app:
     programado: false
   comercial:
     directorio-contratos: ./target/contratos-prueba
+  subcontratacion:
+    directorio-comprobantes: ./target/comprobantes-prueba

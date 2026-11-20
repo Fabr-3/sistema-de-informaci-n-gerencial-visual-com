@@ -18,6 +18,15 @@ public final class Filtros {
     }
 
     /** idsEventos, si no es nulo, limita el listado a esos eventos (tecnicos). */
+    /** idsEventos no nulo limita el listado a esos eventos (tecnico). */
+    public record Gastos(Integer idProyecto, Integer idEvento, LocalDate desde, LocalDate hasta,
+                         List<Integer> idsEventos) {
+
+        public Gastos soloEventos(List<Integer> ids) {
+            return new Gastos(idProyecto, idEvento, desde, hasta, List.copyOf(ids));
+        }
+    }
+
     public record Consumos(Integer idProyecto, Integer idEvento, Integer idConsumible, LocalDate desde,
                            LocalDate hasta, List<Integer> idsEventos) {
 

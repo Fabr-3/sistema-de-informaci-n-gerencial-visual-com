@@ -11,10 +11,13 @@ import org.junit.jupiter.api.Test;
 
 import com.visual.backend.compartido.dominio.ElementoCatalogo;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
+import com.visual.backend.subcontratacion.dominio.modelo.Comprobante;
 import com.visual.backend.subcontratacion.dominio.modelo.Consumible;
 import com.visual.backend.subcontratacion.dominio.modelo.ConsumoProyecto;
 import com.visual.backend.subcontratacion.dominio.modelo.DatosConsumible;
+import com.visual.backend.subcontratacion.dominio.modelo.DatosGasto;
 import com.visual.backend.subcontratacion.dominio.modelo.DatosSubcontratacion;
+import com.visual.backend.subcontratacion.dominio.modelo.GastoEvento;
 import com.visual.backend.subcontratacion.dominio.modelo.MovimientoConsumible;
 import com.visual.backend.subcontratacion.dominio.modelo.ProyectoReferencia;
 import com.visual.backend.subcontratacion.dominio.modelo.Subcontratacion;
@@ -106,5 +109,27 @@ class ReglasSubcontratacionTest {
         assertThatThrownBy(() -> Subcontratacion.registrar(new DatosSubcontratacion(proveedor, null, PROYECTO, EVENTO,
                 "Faltan cabezales", new BigDecimal("600"), fecha, modelo, null), ACTOR, AHORA))
                 .hasMessageContaining("unidades");
+    }
+
+    @Test
+    void elComprobanteSeValidaPorSuFirmaYElGastoExigeEventoYMontoPositivo() {
+        byte[] pdf = "%PDF-1.7 contenido".getBytes();
+        Comprobante comprobante = Comprobante.recibido(" factura.pdf ", "application/pdf", pdf);
+
+        assertThat(comprobante.archivo()).matches("gasto-[a-f0-9-]{36}\\.pdf");
+        assertThat(comprobante.nombreOriginal()).isEqualTo("factura.pdf");
+        assertThatThrownBy(() -> Comprobante.recibido("foto.png", "image/png", pdf))
+                .hasMessageContaining("imagen");
+        assertThatThrownBy(() -> Comprobante.recibido("vacio.pdf", "application/pdf", new byte[0]))
+                .hasMessageContaining("Adjunte");
+
+        LocalDate fecha = LocalDate.of(2026, 11, 10);
+        GastoEvento gasto = GastoEvento.registrar(new DatosGasto(PROYECTO, EVENTO, " Pasaje del técnico ",
+                new BigDecimal("30"), fecha, comprobante), ACTOR, AHORA);
+        assertThat(gasto.concepto()).isEqualTo("Gasto del evento · " + EVENTO.nombre() + " · Pasaje del técnico");
+        assertThatThrownBy(() -> GastoEvento.registrar(new DatosGasto(PROYECTO, null, "Pasaje",
+                new BigDecimal("30"), fecha, comprobante), ACTOR, AHORA)).hasMessageContaining("evento");
+        assertThatThrownBy(() -> GastoEvento.registrar(new DatosGasto(PROYECTO, EVENTO, "Pasaje",
+                BigDecimal.ZERO, fecha, comprobante), ACTOR, AHORA)).hasMessageContaining("mayor a cero");
     }
 }

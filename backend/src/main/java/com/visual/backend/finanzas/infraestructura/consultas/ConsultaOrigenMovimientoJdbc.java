@@ -11,7 +11,8 @@ import com.visual.backend.finanzas.dominio.puerto.ConsultaOrigenMovimiento;
 public class ConsultaOrigenMovimientoJdbc implements ConsultaOrigenMovimiento {
 
     private static final String DE_SUBCONTRATACION =
-            "select exists (select 1 from subcontrataciones where id_movimiento = :idMovimiento)";
+            "select exists (select 1 from subcontrataciones where id_movimiento = :idMovimiento)"
+                    + " or exists (select 1 from gastos_evento where id_movimiento = :idMovimiento)";
 
     private final NamedParameterJdbcTemplate jdbc;
 

@@ -87,3 +87,5 @@ app:
     # Revision diaria de cotizaciones vencidas a las 00:10
     cron-vencimiento-cotizaciones: "0 10 0 * * *"
     directorio-contratos: ${CONTRATOS_DIRECTORIO:./documentos/contratos}
+  subcontratacion:
+    directorio-comprobantes: ${COMPROBANTES_DIRECTORIO:./documentos/comprobantes}

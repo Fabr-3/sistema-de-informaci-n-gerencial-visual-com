@@ -26,6 +26,12 @@ public class RegistroEgresosFinanzas implements RegistroEgresos {
     }
 
     @Override
+    public Integer registrarGastoEvento(String concepto, BigDecimal monto, LocalDate fecha, Integer idProyecto,
+                                        Integer idEvento) {
+        return movimientos.registrarGastoEvento(concepto, monto, fecha, idProyecto, idEvento).getId();
+    }
+
+    @Override
     public void anular(Integer idMovimiento, String motivo) {
         movimientos.anularSubcontratacion(idMovimiento, motivo);
     }

@@ -128,17 +128,32 @@ public class ServicioMovimientos {
         return guardado;
     }
 
+    /** Egreso automatico de un gasto del evento, imputado a su proyecto y evento. */
+    @Transactional
+    public MovimientoFinanciero registrarGastoEvento(String concepto, BigDecimal monto, LocalDate fecha,
+                                                    Integer idProyecto, Integer idEvento) {
+        TipoMovimiento tipo = tipos.buscarPorCodigoSistema(TipoMovimiento.CODIGO_GASTO_EVENTO)
+                .orElseThrow(() -> new ReglaNegocioExcepcion(
+                        "No está configurado el tipo de movimiento para los gastos del evento"));
+        Referencia proyecto = proyecto(idProyecto);
+        MovimientoFinanciero guardado = repositorio.guardar(MovimientoFinanciero.gastoEvento(tipo, concepto, monto,
+                fecha, proyecto, evento(idEvento, proyecto), contexto.idUsuarioActual(), LocalDateTime.now(reloj)));
+        auditoria.registrarOperacion(AccionAuditoria.CREAR, ENTIDAD, guardado.getId(), null, mapa(guardado),
+                "Gasto del evento");
+        return guardado;
+    }
+
     /** La anulacion de una venta devuelve al inventario lo vendido. */
     @Transactional
     public MovimientoFinanciero anular(Integer id, String motivo) {
         if (origenes.esDeSubcontratacion(id)) {
-            throw new ReglaNegocioExcepcion("El egreso pertenece a una subcontratación: anúlela desde "
-                    + "Subcontratación y consumibles");
+            throw new ReglaNegocioExcepcion("El egreso pertenece a una subcontratación o a un gasto del evento: "
+                    + "anúlelo desde Subcontratación y consumibles");
         }
         return anularMovimiento(id, motivo);
     }
 
-    /** Anula el egreso de una subcontratacion al anularse esta en su modulo. */
+    /** Anula el egreso de una subcontratacion o de un gasto del evento al anularse en su modulo. */
     @Transactional
     public MovimientoFinanciero anularSubcontratacion(Integer id, String motivo) {
         return anularMovimiento(id, motivo);

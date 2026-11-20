@@ -6,6 +6,6 @@ package com.visual.backend.finanzas.dominio.puerto;
  */
 public interface ConsultaOrigenMovimiento {
 
-    /** El egreso pertenece a una subcontratacion: se anula desde ese modulo. */
+    /** El egreso pertenece a una subcontratacion o a un gasto del evento: se anula desde ese modulo. */
     boolean esDeSubcontratacion(Integer idMovimiento);
 }
