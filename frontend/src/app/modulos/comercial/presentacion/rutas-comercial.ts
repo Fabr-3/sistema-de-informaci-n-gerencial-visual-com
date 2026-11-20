@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
-import { CalendarDateFormatter, CalendarNativeDateFormatter, DateAdapter, provideCalendar } from 'angular-calendar';
-import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
+import { PROVEEDORES_CALENDARIO } from '../../../nucleo/configuracion/calendario';
 import { PROVEEDOR_PAGINADOR_ESPANOL } from '../../../nucleo/configuracion/paginador-espanol';
 import { Rutas } from '../../../nucleo/configuracion/rutas';
 import { Permisos } from '../../accesos/dominio/modelos/permisos';
@@ -16,11 +15,7 @@ export const RUTAS_COMERCIAL: Routes = [
     path: '',
     providers: [
       PROVEEDOR_PAGINADOR_ESPANOL,
-      provideCalendar(
-        { provide: DateAdapter, useFactory: adapterFactory },
-        // Intl respeta el orden dia-mes del espanol en titulos y cabeceras
-        { dateFormatter: { provide: CalendarDateFormatter, useClass: CalendarNativeDateFormatter } },
-      ),
+      PROVEEDORES_CALENDARIO,
     ],
     canActivate: [permisoGuard(Permisos.COMERCIAL_VER)],
     children: [

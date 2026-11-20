@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -17,11 +17,13 @@ import {
   CalendarWeekViewComponent,
 } from 'angular-calendar';
 import { addDays, endOfMonth, endOfWeek, startOfMonth, startOfWeek } from 'date-fns';
-import { catchError, of, switchMap, tap } from 'rxjs';
+import { Observable, catchError, map, of, switchMap, tap } from 'rxjs';
 
 import { aIsoLocal } from '../../../../../compartido/utilidades/fechas';
 import { Rutas, rutaAbsoluta } from '../../../../../nucleo/configuracion/rutas';
 import { ServicioNotificaciones } from '../../../../../nucleo/notificaciones/servicio-notificaciones';
+import { GestionPlanificacion } from '../../../../logistica/aplicacion/gestion-planificacion';
+import { AsignacionPropia } from '../../../../logistica/dominio/modelos/personal';
 import { GestionProyectos } from '../../../aplicacion/gestion-proyectos';
 import { ESTADOS_EVENTO, EstadoEvento, EventoCalendario } from '../../../dominio/modelos/proyecto';
 
@@ -38,8 +40,10 @@ const COLORES: Readonly<Record<EstadoEvento, { primary: string; secondary: strin
 };
 
 /**
- * Cronograma general de eventos de todos los proyectos (mes, semana o dia).
- * Al hacer clic en un evento se abre su proyecto.
+ * Cronograma de eventos (mes, semana o dia). El general muestra los eventos
+ * de todos los proyectos y abre su proyecto; el propio (dato de ruta
+ * propio = true) muestra solo las asignaciones del tecnico y abre Mis
+ * asignaciones.
  */
 @Component({
   selector: 'app-pagina-cronograma',
@@ -62,6 +66,9 @@ const COLORES: Readonly<Record<EstadoEvento, { primary: string; secondary: strin
 })
 export class PaginaCronograma {
   private readonly gestion = inject(GestionProyectos);
+  private readonly planificacion = inject(GestionPlanificacion);
+  /** Solo los eventos asignados al usuario (tecnicos y sub-contratados). */
+  readonly propio = input(false);
   private readonly notificaciones = inject(ServicioNotificaciones);
   private readonly router = inject(Router);
 
@@ -86,6 +93,7 @@ export class PaginaCronograma {
     return {
       desde: startOfWeek(startOfMonth(fecha), opciones),
       hasta: addDays(endOfWeek(endOfMonth(fecha), opciones), 1),
+      propio: this.propio(),
     };
   });
 
@@ -93,8 +101,8 @@ export class PaginaCronograma {
     toObservable(this.rango)
       .pipe(
         tap(() => this.cargando.set(true)),
-        switchMap(({ desde, hasta }) =>
-          this.gestion.cronograma(aIsoLocal(desde), aIsoLocal(hasta)).pipe(
+        switchMap(({ desde, hasta, propio }) =>
+          this.cargar(aIsoLocal(desde), aIsoLocal(hasta), propio).pipe(
             catchError((error: unknown) => {
               this.notificaciones.error(error);
               return of([]);
@@ -104,9 +112,15 @@ export class PaginaCronograma {
         takeUntilDestroyed(),
       )
       .subscribe((eventos) => {
-        this.eventos.set(eventos.map(aEventoCalendario));
+        this.eventos.set(eventos);
         this.cargando.set(false);
       });
+  }
+
+  private cargar(desde: string, hasta: string, propio: boolean): Observable<CalendarEvent<EventoCalendario>[]> {
+    return propio
+      ? this.planificacion.cronogramaPropio(desde, hasta).pipe(map((asignaciones) => asignaciones.map(aEventoPropio)))
+      : this.gestion.cronograma(desde, hasta).pipe(map((eventos) => eventos.map(aEventoCalendario)));
   }
 
   protected cambiarFecha(fecha: Date): void {
@@ -122,6 +136,10 @@ export class PaginaCronograma {
   }
 
   protected abrirProyecto({ event }: { event: CalendarEvent<EventoCalendario> }): void {
+    if (this.propio()) {
+      void this.router.navigateByUrl(rutaAbsoluta(Rutas.LOGISTICA, Rutas.MIS_ASIGNACIONES));
+      return;
+    }
     if (event.meta) {
       void this.router.navigateByUrl(rutaAbsoluta(Rutas.COMERCIAL, Rutas.PROYECTOS, String(event.meta.idProyecto)));
     }
@@ -138,5 +156,19 @@ function aEventoCalendario(evento: EventoCalendario): CalendarEvent<EventoCalend
     color: COLORES[evento.estado],
     cssClass: evento.estado === 'CANCELADO' ? 'evento-cancelado' : undefined,
     meta: evento,
+  };
+}
+
+/** Asignacion propia en el calendario: su horario de trabajo, con el evento, el rol y el lugar. */
+function aEventoPropio(asignacion: AsignacionPropia): CalendarEvent<EventoCalendario> {
+  const evento = asignacion.evento;
+  const lugar = evento.ciudad ? `${evento.lugar}, ${evento.ciudad}` : evento.lugar;
+  return {
+    id: asignacion.id,
+    start: new Date(asignacion.inicio),
+    end: new Date(asignacion.fin),
+    title: `${evento.nombre} · ${asignacion.rol} (${lugar})`,
+    color: COLORES[evento.estado],
+    cssClass: evento.estado === 'CANCELADO' ? 'evento-cancelado' : undefined,
   };
 }

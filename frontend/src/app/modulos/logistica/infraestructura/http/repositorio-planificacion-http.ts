@@ -6,7 +6,7 @@ import { Pagina, SolicitudPagina } from '../../../../compartido/modelos/pagina';
 import { guardarRecurso } from '../../../../compartido/utilidades/guardar-recurso';
 import { parametrosConsulta } from '../../../../compartido/utilidades/parametros-http';
 import { URL_API } from '../../../../nucleo/configuracion/api';
-import { MisAsignaciones, PersonalDisponible } from '../../dominio/modelos/personal';
+import { AsignacionPropia, MisAsignaciones, PersonalDisponible } from '../../dominio/modelos/personal';
 import {
   Asignacion,
   DatosAsignacion,
@@ -67,4 +67,9 @@ export class RepositorioPlanificacionHttp extends RepositorioPlanificacion {
   misAsignaciones(): Observable<MisAsignaciones> {
     return this.http.get<MisAsignaciones>(this.urlPropias);
   }
+
+  cronogramaPropio(desde: string, hasta: string): Observable<AsignacionPropia[]> {
+    return this.http.get<AsignacionPropia[]>(`${this.urlPropias}/cronograma`, { params: { desde, hasta } });
+  }
+
 }

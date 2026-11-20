@@ -1,8 +1,13 @@
 <div class="pagina">
   <header class="pagina__encabezado">
     <div>
-      <h1>Cronograma de eventos</h1>
-      <p>Eventos de todos los proyectos. Seleccione un evento para abrir su proyecto.</p>
+      @if (propio()) {
+        <h1>Mi cronograma</h1>
+        <p>Eventos en los que usted está asignado, con su horario de trabajo. Seleccione uno para ver el detalle.</p>
+      } @else {
+        <h1>Cronograma de eventos</h1>
+        <p>Eventos de todos los proyectos. Seleccione un evento para abrir su proyecto.</p>
+      }
     </div>
     <mat-button-toggle-group [value]="vista()" (change)="vista.set($event.value)" aria-label="Vista del calendario">
       <mat-button-toggle [value]="Vista.Month">Mes</mat-button-toggle>

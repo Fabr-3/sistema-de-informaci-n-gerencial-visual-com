@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { Pagina, SolicitudPagina } from '../../../compartido/modelos/pagina';
-import { MisAsignaciones, PersonalDisponible } from '../dominio/modelos/personal';
+import { AsignacionPropia, MisAsignaciones, PersonalDisponible } from '../dominio/modelos/personal';
 import {
   Asignacion,
   DatosAsignacion,
@@ -62,5 +62,9 @@ export class GestionPlanificacion {
 
   misAsignaciones(): Observable<MisAsignaciones> {
     return this.repositorio.misAsignaciones();
+  }
+
+  cronogramaPropio(desde: string, hasta: string): Observable<AsignacionPropia[]> {
+    return this.repositorio.cronogramaPropio(desde, hasta);
   }
 }

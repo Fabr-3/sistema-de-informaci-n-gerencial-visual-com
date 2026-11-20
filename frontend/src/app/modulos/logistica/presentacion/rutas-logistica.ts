@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { PROVEEDORES_CALENDARIO } from '../../../nucleo/configuracion/calendario';
 import { PROVEEDOR_PAGINADOR_ESPANOL } from '../../../nucleo/configuracion/paginador-espanol';
 import { Rutas } from '../../../nucleo/configuracion/rutas';
 import { Permisos } from '../../accesos/dominio/modelos/permisos';
@@ -40,6 +41,15 @@ export const RUTAS_LOGISTICA: Routes = [
         canActivate: [permisoGuard(Permisos.ASIGNACIONES_VER_PROPIAS)],
         loadComponent: () =>
           import('./paginas/mis-asignaciones/pagina-mis-asignaciones').then((m) => m.PaginaMisAsignaciones),
+      },
+      {
+        path: Rutas.MI_CRONOGRAMA,
+        title: 'Mi cronograma',
+        canActivate: [permisoGuard(Permisos.ASIGNACIONES_VER_PROPIAS)],
+        data: { propio: true },
+        providers: [PROVEEDORES_CALENDARIO],
+        loadComponent: () =>
+          import('../../comercial/presentacion/paginas/cronograma/pagina-cronograma').then((m) => m.PaginaCronograma),
       },
     ],
   },

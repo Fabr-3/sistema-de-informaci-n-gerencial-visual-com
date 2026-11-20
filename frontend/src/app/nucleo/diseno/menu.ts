@@ -101,6 +101,12 @@ export const MENU_PRINCIPAL: readonly GrupoMenu[] = [
         ruta: rutaAbsoluta(Rutas.LOGISTICA, Rutas.MIS_ASIGNACIONES),
         permiso: Permisos.ASIGNACIONES_VER_PROPIAS,
       },
+      {
+        etiqueta: 'Mi cronograma',
+        icono: 'event_note',
+        ruta: rutaAbsoluta(Rutas.LOGISTICA, Rutas.MI_CRONOGRAMA),
+        permiso: Permisos.ASIGNACIONES_VER_PROPIAS,
+      },
     ],
   },
   {

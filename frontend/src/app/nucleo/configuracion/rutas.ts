@@ -21,6 +21,7 @@ export const Rutas = {
   PLANIFICACION: 'planificacion',
   PERSONAL: 'personal',
   MIS_ASIGNACIONES: 'mis-asignaciones',
+  MI_CRONOGRAMA: 'mi-cronograma',
   FINANZAS: 'finanzas',
   PROVEEDORES: 'proveedores',
   MOVIMIENTOS: 'movimientos',

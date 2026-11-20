@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 
 import { Pagina, SolicitudPagina } from '../../../../compartido/modelos/pagina';
-import { MisAsignaciones, PersonalDisponible } from '../modelos/personal';
+import { AsignacionPropia, MisAsignaciones, PersonalDisponible } from '../modelos/personal';
 import {
   Asignacion,
   DatosAsignacion,
@@ -34,4 +34,6 @@ export abstract class RepositorioPlanificacion {
     idAsignacion: number | null,
   ): Observable<PersonalDisponible[]>;
   abstract misAsignaciones(): Observable<MisAsignaciones>;
+  /** Asignaciones propias que se superponen con el rango (incluye las pasadas). */
+  abstract cronogramaPropio(desde: string, hasta: string): Observable<AsignacionPropia[]>;
 }
