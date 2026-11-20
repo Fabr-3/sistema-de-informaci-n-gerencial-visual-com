@@ -35,6 +35,10 @@ export class RepositorioHistorialActivosHttp extends RepositorioHistorialActivos
     return this.http.post<RegistroUso>(`${this.url}/${idActivo}/usos`, uso);
   }
 
+  registrarUsoGrupal(idsActivos: readonly number[], uso: NuevoRegistroUso): Observable<RegistroUso[]> {
+    return this.http.post<RegistroUso[]>(`${this.url}/usos-grupales`, { idsActivos, ...uso });
+  }
+
   anularUso(idActivo: number, idRegistro: number): Observable<void> {
     return this.http.delete<void>(`${this.url}/${idActivo}/usos/${idRegistro}`);
   }

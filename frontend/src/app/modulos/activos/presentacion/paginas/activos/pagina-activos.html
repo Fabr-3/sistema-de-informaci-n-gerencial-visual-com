@@ -4,10 +4,16 @@
       <h1>Activos</h1>
       <p>Equipos controlados por unidad, su ubicación, estado y horas de uso.</p>
     </div>
-    <button mat-flat-button *siPermiso="permisos.ACTIVOS_GESTIONAR" (click)="crear()">
-      <mat-icon>add</mat-icon>
-      Registrar activos
-    </button>
+    <div class="acciones-encabezado">
+      <button mat-stroked-button *siPermiso="permisos.MANTENIMIENTOS_REGISTRAR" (click)="registrarUsoGrupal()">
+        <mat-icon>playlist_add_check</mat-icon>
+        Registrar uso de varios
+      </button>
+      <button mat-flat-button *siPermiso="permisos.ACTIVOS_GESTIONAR" (click)="crear()">
+        <mat-icon>add</mat-icon>
+        Registrar activos
+      </button>
+    </div>
   </header>
 
   @if (alertas().length > 0) {

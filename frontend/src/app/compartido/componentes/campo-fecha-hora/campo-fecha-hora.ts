@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnInit, computed, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ControlValueAccessor,
@@ -65,7 +65,7 @@ import { combinarFechaHora, separarFechaHora } from './fecha-hora';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CampoFechaHora implements ControlValueAccessor {
+export class CampoFechaHora implements ControlValueAccessor, OnInit {
   readonly etiqueta = input('Fecha');
   /** Paso de la lista de horas (por ejemplo "30min" o "1h"). */
   readonly intervalo = input('30min');
@@ -76,6 +76,8 @@ export class CampoFechaHora implements ControlValueAccessor {
   readonly mensajeError = input('Indique la fecha y la hora');
 
   private readonly control = inject(NgControl, { self: true, optional: true });
+  private readonly detector = inject(ChangeDetectorRef);
+  private readonly destruccion = inject(DestroyRef);
   protected readonly fecha = new FormControl<Date | null>(null);
   protected readonly hora = new FormControl<Date | null>(null);
   private alCambiar: (valor: string) => void = () => undefined;
@@ -92,8 +94,15 @@ export class CampoFechaHora implements ControlValueAccessor {
       this.control.valueAccessor = this;
     }
     merge(this.fecha.valueChanges, this.hora.valueChanges)
-      .pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .pipe(takeUntilDestroyed(this.destruccion))
       .subscribe(() => this.alCambiar(combinarFechaHora(this.fecha.value, this.hora.value)));
+  }
+
+  /** Al marcar el formulario como tocado (por ejemplo, al guardar) se muestran los errores. */
+  ngOnInit(): void {
+    this.control?.control?.events
+      .pipe(takeUntilDestroyed(this.destruccion))
+      .subscribe(() => this.detector.markForCheck());
   }
 
   writeValue(valor: string | null): void {

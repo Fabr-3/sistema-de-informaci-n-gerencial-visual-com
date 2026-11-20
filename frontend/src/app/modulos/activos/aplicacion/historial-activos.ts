@@ -30,6 +30,10 @@ export class HistorialActivos {
     return this.repositorio.registrarUso(idActivo, uso);
   }
 
+  registrarUsoGrupal(idsActivos: readonly number[], uso: NuevoRegistroUso): Observable<RegistroUso[]> {
+    return this.repositorio.registrarUsoGrupal(idsActivos, uso);
+  }
+
   anularUso(idActivo: number, idRegistro: number): Observable<void> {
     return this.repositorio.anularUso(idActivo, idRegistro);
   }

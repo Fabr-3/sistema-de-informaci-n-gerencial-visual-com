@@ -19,6 +19,8 @@ import {
 export abstract class RepositorioHistorialActivos {
   abstract listarUsos(idActivo: number, solicitud: SolicitudPagina): Observable<Pagina<RegistroUso>>;
   abstract registrarUso(idActivo: number, uso: NuevoRegistroUso): Observable<RegistroUso>;
+  /** Mismo periodo para varios equipos: se registran todos o ninguno. */
+  abstract registrarUsoGrupal(idsActivos: readonly number[], uso: NuevoRegistroUso): Observable<RegistroUso[]>;
   abstract anularUso(idActivo: number, idRegistro: number): Observable<void>;
   abstract listarMantenimientos(idActivo: number, solicitud: SolicitudPagina): Observable<Pagina<Mantenimiento>>;
   abstract iniciarMantenimiento(idActivo: number, inicio: InicioMantenimiento): Observable<Mantenimiento>;

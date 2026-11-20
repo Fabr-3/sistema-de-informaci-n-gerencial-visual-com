@@ -38,7 +38,9 @@ import {
 } from '../../../dominio/modelos/activo';
 import { Bodega, Categoria } from '../../../dominio/modelos/catalogos';
 import { ModeloActivo } from '../../../dominio/modelos/modelo-activo';
+import { RegistroUso } from '../../../dominio/modelos/historial';
 import { DatosDialogoActivo, DialogoActivo } from './dialogo-activo/dialogo-activo';
+import { DialogoUsoGrupal } from './dialogo-uso-grupal';
 
 const RETARDO_BUSQUEDA_MS = 300;
 /** Parametro de consulta para abrir el listado filtrado por modelo (desde Catalogos). */
@@ -162,6 +164,18 @@ export class PaginaActivos {
 
   protected abrir(activo: Activo): void {
     void this.router.navigateByUrl(rutaAbsoluta(Rutas.ACTIVOS, String(activo.id)));
+  }
+
+  /** Uso grupal: el mismo periodo para varios equipos (por ejemplo, los de un evento). */
+  protected registrarUsoGrupal(): void {
+    this.dialogos
+      .open<DialogoUsoGrupal, void, RegistroUso[]>(DialogoUsoGrupal, { width: '640px' })
+      .afterClosed()
+      .pipe(filter((registros): registros is RegistroUso[] => !!registros?.length))
+      .subscribe((registros) => {
+        this.notificaciones.exito(`Uso registrado para ${registros.length} equipos`);
+        this.version.update((valor) => valor + 1);
+      });
   }
 
   protected crear(): void {
