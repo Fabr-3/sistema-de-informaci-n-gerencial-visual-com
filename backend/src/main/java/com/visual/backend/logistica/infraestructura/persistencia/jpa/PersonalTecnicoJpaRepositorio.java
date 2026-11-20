@@ -21,11 +21,12 @@ public interface PersonalTecnicoJpaRepositorio extends JpaRepository<PersonalTec
 
     @Query("""
             select count(d) > 0 from DocumentoPersonalEntidad d
-            where d.tipo.id = :idTipo and upper(d.numero) = upper(:numero) and d.fechaEliminacion is null
+            where d.tipo.id = :idTipo and upper(d.numero) = upper(:numero)
+              and coalesce(d.complemento, '') = :complemento and d.fechaEliminacion is null
               and d.personal.fechaEliminacion is null and (:idExcluido is null or d.personal.id <> :idExcluido)
             """)
     boolean existeDocumento(@Param("idTipo") Integer idTipo, @Param("numero") String numero,
-                            @Param("idExcluido") Integer idExcluido);
+                            @Param("complemento") String complemento, @Param("idExcluido") Integer idExcluido);
 
     @Query("""
             select count(p) > 0 from PersonalTecnicoEntidad p

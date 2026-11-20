@@ -7,6 +7,8 @@ import java.util.Locale;
 import java.util.Set;
 
 import com.visual.backend.compartido.dominio.ElementoCatalogo;
+import com.visual.backend.compartido.dominio.ReglasDocumento;
+import com.visual.backend.compartido.dominio.ReglasTexto;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 
 /**
@@ -14,6 +16,9 @@ import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
  * un documento (regla tambien protegida por un trigger diferido en la base).
  */
 public class Cliente {
+
+    /** Tipo de cliente cuyo nombre solo admite letras. */
+    public static final String PERSONA_NATURAL = "Persona natural";
 
     private final Integer id;
     private ElementoCatalogo tipo;
@@ -47,7 +52,7 @@ public class Cliente {
     public static Cliente nuevo(ElementoCatalogo tipo, String razonSocial, String direccion,
                                 List<DocumentoCliente> documentos, List<ContactoCliente> contactos, Integer actor,
                                 LocalDateTime ahora) {
-        validar(razonSocial, documentos, contactos);
+        validar(tipo, razonSocial, documentos, contactos);
         return new Cliente(null, tipo, razonSocial.trim(), textoOpcional(direccion), documentos, contactos, actor,
                 ahora, null, null, null);
     }
@@ -55,7 +60,7 @@ public class Cliente {
     public void actualizar(ElementoCatalogo nuevoTipo, String nuevaRazonSocial, String nuevaDireccion,
                            List<DocumentoCliente> nuevosDocumentos, List<ContactoCliente> nuevosContactos,
                            Integer actor, LocalDateTime ahora) {
-        validar(nuevaRazonSocial, nuevosDocumentos, nuevosContactos);
+        validar(nuevoTipo, nuevaRazonSocial, nuevosDocumentos, nuevosContactos);
         tipo = nuevoTipo;
         razonSocial = nuevaRazonSocial.trim();
         direccion = textoOpcional(nuevaDireccion);
@@ -75,22 +80,30 @@ public class Cliente {
         return new ResumenCliente(id, razonSocial);
     }
 
-    private static void validar(String razonSocial, List<DocumentoCliente> documentos,
+    /** Una persona natural se nombra solo con letras; una empresa o institucion admite numeros y signos. */
+    private static void validar(ElementoCatalogo tipo, String razonSocial, List<DocumentoCliente> documentos,
                                 List<ContactoCliente> contactos) {
         if (razonSocial == null || razonSocial.isBlank()) {
             throw new ReglaNegocioExcepcion("Indique el nombre o la razón social del cliente");
+        }
+        if (PERSONA_NATURAL.equals(tipo.nombre())) {
+            ReglasTexto.exigirNombrePersona(razonSocial, "nombre");
+        } else {
+            ReglasTexto.exigirRazonSocial(razonSocial, "razón social");
         }
         if (documentos == null || documentos.isEmpty()) {
             throw new ReglaNegocioExcepcion("El cliente debe tener al menos un documento (CI o NIT)");
         }
         Set<String> claves = new HashSet<>();
         for (DocumentoCliente documento : documentos) {
-            if (!claves.add(documento.tipo().id() + ":" + documento.numero().toUpperCase(Locale.ROOT))) {
-                throw new ReglaNegocioExcepcion("El documento " + documento.numero() + " está repetido");
+            ReglasDocumento.validar(documento.tipo(), documento.numero(), documento.complemento());
+            if (!claves.add(documento.clave())) {
+                throw new ReglaNegocioExcepcion("El documento " + documento.descripcion() + " está repetido");
             }
         }
         Set<String> valores = new HashSet<>();
         for (ContactoCliente contacto : contactos) {
+            contacto.validar();
             if (!valores.add(contacto.tipo().id() + ":" + contacto.valor().toLowerCase(Locale.ROOT))) {
                 throw new ReglaNegocioExcepcion("El contacto " + contacto.valor() + " está repetido");
             }

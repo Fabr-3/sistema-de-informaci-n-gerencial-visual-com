@@ -47,7 +47,7 @@ final class MapeadorLogistica {
                 .telefono(entidad.getTelefono())
                 .documento(documento == null ? null : new DocumentoPersonal(
                         new ElementoCatalogo(documento.getTipo().getId(), documento.getTipo().getNombre()),
-                        documento.getNumero()))
+                        documento.getNumero(), documento.getComplemento()))
                 .especialidades(entidad.getEspecialidades().stream()
                         .map(especialidad -> new ElementoCatalogo(especialidad.getId(), especialidad.getNombre()))
                         .sorted(Comparator.comparing(ElementoCatalogo::nombre))

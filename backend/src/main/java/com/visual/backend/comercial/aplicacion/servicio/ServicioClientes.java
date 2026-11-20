@@ -101,18 +101,19 @@ public class ServicioClientes {
                 .orElseThrow(() -> new RecursoNoEncontradoExcepcion("el tipo de cliente", comando.idTipoCliente()));
     }
 
-    /** Un mismo documento (tipo y numero) no puede pertenecer a dos clientes. */
+    /** Un mismo documento (tipo, numero y complemento) no puede pertenecer a dos clientes. */
     private List<DocumentoCliente> documentos(ComandoCliente comando, Integer idCliente) {
         return comando.documentos().stream().map(documento -> {
             ElementoCatalogo tipo = catalogos.buscarTipoDocumento(documento.idTipoDocumento())
                     .orElseThrow(() -> new RecursoNoEncontradoExcepcion("el tipo de documento",
                             documento.idTipoDocumento()));
-            String numero = documento.numero().trim();
-            if (repositorio.existeDocumento(tipo.id(), numero, idCliente)) {
-                throw new DatoDuplicadoExcepcion("El " + tipo.nombre() + " " + numero
+            DocumentoCliente nuevo = new DocumentoCliente(documento.id(), tipo, documento.numero(),
+                    documento.complemento());
+            if (repositorio.existeDocumento(tipo.id(), nuevo.numero(), nuevo.complemento(), idCliente)) {
+                throw new DatoDuplicadoExcepcion("El " + tipo.nombre() + " " + nuevo.descripcion()
                         + " ya está registrado en otro cliente");
             }
-            return new DocumentoCliente(documento.id(), tipo, numero);
+            return nuevo;
         }).toList();
     }
 

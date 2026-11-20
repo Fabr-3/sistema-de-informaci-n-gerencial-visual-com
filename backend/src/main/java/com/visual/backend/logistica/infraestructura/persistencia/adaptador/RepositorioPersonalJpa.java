@@ -2,6 +2,7 @@ package com.visual.backend.logistica.infraestructura.persistencia.adaptador;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.data.domain.Sort;
@@ -68,8 +69,8 @@ public class RepositorioPersonalJpa implements RepositorioPersonal {
     }
 
     @Override
-    public boolean existeDocumento(Integer idTipoDocumento, String numero, Integer idExcluido) {
-        return personal.existeDocumento(idTipoDocumento, numero, idExcluido);
+    public boolean existeDocumento(Integer idTipoDocumento, String numero, String complemento, Integer idExcluido) {
+        return personal.existeDocumento(idTipoDocumento, numero, complemento == null ? "" : complemento, idExcluido);
     }
 
     @Override
@@ -103,8 +104,10 @@ public class RepositorioPersonalJpa implements RepositorioPersonal {
         DocumentoPersonal documento = dominio.getDocumento();
         DocumentoPersonalEntidad actual = MapeadorLogistica.documentoVigente(entidad);
         if (actual != null && actual.getTipo().getId().equals(documento.tipo().id())) {
-            if (!actual.getNumero().equals(documento.numero())) {
+            if (!actual.getNumero().equals(documento.numero())
+                    || !Objects.equals(actual.getComplemento(), documento.complemento())) {
                 actual.setNumero(documento.numero());
+                actual.setComplemento(documento.complemento());
                 actual.setModificadoPor(dominio.getModificadoPor());
                 actual.setFechaModificacion(dominio.getFechaModificacion());
             }
@@ -117,6 +120,7 @@ public class RepositorioPersonalJpa implements RepositorioPersonal {
         nuevo.setPersonal(entidad);
         nuevo.setTipo(tiposDocumento.getReferenceById(documento.tipo().id()));
         nuevo.setNumero(documento.numero());
+        nuevo.setComplemento(documento.complemento());
         nuevo.setCreadoPor(dominio.getModificadoPor() == null ? dominio.getCreadoPor() : dominio.getModificadoPor());
         nuevo.setFechaCreacion(dominio.getFechaModificacion() == null ? dominio.getFechaCreacion()
                 : dominio.getFechaModificacion());

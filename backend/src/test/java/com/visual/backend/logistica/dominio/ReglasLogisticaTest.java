@@ -43,7 +43,7 @@ class ReglasLogisticaTest {
 
     private static PersonalTecnico persona(boolean activo) {
         return PersonalTecnico.nuevo(new DatosPersonal(" Juan Carlos ", "Mamani Quispe", "71234567",
-                new DocumentoPersonal(CI, "4876512 LP"), List.of(SONIDO, SONIDO), null, activo), ACTOR, AHORA);
+                new DocumentoPersonal(CI, "4876512 LP", null), List.of(SONIDO, SONIDO), null, activo), ACTOR, AHORA);
     }
 
     @Test
@@ -132,7 +132,7 @@ class ReglasLogisticaTest {
         assertThat(personal.getNombres()).isEqualTo("Juan Carlos");
         assertThat(personal.getEspecialidades()).containsExactly(SONIDO);
         assertThatThrownBy(() -> PersonalTecnico.nuevo(new DatosPersonal("Ana", " ", null,
-                new DocumentoPersonal(CI, "123"), List.of(), null, true), ACTOR, AHORA))
+                new DocumentoPersonal(CI, "123", null), List.of(), null, true), ACTOR, AHORA))
                 .isInstanceOf(ReglaNegocioExcepcion.class);
     }
 }

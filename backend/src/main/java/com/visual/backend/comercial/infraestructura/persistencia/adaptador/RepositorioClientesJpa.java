@@ -62,8 +62,8 @@ public class RepositorioClientesJpa implements RepositorioClientes {
     }
 
     @Override
-    public boolean existeDocumento(Integer idTipoDocumento, String numero, Integer idExcluido) {
-        return clientes.existeDocumento(idTipoDocumento, numero, idExcluido);
+    public boolean existeDocumento(Integer idTipoDocumento, String numero, String complemento, Integer idExcluido) {
+        return clientes.existeDocumento(idTipoDocumento, numero, complemento == null ? "" : complemento, idExcluido);
     }
 
     @Override
@@ -93,7 +93,8 @@ public class RepositorioClientesJpa implements RepositorioClientes {
         for (DocumentoCliente documento : cliente.getDocumentos()) {
             DocumentoClienteEntidad fila = documento.id() != null ? existentes.get(documento.id())
                     : buscarPorClave(entidad.getDocumentos(), existente -> existente.getTipo().getId().equals(documento.tipo().id())
-                            && existente.getNumero().equalsIgnoreCase(documento.numero()));
+                            && existente.getNumero().equalsIgnoreCase(documento.numero())
+                            && Objects.equals(existente.getComplemento(), documento.complemento()));
             if (fila == null) {
                 fila = new DocumentoClienteEntidad();
                 fila.setCliente(entidad);
@@ -101,12 +102,14 @@ public class RepositorioClientesJpa implements RepositorioClientes {
                 fila.setFechaCreacion(cliente.getFechaModificacion() == null ? cliente.getFechaCreacion()
                         : cliente.getFechaModificacion());
             } else if (!Objects.equals(fila.getNumero(), documento.numero())
+                    || !Objects.equals(fila.getComplemento(), documento.complemento())
                     || !fila.getTipo().getId().equals(documento.tipo().id())) {
                 fila.setModificadoPor(cliente.getModificadoPor());
                 fila.setFechaModificacion(cliente.getFechaModificacion());
             }
             fila.setTipo(tiposDocumento.getReferenceById(documento.tipo().id()));
             fila.setNumero(documento.numero());
+            fila.setComplemento(documento.complemento());
             resultado.add(fila);
         }
         entidad.getDocumentos().retainAll(resultado);

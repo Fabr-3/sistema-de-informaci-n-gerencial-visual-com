@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.visual.backend.compartido.dominio.ElementoCatalogo;
+import com.visual.backend.compartido.dominio.ReglasDocumento;
+import com.visual.backend.compartido.dominio.ReglasTexto;
 import com.visual.backend.compartido.dominio.excepcion.ReglaNegocioExcepcion;
 
 import lombok.AccessLevel;
@@ -67,7 +69,7 @@ public class PersonalTecnico {
         nombres = datos.nombres().trim();
         apellidos = datos.apellidos().trim();
         telefono = datos.telefono() == null || datos.telefono().isBlank() ? null : datos.telefono().trim();
-        documento = new DocumentoPersonal(datos.documento().tipo(), datos.documento().numero().trim());
+        documento = datos.documento();
         especialidades = sinRepetir(datos.especialidades());
         usuario = datos.usuario();
         activo = datos.activo();
@@ -82,6 +84,9 @@ public class PersonalTecnico {
                 || datos.documento().numero().isBlank()) {
             throw new ReglaNegocioExcepcion("Indique el documento de identidad");
         }
+        ReglasTexto.exigirNombrePersona(datos.nombres(), "nombres");
+        ReglasTexto.exigirNombrePersona(datos.apellidos(), "apellidos");
+        ReglasDocumento.validar(datos.documento().tipo(), datos.documento().numero(), datos.documento().complemento());
     }
 
     private static List<ElementoCatalogo> sinRepetir(List<ElementoCatalogo> especialidades) {

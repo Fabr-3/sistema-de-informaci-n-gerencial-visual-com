@@ -24,7 +24,7 @@ public interface RepositorioPersonal {
 
     Optional<PersonalTecnico> buscarPorUsuario(Integer idUsuario);
 
-    boolean existeDocumento(Integer idTipoDocumento, String numero, Integer idExcluido);
+    boolean existeDocumento(Integer idTipoDocumento, String numero, String complemento, Integer idExcluido);
 
     boolean usuarioVinculadoAOtro(Integer idUsuario, Integer idExcluido);
 

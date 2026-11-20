@@ -59,7 +59,7 @@ final class MapeadorComercial {
 
     static DocumentoCliente aDominio(DocumentoClienteEntidad entidad) {
         return new DocumentoCliente(entidad.getId(), catalogo(entidad.getTipo().getId(), entidad.getTipo().getNombre()),
-                entidad.getNumero());
+                entidad.getNumero(), entidad.getComplemento());
     }
 
     static ContactoCliente aDominio(ContactoClienteEntidad entidad) {

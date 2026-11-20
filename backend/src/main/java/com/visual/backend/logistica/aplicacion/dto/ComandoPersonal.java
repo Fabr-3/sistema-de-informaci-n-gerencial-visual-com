@@ -12,6 +12,7 @@ public record ComandoPersonal(@NotBlank @Size(max = 100) String nombres,
                               @Size(max = 30) String telefono,
                               @NotNull Integer idTipoDocumento,
                               @NotBlank @Size(max = 50) String numeroDocumento,
+                              @Size(max = 2) String complementoDocumento,
                               @Size(max = 10) List<@NotNull Integer> idsEspecialidades,
                               Integer idUsuario,
                               @NotNull Boolean activo) {

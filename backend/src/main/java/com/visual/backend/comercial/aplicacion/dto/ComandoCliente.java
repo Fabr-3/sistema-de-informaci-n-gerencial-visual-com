@@ -15,7 +15,9 @@ public record ComandoCliente(@NotNull Integer idTipoCliente,
                              @Size(max = 20) List<@Valid Contacto> contactos) {
 
     /** id nulo para documentos nuevos. */
-    public record Documento(Integer id, @NotNull Integer idTipoDocumento, @NotBlank @Size(max = 50) String numero) {
+    /** complemento solo para el carnet de identidad (opcional). */
+    public record Documento(Integer id, @NotNull Integer idTipoDocumento, @NotBlank @Size(max = 50) String numero,
+                            @Size(max = 2) String complemento) {
     }
 
     /** id nulo para contactos nuevos. */

@@ -27,8 +27,9 @@ public interface ClienteJpaRepositorio extends JpaRepository<ClienteEntidad, Int
     @Query("""
             select count(d) > 0 from DocumentoClienteEntidad d
             where d.tipo.id = :idTipo and upper(d.numero) = upper(:numero)
+              and coalesce(d.complemento, '') = :complemento
               and (:idExcluido is null or d.cliente.id <> :idExcluido)
             """)
     boolean existeDocumento(@Param("idTipo") Integer idTipo, @Param("numero") String numero,
-                            @Param("idExcluido") Integer idExcluido);
+                            @Param("complemento") String complemento, @Param("idExcluido") Integer idExcluido);
 }

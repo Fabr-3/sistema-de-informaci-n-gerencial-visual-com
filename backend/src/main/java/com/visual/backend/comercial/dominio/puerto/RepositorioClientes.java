@@ -22,7 +22,7 @@ public interface RepositorioClientes {
     Pagina<Cliente> buscar(Filtros.Clientes filtro, SolicitudPagina solicitud);
 
     /** Indica si el documento ya pertenece a otro cliente distinto de idExcluido (puede ser nulo). */
-    boolean existeDocumento(Integer idTipoDocumento, String numero, Integer idExcluido);
+    boolean existeDocumento(Integer idTipoDocumento, String numero, String complemento, Integer idExcluido);
 
     Cliente guardar(Cliente cliente);
 }

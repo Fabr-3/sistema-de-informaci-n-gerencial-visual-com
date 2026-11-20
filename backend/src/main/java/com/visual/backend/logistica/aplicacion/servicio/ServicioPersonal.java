@@ -120,12 +120,13 @@ public class ServicioPersonal {
         ElementoCatalogo tipo = catalogos.buscarTipoDocumento(comando.idTipoDocumento())
                 .orElseThrow(() -> new RecursoNoEncontradoExcepcion("el tipo de documento",
                         comando.idTipoDocumento()));
-        String numero = comando.numeroDocumento().trim();
-        if (repositorio.existeDocumento(tipo.id(), numero, idPersonal)) {
-            throw new DatoDuplicadoExcepcion("El " + tipo.nombre() + " " + numero
+        DocumentoPersonal documento = new DocumentoPersonal(tipo, comando.numeroDocumento(),
+                comando.complementoDocumento());
+        if (repositorio.existeDocumento(tipo.id(), documento.numero(), documento.complemento(), idPersonal)) {
+            throw new DatoDuplicadoExcepcion("El " + tipo.nombre() + " " + documento.descripcion()
                     + " ya está registrado en otra persona");
         }
-        return new DocumentoPersonal(tipo, numero);
+        return documento;
     }
 
     private List<ElementoCatalogo> especialidades(ComandoPersonal comando) {

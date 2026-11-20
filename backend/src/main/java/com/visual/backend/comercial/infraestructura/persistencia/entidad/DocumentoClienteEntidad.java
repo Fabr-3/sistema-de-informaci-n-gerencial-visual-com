@@ -39,6 +39,9 @@ public class DocumentoClienteEntidad {
     @Column(nullable = false, length = 50)
     private String numero;
 
+    @Column(length = 2)
+    private String complemento;
+
     @Column(name = "creado_por", updatable = false)
     private Integer creadoPor;
 

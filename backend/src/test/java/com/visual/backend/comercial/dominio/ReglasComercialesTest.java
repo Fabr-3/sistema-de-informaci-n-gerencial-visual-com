@@ -140,7 +140,7 @@ class ReglasComercialesTest {
         assertThatThrownBy(() -> Cliente.nuevo(empresa, "Banco", null, List.of(), List.of(), 1, AHORA))
                 .hasMessageContaining("al menos un documento");
         assertThatThrownBy(() -> Cliente.nuevo(empresa, "Banco", null,
-                List.of(new DocumentoCliente(null, nit, "1020"), new DocumentoCliente(null, nit, " 1020 ")),
+                List.of(new DocumentoCliente(null, nit, "1020304", null), new DocumentoCliente(null, nit, " 1020304 ", null)),
                 List.of(), 1, AHORA)).hasMessageContaining("repetido");
     }
 }

@@ -23,7 +23,7 @@ public record VistaPersonal(Integer id, String nombres, String apellidos, String
         Map<String, Object> mapa = new LinkedHashMap<>();
         mapa.put("nombre", nombreCompleto);
         mapa.put("telefono", telefono);
-        mapa.put("documento", documento.tipo().nombre() + " " + documento.numero());
+        mapa.put("documento", documento.tipo().nombre() + " " + documento.descripcion());
         mapa.put("especialidades", especialidades.stream().map(ElementoCatalogo::nombre).toList());
         mapa.put("usuario", usuario == null ? null : usuario.nombreUsuario());
         mapa.put("activo", activo);
