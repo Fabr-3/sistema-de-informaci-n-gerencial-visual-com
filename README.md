@@ -139,6 +139,7 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
   - `V17`: complemento del carnet de identidad (`complemento`, 1 o 2 letras o números) en los documentos de clientes, personal técnico y proveedores; un documento se distingue por tipo, número y complemento.
   - `V18`: proveedores con los mismos datos que un cliente. Catálogo `tipos_proveedor` (persona natural, empresa privada, institución pública), `direccion` y estado `activo` en `proveedores`; los existentes quedan como empresa privada.
   - `V19`: un proveedor registrado sin tipo (scripts anteriores a `V18`) se toma como empresa privada.
+  - `V20`: subalquiler de equipos. `subcontrataciones` recibe `id_modelo` y `cantidad` (ambos o ninguno; con modelo se exige el evento).
 - Todo cambio de esquema va en una migración nueva. Nunca se edita una migración ya aplicada.
 
 ## Seguridad del módulo de accesos
@@ -205,10 +206,13 @@ Fuera de desarrollo, la cookie de refresco se marca como `Secure`, por lo que re
 - **Asignación de personal:** cada asignación tiene persona, rol y horario. Una persona no se repite en el mismo horario de un mismo evento, pero sí puede estar en varios eventos a la vez: el sistema muestra el cruce como alerta (en la lista de eventos, en el plan, al elegir a la persona y en «Mis asignaciones») y no lo bloquea. Los eventos cancelados no generan cruces.
 - **Personal técnico:** documento de identidad único, especialidades y, opcionalmente, una cuenta de técnico o sub-contratado (una cuenta por persona). No se elimina: se desactiva, y solo si no tiene asignaciones pendientes. Al personal inactivo no se le asigna trabajo.
 - **Mis asignaciones:** el técnico o sub-contratado con cuenta vinculada ve sus asignaciones desde hoy, con el lugar, el transporte y los cruces.
+- **Fechas y horas:** las jornadas, las asignaciones y los eventos se programan con un calendario desplegable (que se abre en la fecha del evento) y una lista de horas cada 30 minutos, en formato de 24 horas; también se pueden escribir.
 - **Reserva de equipos:**
   - Solo se reservan equipos por unidad que siguen en el inventario y no están en mantenimiento, para eventos *Programados* de proyectos en planificación o en ejecución. Los lotes (cables y accesorios) quedan fuera de las reservas.
   - El periodo va desde el montaje más temprano hasta el desmontaje más tardío del plan; sin montaje o sin desmontaje se usa el inicio o el fin del evento.
   - Se reservan todos los equipos pedidos o ninguno: si alguno ya está reservado para otro evento en un periodo que se superpone, la API responde 409 con cada conflicto (equipo, evento que lo ocupa y periodo). La base de datos también lo impide.
+  - **Reserva automática:** se indica cuántas unidades de cada modelo hacen falta y el sistema elige las primeras libres (por código). La pantalla muestra las unidades libres de cada modelo en el periodo del plan, incluso los agotados. Si un pedido supera lo disponible no se reserva nada y la API responde 409 con los faltantes (pedido, libres y faltante).
+  - **Faltantes:** ante un faltante se puede bajar la cantidad, **subalquilar** lo que falta (con `PROVEEDORES_GESTIONAR`: se reservan las unidades libres y lo que falta se registra como subcontratación con modelo y cantidad, a un proveedor activo y con su costo; su egreso *Subcontratación de servicios* queda imputado al proyecto y al evento y aparece en Finanzas) o **cancelar el evento** (con `COMERCIAL_GESTIONAR`). Los subalquileres vigentes figuran en la sección *Equipos* del plan como *Subcontratado*; anular la subcontratación anula su egreso y lo quita del plan.
   - Reservar no cambia el estado operativo del equipo: puede tener varias reservas futuras que no se superpongan, y su disponibilidad se deduce de las reservas activas.
   - Al agregar, modificar o quitar una jornada, o al cambiar el horario del evento, se recalcula el periodo de sus reservas; si eso provoca un conflicto, el cambio se rechaza con 409 y no se guarda nada. Cancelar el evento libera sus reservas con el motivo «Evento cancelado».
   - Una reserva se libera con motivo y queda en el historial. En el reporte de estado de activos, «En uso» cuenta los equipos con una reserva activa en curso.
